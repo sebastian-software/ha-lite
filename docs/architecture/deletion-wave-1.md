@@ -249,3 +249,7 @@ The third-party `homeassistant-ai/ha-mcp` project is a compatibility target, not
 The frontend deletion also removes the `home-assistant-frontend` requirement from the all-requirements/constraint sets. This repository never contained the separate upstream browser application's TypeScript source; the removed Core component was the Python integration/glue that loaded and served that packaged frontend.
 
 The retained `tests/components/mcp_server` protocol suite now runs with the frontend package physically absent from the source tree. Its authenticated initialization, tool listing and tool invocation tests are therefore the Wave-1 headless MCP compatibility check at this checkpoint.
+
+### Lovelace bootstrap decoupling checkpoint
+
+Before physical Lovelace deletion, bootstrap no longer pre-imports the `lovelace` integration. The remaining Lovelace references are confined to the component itself, its tests, and static/tooling metadata that will be removed with the component.
