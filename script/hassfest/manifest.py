@@ -101,7 +101,6 @@ NO_IOT_CLASS = [
     "intent",
     "logbook",
     "logger",
-    "lovelace",
     "map_tiles",
     "media_source",
     "moisture",
