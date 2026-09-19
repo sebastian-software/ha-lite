@@ -10,8 +10,6 @@ handled consistently. It intentionally captures only imports under
 homeassistant.components.*; core/helper imports can be added as a second graph later.
 """
 
-from __future__ import annotations
-
 import argparse
 import ast
 from collections import defaultdict
@@ -23,6 +21,7 @@ PREFIX = "homeassistant.components."
 
 
 def component_from_module(module: str | None) -> str | None:
+    """Return the component domain referenced by a Home Assistant module."""
     if not module or not module.startswith(PREFIX):
         return None
     rest = module[len(PREFIX) :]
@@ -30,10 +29,12 @@ def component_from_module(module: str | None) -> str | None:
 
 
 def source_component(path: Path, components_root: Path) -> str:
+    """Return the component domain that owns a Python source file."""
     return path.relative_to(components_root).parts[0]
 
 
 def imports_for_file(path: Path) -> set[str]:
+    """Return Home Assistant component domains imported by one Python file."""
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (SyntaxError, UnicodeDecodeError):
@@ -52,6 +53,7 @@ def imports_for_file(path: Path) -> set[str]:
 
 
 def main() -> int:
+    """Generate the component import graph and write it as TSV to stdout."""
     parser = argparse.ArgumentParser()
     parser.add_argument("core", type=Path, help="Home Assistant Core checkout")
     args = parser.parse_args()
@@ -65,12 +67,14 @@ def main() -> int:
         src = source_component(path, components_root)
         edges[src].update(imports_for_file(path))
 
-    print("source\ttarget")
+    lines = ["source\ttarget"]
     for src in sorted(edges):
-        for dst in sorted(edges[src]):
-            if src != dst:
-                print(f"{src}\t{dst}")
-
+        lines.extend(
+            f"{src}\t{dst}"
+            for dst in sorted(edges[src])
+            if src != dst
+        )
+    sys.stdout.write("\n".join(lines) + "\n")
     return 0
 
 

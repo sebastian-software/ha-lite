@@ -1,5 +1,6 @@
 name: Import Home Assistant Core
 
+# yamllint disable-line rule:truthy
 on:
   push:
     paths:
