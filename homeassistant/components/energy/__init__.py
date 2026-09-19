@@ -1,6 +1,5 @@
 """The Energy integration."""
 
-from homeassistant.components import frontend
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, discovery
@@ -24,8 +23,6 @@ async def is_configured(hass: HomeAssistant) -> bool:
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up Energy."""
     websocket_api.async_setup(hass)
-    frontend.async_register_built_in_panel(hass, DOMAIN, DOMAIN, "mdi:lightning-bolt")
-
     hass.async_create_task(
         discovery.async_load_platform(hass, Platform.SENSOR, DOMAIN, {}, config),
         eager_start=True,
