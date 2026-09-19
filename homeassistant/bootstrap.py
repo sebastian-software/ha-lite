@@ -208,6 +208,16 @@ DEFAULT_INTEGRATIONS = {
     # These integrations are set up unless recovery mode is activated.
     #
     # Integrations providing core functionality:
+    # Headless runtime/API services. These used to arrive transitively via
+    # frontend and must remain explicit when frontend is not a default.
+    "api",
+    "auth",
+    "config",
+    "diagnostics",
+    "http",
+    "repairs",
+    "system_log",
+    "websocket_api",
     "analytics",  # Needed for onboarding
     "application_credentials",
     "backup",
