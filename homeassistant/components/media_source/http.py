@@ -4,7 +4,7 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.components import frontend, websocket_api
+from homeassistant.components import websocket_api
 from homeassistant.components.media_player import (
     ATTR_MEDIA_CONTENT_ID,
     ATTR_MEDIA_FILTER_CLASSES,
@@ -27,9 +27,6 @@ def async_setup(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_browse_media)
     websocket_api.async_register_command(hass, websocket_search_media)
     websocket_api.async_register_command(hass, websocket_resolve_media)
-    frontend.async_register_built_in_panel(
-        hass, "media-browser", "media_browser", "mdi:play-box-multiple"
-    )
 
 
 @websocket_api.websocket_command(
