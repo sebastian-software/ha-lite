@@ -1,0 +1,113 @@
+# Testing strategy
+
+## Principle
+
+The Home Assistant test suite is part of the source material we are inheriting.
+
+Reduction must not mean deleting failing tests until CI turns green. Tests should be classified by the same architectural boundary as production code.
+
+A test may be removed only when the behavior it protects has been explicitly classified as out of scope. Tests for retained runtime contracts must stay green, even if their implementation is refactored substantially.
+
+## Baseline first
+
+Before Deletion Wave 1 touches Home Assistant production code, `.github/workflows/ha-lite-ci.yml` establishes a green baseline against the imported Home Assistant Core 2026.9.3 source.
+
+The baseline is intentionally narrower than Home Assistant upstream CI but broader than the five representative integrations. It protects the contracts that those integrations rely on.
+
+## Required suites
+
+### Core runtime
+
+These tests protect lifecycle and integration-host behavior:
+
+- `tests/test_bootstrap.py`
+- `tests/test_core.py`
+- `tests/test_config_entries.py`
+- `tests/test_loader.py`
+- `tests/test_setup.py`
+- `tests/helpers/test_device_registry.py`
+- `tests/helpers/test_entity_registry.py`
+- `tests/helpers/test_storage.py`
+
+A headless/reduced core is not acceptable if these contracts silently regress.
+
+### Headless infrastructure
+
+Initially protected as directories:
+
+- `tests/components/auth`
+- `tests/components/http`
+- `tests/components/websocket_api`
+- `tests/components/config`
+- `tests/components/network`
+- `tests/components/zeroconf`
+- `tests/components/bluetooth`
+- `tests/components/dhcp`
+- `tests/components/ssdp`
+- `tests/components/usb`
+- `tests/components/repairs`
+- `tests/components/diagnostics`
+
+Tests inside these directories may later be split into retained runtime behavior versus Home Assistant product/UI behavior. Until that split is explicit, they remain a safety net.
+
+### Representative integrations
+
+The complete test directories for these integrations are required:
+
+- Shelly
+- MQTT
+- Matter
+- Hue
+- Fronius
+- Modbus
+
+The whole integration directory is tested rather than a hand-picked test subset. This protects config flows, migrations, entity behavior, diagnostics, lifecycle, discovery, failures and edge cases already learned by Home Assistant.
+
+## Classification of test failures during reduction
+
+Every failure caused by a deletion must be assigned one of four outcomes:
+
+1. **Regression — fix production code.** The test protects retained behavior.
+2. **Interface migration — adapt the test.** The behavior remains, but its presentation/API changed (for example panel UI to headless API).
+3. **Product behavior removed — delete or replace the test.** The behavior is explicitly outside ha-lite scope and the associated production code is deleted.
+4. **Hidden dependency discovered — update architecture classification.** The test reveals a dependency we did not understand. Do not patch around it blindly.
+
+The reason for outcomes 2–4 should be captured in the relevant ADR/deletion-wave document or commit message.
+
+## CI shape
+
+The initial workflow has four gates:
+
+```text
+prepare environment
+       |
+       +--> core runtime
+       +--> headless infrastructure
+       +--> retained integrations (matrix)
+       +--> static sanity
+```
+
+The dependency environment is built once and cached. Integration suites run separately so a failure in Matter does not obscure a Shelly regression.
+
+## Full upstream suite
+
+Running all ~Home Assistant tests on every ha-lite change is not a useful long-term goal because thousands of tests protect integrations and product features we intend to remove.
+
+However, while the source tree is still largely intact, occasional full-suite runs are useful as a reference. Before large deletion waves, the focused ha-lite suite is the required gate. A full upstream-style run may be added as a manually triggered/nightly diagnostic until enough code has been removed that it stops being meaningful.
+
+## Adding integrations
+
+A new integration is not considered retained merely because its source directory remains in the repository.
+
+When an integration is promoted to retained scope:
+
+1. add its full `tests/components/<domain>` directory to the CI matrix;
+2. add its manifest/import dependencies to the dependency map;
+3. classify any new generic runtime dependencies;
+4. keep its config-flow/migration tests unless the corresponding lifecycle is intentionally replaced.
+
+## Removing tests
+
+Deletion of a test should be reviewable as an architectural decision.
+
+For large component removals, deleting the component and its tests together is expected. For mixed components, prefer retaining or rewriting tests around the reduced responsibility instead of bulk deletion.
