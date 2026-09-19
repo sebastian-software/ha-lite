@@ -1,6 +1,5 @@
 """Component to configure Home Assistant via an API."""
 
-from homeassistant.components import frontend
 from homeassistant.const import EVENT_COMPONENT_LOADED
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -46,10 +45,6 @@ CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the config component."""
-    frontend.async_register_built_in_panel(
-        hass, "config", "config", "mdi:cog", require_admin=True
-    )
-
     for panel in SECTIONS:
         if panel.async_setup(hass):
             name = panel.__name__.split(".")[-1]
