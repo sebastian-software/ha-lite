@@ -10,7 +10,7 @@ from typing import Any, final, override
 from propcache.api import cached_property
 import voluptuous as vol
 
-from homeassistant.components import frontend, websocket_api
+from homeassistant.components import websocket_api
 from homeassistant.components.websocket_api import ERR_NOT_FOUND, ERR_NOT_SUPPORTED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ENTITY_ID
@@ -121,8 +121,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     component = hass.data[DATA_COMPONENT] = EntityComponent[TodoListEntity](
         _LOGGER, DOMAIN, hass, SCAN_INTERVAL
     )
-
-    frontend.async_register_built_in_panel(hass, "todo", "todo", "mdi:clipboard-list")
 
     websocket_api.async_register_command(hass, websocket_handle_subscribe_todo_items)
     websocket_api.async_register_command(hass, websocket_handle_todo_item_list)
