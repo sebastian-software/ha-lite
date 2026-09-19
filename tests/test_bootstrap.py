@@ -317,11 +317,10 @@ async def test_asyncio_debug_on_turns_hass_debug_on(
 
 @pytest.mark.parametrize("load_registries", [False])
 async def test_preload_translations(hass: HomeAssistant) -> None:
-    """Test translations are preloaded for all frontend deps and base platforms."""
+    """Test translations are preloaded for headless defaults and base platforms."""
     await bootstrap.async_from_config_dict({}, hass)
     await hass.async_block_till_done(wait_background_tasks=True)
-    frontend = await loader.async_get_integration(hass, "frontend")
-    assert async_translations_loaded(hass, set(frontend.all_dependencies))
+    assert async_translations_loaded(hass, bootstrap.DEFAULT_INTEGRATIONS)
     assert async_translations_loaded(hass, BASE_PLATFORMS)
 
 
