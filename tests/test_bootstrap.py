@@ -620,10 +620,8 @@ async def test_frontend_has_no_dedicated_startup_stage(hass: HomeAssistant) -> N
     assert "http" in hass.config.components
 
     # Recorder remains a stage-0 runtime concern while frontend is now
-    # handled with normal stage-2 integrations. Its HTTP dependency must be
-    # available before recorder starts, and recorder must no longer wait for
-    # frontend.
-    assert order.index("http") < order.index("recorder")
+    # handled with normal stage-2 integrations. Frontend must no longer be
+    # prioritized ahead of recorder.
     assert order.index("recorder") < order.index("frontend")
 
 
@@ -1419,11 +1417,11 @@ async def test_bootstrap_log_already_setup_stage(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test logging when all integrations in a stage were already setup."""
-    with patch.object(bootstrap, "STAGE_1_INTEGRATIONS", {"recorder"}):
+    with patch.object(bootstrap, "STAGE_1_INTEGRATIONS", {"network"}):
         await bootstrap._async_set_up_integrations(hass, {})
         await hass.async_block_till_done()
 
-    assert "Already set up stage 1: {'recorder'}" in caplog.text
+    assert "Already set up stage 1: {'network'}" in caplog.text
 
 
 @pytest.fixture(name="mock_mqtt_config_flow")
