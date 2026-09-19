@@ -1,10 +1,10 @@
 name: Import Home Assistant Core
 
+# This workflow is only for the initial repository seed. Once UPSTREAM.md exists,
+# upstream changes must be curated instead of replacing the fork with rsync.
 # yamllint disable-line rule:truthy
 on:
-  push:
-    paths:
-      - ".github/workflows/import-home-assistant.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -17,6 +17,13 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - name: Refuse destructive re-import after repository seed
+        run: |
+          if [[ -f UPSTREAM.md ]]; then
+            echo "::error::ha-lite is already seeded. A full rsync import would overwrite fork-specific reductions. Curate upstream changes instead."
+            exit 1
+          fi
 
       - name: Fetch Home Assistant Core 2026.9.3
         run: |
