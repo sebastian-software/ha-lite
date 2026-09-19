@@ -16,7 +16,6 @@ from aiohasupervisor.models import (
 
 from homeassistant.auth.const import GROUP_ID_ADMIN
 from homeassistant.auth.models import User
-from homeassistant.components import frontend
 from homeassistant.components.homeassistant import async_set_stop_handler
 from homeassistant.components.onboarding import async_is_onboarded
 from homeassistant.config_entries import SOURCE_SYSTEM, ConfigEntry
@@ -338,7 +337,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_setup_auth_view(hass)
     async_setup_ingress_view(hass)
     async_setup_addon_panel(hass)
-    frontend.async_register_built_in_panel(hass, "app")
 
     if entry is None:
         # Create the config entry directly instead of via the discovery flow
