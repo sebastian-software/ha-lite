@@ -317,11 +317,10 @@ async def test_asyncio_debug_on_turns_hass_debug_on(
 
 @pytest.mark.parametrize("load_registries", [False])
 async def test_preload_translations(hass: HomeAssistant) -> None:
-    """Test translations are preloaded for all frontend deps and base platforms."""
+    """Test translations are preloaded for headless defaults and base platforms."""
     await bootstrap.async_from_config_dict({}, hass)
     await hass.async_block_till_done(wait_background_tasks=True)
-    frontend = await loader.async_get_integration(hass, "frontend")
-    assert async_translations_loaded(hass, set(frontend.all_dependencies))
+    assert async_translations_loaded(hass, bootstrap.DEFAULT_INTEGRATIONS)
     assert async_translations_loaded(hass, BASE_PLATFORMS)
 
 
@@ -551,8 +550,8 @@ async def test_setup_after_deps_manifests_are_loaded_even_if_not_setup(
 
 
 @pytest.mark.parametrize("load_registries", [False])
-async def test_setup_frontend_before_recorder(hass: HomeAssistant) -> None:
-    """Test frontend is setup before recorder."""
+async def test_frontend_has_no_dedicated_startup_stage(hass: HomeAssistant) -> None:
+    """Test frontend is not prioritized ahead of recorder."""
     order = []
 
     def gen_domain_setup(domain):
@@ -619,15 +618,10 @@ async def test_setup_frontend_before_recorder(hass: HomeAssistant) -> None:
     assert "recorder" in hass.config.components
     assert "http" in hass.config.components
 
-    # http (a dependency) and an_after_dep (an after_dependency) are both set
-    # up in the frontend substage of stage 0; their relative order depends on
-    # set iteration order and is not guaranteed.
-    assert set(order[:2]) == {"http", "an_after_dep"}
-    assert order[2:] == [
-        "frontend",
-        "recorder",
-        "normal_integration",
-    ]
+    # Recorder remains a stage-0 runtime concern while frontend is now
+    # handled with normal stage-2 integrations. Frontend must no longer be
+    # prioritized ahead of recorder.
+    assert order.index("recorder") < order.index("frontend")
 
 
 @pytest.mark.parametrize("load_registries", [False])
@@ -1166,14 +1160,14 @@ async def test_setup_hass_invalid_core_config(
     ],
 )
 @pytest.mark.usefixtures("mock_hass_config")
-async def test_setup_recovery_mode_if_no_frontend(
+async def test_setup_does_not_enter_recovery_mode_if_frontend_fails(
     mock_enable_logging: AsyncMock,
     mock_is_virtual_env: Mock,
     mock_mount_local_lib_path: AsyncMock,
     mock_ensure_config_exists: AsyncMock,
     mock_process_ha_config_upgrade: Mock,
 ) -> None:
-    """Test we setup recovery mode if frontend didn't load."""
+    """Test a frontend failure does not activate recovery mode."""
     verbose = Mock()
     log_rotate_days = Mock()
     log_file = Mock()
@@ -1191,7 +1185,7 @@ async def test_setup_recovery_mode_if_no_frontend(
         ),
     )
 
-    assert "recovery_mode" in hass.config.components
+    assert "recovery_mode" not in hass.config.components
     assert hass.config.config_dir == get_test_config_dir()
     assert hass.config.skip_pip
     assert hass.config.internal_url == "http://192.168.1.100:8123"
@@ -1422,11 +1416,11 @@ async def test_bootstrap_log_already_setup_stage(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test logging when all integrations in a stage were already setup."""
-    with patch.object(bootstrap, "STAGE_1_INTEGRATIONS", {"frontend"}):
+    with patch.object(bootstrap, "STAGE_1_INTEGRATIONS", {"network"}):
         await bootstrap._async_set_up_integrations(hass, {})
         await hass.async_block_till_done()
 
-    assert "Already set up stage 1: {'frontend'}" in caplog.text
+    assert "Already set up stage 1: {'network'}" in caplog.text
 
 
 @pytest.fixture(name="mock_mqtt_config_flow")
