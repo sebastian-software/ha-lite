@@ -23,7 +23,13 @@ jobs:
 
       - name: Import upstream source
         run: |
-          rsync -a --delete             --exclude '.git/'             --exclude '.github/workflows/import-home-assistant.yml'             --exclude 'README.md'             --exclude 'docs/'             --exclude 'tools/analyze_ha_imports.py'             /tmp/home-assistant-core/ ./
+          rsync -a --delete \
+            --exclude '.git/' \
+            --exclude '.github/workflows/' \
+            --exclude 'README.md' \
+            --exclude 'docs/' \
+            --exclude 'tools/analyze_ha_imports.py' \
+            /tmp/home-assistant-core/ ./
 
       - name: Record upstream baseline
         run: |
