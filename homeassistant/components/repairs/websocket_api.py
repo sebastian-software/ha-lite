@@ -1,0 +1,199 @@
+"""The repairs websocket API."""
+
+from collections.abc import Callable
+from http import HTTPStatus
+from typing import Any, override
+
+from aiohttp import web
+import voluptuous as vol
+
+from homeassistant import data_entry_flow
+from homeassistant.auth.permissions.const import POLICY_EDIT
+from homeassistant.components import websocket_api
+from homeassistant.components.http.data_validator import RequestDataValidator
+from homeassistant.components.http.decorators import require_admin
+from homeassistant.config_entries import ConfigEntry, UnknownEntry
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.data_entry_flow import (
+    FlowManagerIndexView,
+    FlowManagerResourceView,
+)
+
+from .const import DOMAIN
+from .issue_handler import RepairsFlowManager
+
+
+@callback
+def async_setup(hass: HomeAssistant) -> None:
+    """Set up the repairs websocket API."""
+    websocket_api.async_register_command(hass, ws_get_issue_data)
+    websocket_api.async_register_command(hass, ws_ignore_issue)
+    websocket_api.async_register_command(hass, ws_list_issues)
+
+    hass.http.register_view(RepairsFlowIndexView(hass.data[DOMAIN]["flow_manager"]))
+    hass.http.register_view(RepairsFlowResourceView(hass.data[DOMAIN]["flow_manager"]))
+
+
+@callback
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "repairs/get_issue_data",
+        vol.Required("domain"): str,
+        vol.Required("issue_id"): str,
+    }
+)
+def ws_get_issue_data(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Fix an issue."""
+    issue_registry = ir.async_get(hass)
+    if not (issue := issue_registry.async_get_issue(msg["domain"], msg["issue_id"])):
+        connection.send_error(
+            msg["id"],
+            "unknown_issue",
+            f"Issue '{msg['issue_id']}' not found",
+        )
+        return
+    connection.send_result(msg["id"], {"issue_data": issue.data})
+
+
+@callback
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "repairs/ignore_issue",
+        vol.Required("domain"): str,
+        vol.Required("issue_id"): str,
+        vol.Required("ignore"): bool,
+    }
+)
+def ws_ignore_issue(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Fix an issue."""
+    ir.async_ignore_issue(hass, msg["domain"], msg["issue_id"], msg["ignore"])
+
+    connection.send_result(msg["id"])
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "repairs/list_issues",
+    }
+)
+@callback
+def ws_list_issues(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Return a list of issues."""
+    issue_registry = ir.async_get(hass)
+    issues = [
+        {
+            "breaks_in_ha_version": issue.breaks_in_ha_version,
+            "created": issue.created,
+            "dismissed_version": issue.dismissed_version,
+            "ignored": issue.dismissed_version is not None,
+            "domain": issue.domain,
+            "is_fixable": issue.is_fixable,
+            "issue_domain": issue.issue_domain,
+            "issue_id": issue.issue_id,
+            "learn_more_url": issue.learn_more_url,
+            "severity": issue.severity,
+            "translation_key": issue.translation_key,
+            "translation_placeholders": issue.translation_placeholders,
+        }
+        for issue in issue_registry.issues.values()
+        if issue.active
+    ]
+    connection.send_result(msg["id"], {"issues": issues})
+
+
+def _prepare_repairs_flow_result_json(
+    result: data_entry_flow.FlowResult,
+    prepare_result_json: Callable[[data_entry_flow.FlowResult], dict[str, Any]],
+) -> dict[str, Any]:
+    """Convert result to serializable JSON dict."""
+    entry: ConfigEntry | None = result.pop("result", None)  # type: ignore[typeddict-item]
+    data = prepare_result_json(result)
+    if entry is not None:
+        # Overwrite the ConfigEntry object with its json representation for frontend.
+        data["result"] = entry.as_json_fragment
+    return data
+
+
+class RepairsFlowIndexView(FlowManagerIndexView[RepairsFlowManager]):
+    """View to create issue fix flows."""
+
+    url = "/api/repairs/issues/fix"
+    name = "api:repairs:issues:fix"
+
+    @require_admin(permission=POLICY_EDIT)
+    @RequestDataValidator(
+        vol.Schema(
+            {
+                vol.Required("handler"): str,
+                vol.Required("issue_id"): str,
+            },
+            extra=vol.ALLOW_EXTRA,
+        )
+    )
+    @override
+    async def post(self, request: web.Request, data: dict[str, Any]) -> web.Response:
+        """Handle a POST request."""
+        try:
+            result = await self._flow_mgr.async_init(
+                data["handler"],
+                data={"issue_id": data["issue_id"]},
+            )
+        except data_entry_flow.UnknownFlow as ex:
+            return self.json_message(
+                f"Unknown flow{f': {ex!s}' if str(ex) else ''}",
+                HTTPStatus.NOT_FOUND,
+            )
+        except data_entry_flow.UnknownStep as ex:
+            return self.json_message(str(ex), HTTPStatus.BAD_REQUEST)
+        except UnknownEntry as ex:
+            return self.json_message(
+                f"Config entry {ex!s} not found in next_flow", HTTPStatus.BAD_REQUEST
+            )
+        return self.json(self._prepare_result_json(result))
+
+    @override
+    def _prepare_result_json(
+        self, result: data_entry_flow.FlowResult
+    ) -> dict[str, Any]:
+        """Convert result to JSON serializable dict."""
+        return _prepare_repairs_flow_result_json(result, super()._prepare_result_json)
+
+
+class RepairsFlowResourceView(FlowManagerResourceView[RepairsFlowManager]):
+    """View to interact with the option flow manager."""
+
+    url = "/api/repairs/issues/fix/{flow_id}"
+    name = "api:repairs:issues:fix:resource"
+
+    @require_admin(permission=POLICY_EDIT)
+    @override
+    async def get(self, request: web.Request, /, flow_id: str) -> web.Response:
+        """Get the current state of a data_entry_flow."""
+        return await super().get(request, flow_id)
+
+    @require_admin(permission=POLICY_EDIT)
+    @override
+    async def post(self, request: web.Request, flow_id: str) -> web.Response:
+        """Handle a POST request."""
+        try:
+            result = await super().post(request, flow_id)
+        except UnknownEntry as ex:
+            # Raised by _async_set_next_flow_if_valid in a RepairsFlow
+            return self.json_message(
+                f"Config entry {ex!s} not found in next_flow", HTTPStatus.BAD_REQUEST
+            )
+        return result
+
+    @override
+    def _prepare_result_json(
+        self, result: data_entry_flow.FlowResult
+    ) -> dict[str, Any]:
+        """Convert result to JSON serializable dict."""
+        return _prepare_repairs_flow_result_json(result, super()._prepare_result_json)
