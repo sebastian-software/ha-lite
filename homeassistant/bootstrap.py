@@ -166,12 +166,6 @@ LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
     "system_log",
     "sentry",
 }
-FRONTEND_INTEGRATIONS = {
-    # Get the frontend up and running as soon as possible so problem
-    # integrations can be removed and database migration status is
-    # visible in frontend
-    "frontend",
-}
 # Stage 0 is divided into substages. Each substage has a name,
 # a set of integrations and a timeout.
 # The substage containing recorder should have no timeout, as it
@@ -185,8 +179,6 @@ STAGE_0_INTEGRATIONS = (
     ("logging, http deps", LOGGING_AND_HTTP_DEPS_INTEGRATIONS, None),
     # Setup labs for preview features
     ("labs", {"labs"}, STAGE_0_SUBSTAGE_TIMEOUT),
-    # Setup frontend
-    ("frontend", FRONTEND_INTEGRATIONS, None),
     # Setup recorder
     ("recorder", {"recorder"}, None),
     # Start up debuggers. Start these first in case they want to wait.
