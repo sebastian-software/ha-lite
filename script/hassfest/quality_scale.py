@@ -2045,7 +2045,6 @@ NO_QUALITY_SCALE = [
     "llm",
     "logbook",
     "logger",
-    "lovelace",
     "map_tiles",
     "media_source",
     "moisture",
