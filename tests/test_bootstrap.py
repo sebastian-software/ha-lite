@@ -1166,14 +1166,14 @@ async def test_setup_hass_invalid_core_config(
     ],
 )
 @pytest.mark.usefixtures("mock_hass_config")
-async def test_setup_recovery_mode_if_no_frontend(
+async def test_setup_does_not_enter_recovery_mode_if_frontend_fails(
     mock_enable_logging: AsyncMock,
     mock_is_virtual_env: Mock,
     mock_mount_local_lib_path: AsyncMock,
     mock_ensure_config_exists: AsyncMock,
     mock_process_ha_config_upgrade: Mock,
 ) -> None:
-    """Test we setup recovery mode if frontend didn't load."""
+    """Test a frontend failure does not activate recovery mode."""
     verbose = Mock()
     log_rotate_days = Mock()
     log_file = Mock()
@@ -1191,7 +1191,7 @@ async def test_setup_recovery_mode_if_no_frontend(
         ),
     )
 
-    assert "recovery_mode" in hass.config.components
+    assert "recovery_mode" not in hass.config.components
     assert hass.config.config_dir == get_test_config_dir()
     assert hass.config.skip_pip
     assert hass.config.internal_url == "http://192.168.1.100:8123"
