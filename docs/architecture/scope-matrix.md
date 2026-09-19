@@ -21,7 +21,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | WebSocket API | KEEP / REDUCE | Good initial event/state/action transport; later define ha-lite contract. |
 | REST API | INVESTIGATE | Retain only where useful after API contract is defined. |
 | frontend | **REMOVED** | Outside headless core; physically removed in Wave 1 after bootstrap/config decoupling. |
-| lovelace | DELETE | Dashboard product surface. |
+| lovelace | **REMOVED** | Dashboard product surface; physically removed in Wave 1. |
 | UI panels / panel registration | DELETE | Presentation concern; decouple backend config first. |
 | onboarding | DELETE / REPLACE | Replace product onboarding with API/CLI bootstrap. |
 | automation | DELETE | Decision engine belongs outside core. |
