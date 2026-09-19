@@ -6,7 +6,7 @@ Make Home Assistant Core boot without the browser product surface while preservi
 
 Target upstream baseline: **Home Assistant Core 2026.9.3**.
 
-This wave is deliberately narrow. It should not yet remove automation, recorder, auth, config entries, generic entity platforms, or integration-specific runtime machinery.
+This wave is deliberately narrow. It should not yet remove automation, recorder, auth, config entries, generic entity platforms, integration-specific runtime machinery, or the Conversation/MCP substrate now classified as core.
 
 ## Why this wave comes first
 
@@ -208,6 +208,7 @@ A wave-1 branch is successful when:
 8. Shelly can at least import/setup far enough to expose remaining missing runtime dependencies.
 9. Tests contain no expectation that a frontend panel exists.
 10. No Lovelace storage keys are preloaded.
+11. The official `mcp_server` suite remains green, including real MCP initialization, tool listing, and tool invocation without requiring frontend/Lovelace.
 
 ## Expected first breakages
 
@@ -232,3 +233,11 @@ Prefer thematic commits:
 5. `tests: remove/update frontend startup assumptions`
 
 Keeping these separate makes future upstream archaeology easier than one giant delete commit.
+
+## MCP guardrail added during Wave 1
+
+Before physically deleting frontend/Lovelace, ha-lite promotes the official Home Assistant Model Context Protocol server to a retained core capability. This deliberately changes the earlier assumption that all Assist/Conversation machinery belongs to a later deletion wave.
+
+Retain and protect the minimal dependency chain needed by `mcp_server` (`http`, `conversation`, `intent`, LLM helpers and their actual runtime dependencies). Do not retain frontend/Lovelace merely to support MCP.
+
+The third-party `homeassistant-ai/ha-mcp` project is a compatibility target, not copied into this repository. Its hard HA dependency is `webhook`; frontend and Lovelace are optional/after-dependencies. Its embedded-server default sidebar panel is presentation-only and must be disabled for a truly headless deployment. Future compatibility testing should exercise the server/webhook/state/service paths with that panel disabled and should not require its dashboard-specific tools to work after Lovelace is removed.
