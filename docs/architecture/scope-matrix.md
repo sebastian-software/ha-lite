@@ -20,7 +20,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | HTTP server | KEEP initially | Required by integrations/config flows and practical API transport. |
 | WebSocket API | KEEP / REDUCE | Good initial event/state/action transport; later define ha-lite contract. |
 | REST API | INVESTIGATE | Retain only where useful after API contract is defined. |
-| frontend | DELETE | Outside headless core. |
+| frontend | **REMOVED** | Outside headless core; physically removed in Wave 1 after bootstrap/config decoupling. |
 | lovelace | DELETE | Dashboard product surface. |
 | UI panels / panel registration | DELETE | Presentation concern; decouple backend config first. |
 | onboarding | DELETE / REPLACE | Replace product onboarding with API/CLI bootstrap. |
