@@ -25,7 +25,6 @@ from homeassistant.components.alexa import (
     entities as alexa_entities,
     errors as alexa_errors,
 )
-from homeassistant.components.frontend import DATA_THEMES
 from homeassistant.components.google_assistant import helpers as google_helpers
 from homeassistant.components.homeassistant import exposed_entities
 from homeassistant.components.http import KEY_HASS, HomeAssistantView, require_admin
@@ -35,6 +34,7 @@ from homeassistant.components.websocket_api import ERR_NOT_FOUND
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.util.hass_dict import HassKey
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import (
     async_dispatcher_connect,
@@ -76,6 +76,8 @@ from .repairs import async_manage_legacy_subscription_issue
 from .subscription import async_subscription_info
 
 _LOGGER = logging.getLogger(__name__)
+
+_FRONTEND_THEMES: HassKey[dict[str, Any]] = HassKey("frontend_themes")
 
 _NO_PENDING_AUTO_LOGIN = "no_pending_auto_login"
 
@@ -563,7 +565,7 @@ class DownloadSupportPackageView(HomeAssistantView):
     @callback
     def _get_themes_info(self, hass: HomeAssistant) -> dict[str, Any]:
         """Collect information about user-installed custom themes."""
-        themes: dict[str, Any] = hass.data.get(DATA_THEMES, {})
+        themes: dict[str, Any] = hass.data.get(_FRONTEND_THEMES, {})
         return {
             "count": len(themes),
             "themes": sorted(themes),
