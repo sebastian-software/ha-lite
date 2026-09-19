@@ -12,9 +12,9 @@ homeassistant.components.*; core/helper imports can be added as a second graph l
 
 import argparse
 import ast
+import sys
 from collections import defaultdict
 from pathlib import Path
-import sys
 
 
 PREFIX = "homeassistant.components."
