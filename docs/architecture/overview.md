@@ -58,6 +58,7 @@ Representative integrations should drive the first transitive closure: Shelly, M
 ## Design constraints
 
 - Headless by design, not merely "frontend disabled".
+- Programmatic and agent-driven control is a first-class product boundary: HTTP/WebSocket APIs, webhooks, Assist/Conversation primitives needed by MCP, and the official MCP server are retained core capabilities.
 - Docker must not be required to run the core.
 - Configuration flows remain valuable backend state machines even without a UI.
 - Events/state changes are core infrastructure; automations consuming them are not.
@@ -65,3 +66,9 @@ Representative integrations should drive the first transitive closure: Shelly, M
 - Stable identities must survive restart and rediscovery.
 - Persistence should converge toward a simple SQLite-backed model, but storage replacement is not a prerequisite for the first reduction.
 - Protocol servers such as Matter may remain separate processes when appropriate.
+
+## Agent and MCP boundary
+
+ha-lite treats machine-facing control as part of the runtime rather than as presentation. The official Home Assistant `mcp_server` integration is therefore retained and tested as a core capability. Its required dependency chain (`http` + `conversation`, including intent/LLM primitives) must remain usable without frontend or Lovelace.
+
+Third-party MCP implementations are compatibility consumers rather than vendored core. In particular, `homeassistant-ai/ha-mcp` should remain able to load headlessly when UI-only options such as its sidebar panel are disabled. Its optional Lovelace/dashboard functionality may degrade or disappear when those product surfaces are removed, but its server, webhook, registry, state and service-control paths are an important compatibility canary.
