@@ -1,0 +1,67 @@
+# Architecture overview
+
+## Status
+
+Initial exploration based on Home Assistant Core 2026.9.x. Classifications are hypotheses to validate against the actual dependency graph and representative integrations.
+
+## Boundary
+
+```text
+                     Intelligence / Applications
+        AI agents · deterministic rules · cron · humans · apps
+                                  |
+                           commands / events
+                                  |
++------------------------------------------------------------------+
+|                         ha-lite core                             |
+|                                                                  |
+|  API   State Model   Device/Entity Model   Events   Persistence  |
+|   \         |              |                 /                  |
+|              Integration Runtime                                 |
+|                    |                                             |
+|        Discovery / Protocol Infrastructure                       |
++----------+----------------+----------------+----------------------+
+           |                |                |
+        Shelly            MQTT            Matter ...
+           |                |                |
+        physical devices and external services
+```
+
+The core answers four questions:
+
+1. What devices/services exist?
+2. What can they do?
+3. What state are they in?
+4. How can a caller interact with them?
+
+It deliberately does **not** answer: what should happen next?
+
+## Home Assistant as bootstrap
+
+The first implementation should preserve useful Home Assistant Core machinery rather than reimplement device integrations from zero. Reduction is intentional and may be aggressive: code outside the target responsibility should be physically removed when practical.
+
+Upstream compatibility is useful but subordinate to architectural clarity. Avoid gratuitous path/name changes so selected upstream commits remain easier to inspect or port.
+
+## Dependency analysis
+
+Two dependency graphs are required:
+
+1. **Declared component graph** — dependencies from integration manifests.
+2. **Actual import graph** — Python imports crossing component/core/helper boundaries.
+
+The import graph is authoritative when deciding whether code can be removed. The manifest graph is still useful because it describes intended integration-level coupling.
+
+Each subsystem/component is classified as **KEEP**, **DELETE**, or **INVESTIGATE**.
+
+Representative integrations should drive the first transitive closure: Shelly, MQTT, Matter, Hue, and Fronius. A cloud/OAuth integration should later exercise reauthentication and external authorization flows.
+
+## Design constraints
+
+- Headless by design, not merely "frontend disabled".
+- Docker must not be required to run the core.
+- Configuration flows remain valuable backend state machines even without a UI.
+- Events/state changes are core infrastructure; automations consuming them are not.
+- Device communication success and observed device state are distinct concepts.
+- Stable identities must survive restart and rediscovery.
+- Persistence should converge toward a simple SQLite-backed model, but storage replacement is not a prerequisite for the first reduction.
+- Protocol servers such as Matter may remain separate processes when appropriate.
