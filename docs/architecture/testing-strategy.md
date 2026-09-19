@@ -47,6 +47,8 @@ Initially protected as directories:
 - `tests/components/usb`
 - `tests/components/repairs`
 - `tests/components/diagnostics`
+- `tests/components/conversation`
+- `tests/components/mcp_server`
 
 Tests inside these directories may later be split into retained runtime behavior versus Home Assistant product/UI behavior. Until that split is explicit, they remain a safety net.
 
@@ -111,3 +113,13 @@ When an integration is promoted to retained scope:
 Deletion of a test should be reviewable as an architectural decision.
 
 For large component removals, deleting the component and its tests together is expected. For mixed components, prefer retaining or rewriting tests around the reduced responsibility instead of bulk deletion.
+
+## Agent/MCP runtime contract
+
+The official Home Assistant MCP server is a retained ha-lite capability, not optional test coverage. CI runs the upstream `tests/components/mcp_server` suite because it already exercises the real protocol surface, including authenticated initialization over SSE/streamable HTTP, tool enumeration and service-affecting tool invocation.
+
+`conversation` is tested alongside it because it is a hard dependency of `mcp_server`. Passing import-only tests is insufficient: protocol-level MCP tests are the contract.
+
+When Wave 1 physically removes `frontend` and `lovelace`, add/retain a ha-lite-specific assertion that MCP setup and a representative protocol round-trip succeed with those packages absent. That test should fail if a future upstream merge reintroduces a presentation dependency.
+
+`homeassistant-ai/ha-mcp` is an external compatibility canary. A later CI layer may install its current custom component and exercise its embedded server with `enable_sidebar_panel=false`; avoid vendoring its implementation or requiring dashboard/Lovelace tools as part of the ha-lite core contract.
