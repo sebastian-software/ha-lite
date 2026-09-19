@@ -24,11 +24,13 @@ This means "do not configure frontend" is not equivalent to a headless runtime. 
 
 ## High-confidence deletes
 
+Current Wave 1 progress: the `frontend` component has now been physically removed after its bootstrap/recovery/config coupling was eliminated. `lovelace` remains for the next deletion block so dependency failures stay attributable.
+
 After the patches below are in place:
 
 ```text
-homeassistant/components/frontend/
-homeassistant/components/lovelace/
+homeassistant/components/frontend/  # REMOVED
+homeassistant/components/lovelace/  # NEXT
 ```
 
 Likely deletions in the same or immediately following commit, after import checks:
@@ -241,3 +243,9 @@ Before physically deleting frontend/Lovelace, ha-lite promotes the official Home
 Retain and protect the minimal dependency chain needed by `mcp_server` (`http`, `conversation`, `intent`, LLM helpers and their actual runtime dependencies). Do not retain frontend/Lovelace merely to support MCP.
 
 The third-party `homeassistant-ai/ha-mcp` project is a compatibility target, not copied into this repository. Its hard HA dependency is `webhook`; frontend and Lovelace are optional/after-dependencies. Its embedded-server default sidebar panel is presentation-only and must be disabled for a truly headless deployment. Future compatibility testing should exercise the server/webhook/state/service paths with that panel disabled and should not require its dashboard-specific tools to work after Lovelace is removed.
+
+### Frontend physical deletion checkpoint
+
+The frontend deletion also removes the `home-assistant-frontend` requirement from the all-requirements/constraint sets. This repository never contained the separate upstream browser application's TypeScript source; the removed Core component was the Python integration/glue that loaded and served that packaged frontend.
+
+The retained `tests/components/mcp_server` protocol suite now runs with the frontend package physically absent from the source tree. Its authenticated initialization, tool listing and tool invocation tests are therefore the Wave-1 headless MCP compatibility check at this checkpoint.
