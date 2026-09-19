@@ -31,11 +31,9 @@ from . import (
     requirements,
 )
 
-# Pre-import frontend deps which have no requirements here to avoid
-# loading them at run time and blocking the event loop. We do this ahead
-# of time so that we do not have to flag frontend deps with `import_executor`
-# as it would create a thundering heard of executor jobs trying to import
-# frontend deps at the same time.
+# Pre-import selected runtime integrations which have no requirements here to
+# avoid loading them at run time and blocking the event loop. Keep this list
+# limited to integrations that remain part of the headless runtime.
 from .components import (
     api as api_pre_import,  # noqa: F401
     auth as auth_pre_import,  # noqa: F401
@@ -49,7 +47,6 @@ from .components import (
     http as http_import,  # noqa: F401 - not named pre_import since it has requirements
     image_upload as image_upload_import,  # noqa: F401 - not named pre_import since it has requirements
     logbook as logbook_pre_import,  # noqa: F401
-    lovelace as lovelace_pre_import,  # noqa: F401
     onboarding as onboarding_pre_import,  # noqa: F401
     person as person_pre_import,  # noqa: F401
     recorder as recorder_import,  # noqa: F401 - not named pre_import since it has requirements
