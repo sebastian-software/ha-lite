@@ -30,7 +30,7 @@ After the patches below are in place:
 
 ```text
 homeassistant/components/frontend/  # REMOVED
-homeassistant/components/lovelace/  # NEXT
+homeassistant/components/lovelace/  # REMOVED
 ```
 
 Likely deletions in the same or immediately following commit, after import checks:
@@ -253,3 +253,7 @@ The retained `tests/components/mcp_server` protocol suite now runs with the fron
 ### Lovelace bootstrap decoupling checkpoint
 
 Before physical Lovelace deletion, bootstrap no longer pre-imports the `lovelace` integration. The remaining Lovelace references are confined to the component itself, its tests, and static/tooling metadata that will be removed with the component.
+
+### Lovelace physical deletion checkpoint
+
+The Lovelace component and its dedicated tests are now physically removed, along with static typing/core-file/Hassfest metadata that referenced the deleted component. Any subsequent failure mentioning Lovelace is therefore treated as a retained-runtime coupling discovered by CI rather than as expected dashboard behavior.
