@@ -258,6 +258,3 @@ Before physical Lovelace deletion, bootstrap no longer pre-imports the `lovelace
 
 The Lovelace component and its dedicated tests are now physically removed, along with static typing/core-file/Hassfest metadata that referenced the deleted component. Any subsequent failure mentioning Lovelace is therefore treated as a retained-runtime coupling discovered by CI rather than as expected dashboard behavior.
 
-### Lovelace physical deletion checkpoint
-
-The `lovelace` component and its dedicated tests are now physically removed. Wave 1 is therefore at its final verification stage: retained runtime, representative integrations, and MCP must remain green with both frontend and Lovelace absent.
