@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING, Any, override
 # _ModuleLock('cryptography.hazmat.backends.openssl.backend')
 import cryptography.hazmat.backends.openssl.backend  # noqa: F401
 import voluptuous as vol
-import yarl
 
 from . import (
     block_async_io,
@@ -166,12 +165,6 @@ LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
     "system_log",
     "sentry",
 }
-FRONTEND_INTEGRATIONS = {
-    # Get the frontend up and running as soon as possible so problem
-    # integrations can be removed and database migration status is
-    # visible in frontend
-    "frontend",
-}
 # Stage 0 is divided into substages. Each substage has a name,
 # a set of integrations and a timeout.
 # The substage containing recorder should have no timeout, as it
@@ -185,8 +178,6 @@ STAGE_0_INTEGRATIONS = (
     ("logging, http deps", LOGGING_AND_HTTP_DEPS_INTEGRATIONS, None),
     # Setup labs for preview features
     ("labs", {"labs"}, STAGE_0_SUBSTAGE_TIMEOUT),
-    # Setup frontend
-    ("frontend", FRONTEND_INTEGRATIONS, None),
     # Setup recorder
     ("recorder", {"recorder"}, None),
     # Start up debuggers. Start these first in case they want to wait.
@@ -216,11 +207,20 @@ DEFAULT_INTEGRATIONS = {
     # These integrations are set up unless recovery mode is activated.
     #
     # Integrations providing core functionality:
+    # Headless runtime/API services. These used to arrive transitively via
+    # frontend and must remain explicit when frontend is not a default.
+    "api",
+    "auth",
+    "config",
+    "diagnostics",
+    "http",
+    "repairs",
+    "system_log",
+    "websocket_api",
     "analytics",  # Needed for onboarding
     "application_credentials",
     "backup",
     "brands",
-    "frontend",
     "hardware",
     "labs",
     "logger",
@@ -271,17 +271,14 @@ DEFAULT_INTEGRATIONS_RECOVERY_MODE = {
     # These integrations are set up if recovery mode is activated.
     "backup",
     "cloud",
-    "frontend",
 }
 DEFAULT_INTEGRATIONS_SUPERVISOR = {
     # These integrations are set up if using the Supervisor
     "hassio",
 }
 
-CRITICAL_INTEGRATIONS = {
-    # Recovery mode is activated if these integrations fail to set up
-    "frontend",
-}
+# ha-lite: no presentation component is critical to runtime startup.
+CRITICAL_INTEGRATIONS: set[str] = set()
 
 #
 # Storage keys we are likely to load during startup
@@ -294,10 +291,7 @@ PRELOAD_STORAGE = [
     "core.network",
     "http.auth",
     "image",
-    "lovelace_dashboards",
-    "lovelace_resources",
     "core.uuid",
-    "lovelace.map",
     "bluetooth.passive_update_processor",
     "bluetooth.remote_scanners",
     "assist_pipeline.pipelines",
@@ -417,30 +411,7 @@ async def async_setup_hass(
 
         await async_from_config_dict({"recovery_mode": {}}, hass)
 
-    if runtime_config.open_ui:
-        hass.add_job(open_hass_ui, hass)
-
     return hass
-
-
-def open_hass_ui(hass: core.HomeAssistant) -> None:
-    """Open the UI."""
-    import webbrowser  # noqa: PLC0415
-
-    if hass.config.api is None or "frontend" not in hass.config.components:
-        _LOGGER.warning("Cannot launch the UI because frontend not loaded")
-        return
-
-    scheme = "https" if hass.config.api.use_ssl else "http"
-    url = str(
-        yarl.URL.build(scheme=scheme, host="127.0.0.1", port=hass.config.api.port)
-    )
-
-    if not webbrowser.open(url):
-        _LOGGER.warning(
-            "Unable to open the Home Assistant UI in a browser. Open it yourself at %s",
-            url,
-        )
 
 
 def _init_blocking_io_modules_in_executor() -> None:
