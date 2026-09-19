@@ -5,7 +5,6 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.components import frontend
 from homeassistant.components.recorder import DOMAIN as RECORDER_DOMAIN
 from homeassistant.components.recorder.filters import (
     extract_include_exclude_filter_conf,
@@ -108,10 +107,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             domain = DOMAIN
 
         async_log_entry(hass, name, message, domain, entity_id, service.context)
-
-    frontend.async_register_built_in_panel(
-        hass, "logbook", "logbook", "mdi:format-list-bulleted-type"
-    )
 
     recorder_conf = config.get(RECORDER_DOMAIN, {})
     logbook_conf = config.get(DOMAIN, {})
