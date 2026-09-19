@@ -50,6 +50,5 @@ jobs:
             exit 0
           fi
           git commit -m "chore: import Home Assistant Core 2026.9.3"
+          git pull --rebase origin main
           git push
-
-# trigger import
