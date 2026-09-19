@@ -278,10 +278,8 @@ DEFAULT_INTEGRATIONS_SUPERVISOR = {
     "hassio",
 }
 
-CRITICAL_INTEGRATIONS = {
-    # Recovery mode is activated if these integrations fail to set up
-    "frontend",
-}
+# ha-lite: no presentation component is critical to runtime startup.
+CRITICAL_INTEGRATIONS: set[str] = set()
 
 #
 # Storage keys we are likely to load during startup
