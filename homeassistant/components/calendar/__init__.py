@@ -15,7 +15,7 @@ import voluptuous as vol
 
 from homeassistant.auth.models import User
 from homeassistant.auth.permissions.const import POLICY_CONTROL, POLICY_READ
-from homeassistant.components import frontend, http, websocket_api
+from homeassistant.components import http, websocket_api
 from homeassistant.components.http import KEY_HASS_USER
 from homeassistant.components.websocket_api import (
     ERR_INVALID_FORMAT,
@@ -320,7 +320,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.http.register_view(CalendarListView(component))
     hass.http.register_view(CalendarEventView(component))
 
-    frontend.async_register_built_in_panel(hass, "calendar", "calendar", "mdi:calendar")
 
     websocket_api.async_register_command(hass, handle_calendar_event_create)
     websocket_api.async_register_command(hass, handle_calendar_event_delete)
