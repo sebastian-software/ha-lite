@@ -272,7 +272,6 @@ DEFAULT_INTEGRATIONS_RECOVERY_MODE = {
     # These integrations are set up if recovery mode is activated.
     "backup",
     "cloud",
-    "frontend",
 }
 DEFAULT_INTEGRATIONS_SUPERVISOR = {
     # These integrations are set up if using the Supervisor
