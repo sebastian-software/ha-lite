@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           . venv/bin/activate
-          python -c "import homeassistant; import homeassistant.bootstrap; print(homeassistant.__version__)"
+          python -c "import homeassistant; import homeassistant.bootstrap; print(\"Home Assistant imports OK\")"
 
   core-runtime:
     name: Core runtime tests
