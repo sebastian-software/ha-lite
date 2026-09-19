@@ -167,7 +167,9 @@ jobs:
             tests/components/ssdp \
             tests/components/usb \
             tests/components/repairs \
-            tests/components/diagnostics
+            tests/components/diagnostics \
+            tests/components/conversation \
+            tests/components/mcp_server
 
   entity-domain-substrate:
     name: "Entity domain: ${{ matrix.domain }}"
