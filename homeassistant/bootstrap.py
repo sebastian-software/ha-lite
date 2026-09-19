@@ -212,7 +212,6 @@ DEFAULT_INTEGRATIONS = {
     "application_credentials",
     "backup",
     "brands",
-    "frontend",
     "hardware",
     "labs",
     "logger",
