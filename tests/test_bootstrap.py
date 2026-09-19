@@ -551,8 +551,8 @@ async def test_setup_after_deps_manifests_are_loaded_even_if_not_setup(
 
 
 @pytest.mark.parametrize("load_registries", [False])
-async def test_setup_frontend_before_recorder(hass: HomeAssistant) -> None:
-    """Test frontend is setup before recorder."""
+async def test_frontend_has_no_dedicated_startup_stage(hass: HomeAssistant) -> None:
+    """Test frontend is not prioritized ahead of recorder."""
     order = []
 
     def gen_domain_setup(domain):
@@ -619,15 +619,12 @@ async def test_setup_frontend_before_recorder(hass: HomeAssistant) -> None:
     assert "recorder" in hass.config.components
     assert "http" in hass.config.components
 
-    # http (a dependency) and an_after_dep (an after_dependency) are both set
-    # up in the frontend substage of stage 0; their relative order depends on
-    # set iteration order and is not guaranteed.
-    assert set(order[:2]) == {"http", "an_after_dep"}
-    assert order[2:] == [
-        "frontend",
-        "recorder",
-        "normal_integration",
-    ]
+    # Recorder remains a stage-0 runtime concern while frontend is now
+    # handled with normal stage-2 integrations. Its HTTP dependency must be
+    # available before recorder starts, and recorder must no longer wait for
+    # frontend.
+    assert order.index("http") < order.index("recorder")
+    assert order.index("recorder") < order.index("frontend")
 
 
 @pytest.mark.parametrize("load_registries", [False])
@@ -1422,11 +1419,11 @@ async def test_bootstrap_log_already_setup_stage(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
     """Test logging when all integrations in a stage were already setup."""
-    with patch.object(bootstrap, "STAGE_1_INTEGRATIONS", {"frontend"}):
+    with patch.object(bootstrap, "STAGE_1_INTEGRATIONS", {"recorder"}):
         await bootstrap._async_set_up_integrations(hass, {})
         await hass.async_block_till_done()
 
-    assert "Already set up stage 1: {'frontend'}" in caplog.text
+    assert "Already set up stage 1: {'recorder'}" in caplog.text
 
 
 @pytest.fixture(name="mock_mqtt_config_flow")
