@@ -48,7 +48,7 @@ This table describes the architectural target. **Removed** means physically dele
 | Representative integrations (Shelly, MQTT, Matter, Hue, Fronius, Modbus) | **Keep** | Compatibility anchors while reducing the runtime |
 | Frontend startup/recovery/browser assumptions | **Removed** | No longer part of bootstrap semantics |
 | Frontend component | **Remove — Wave 1** | Backend must boot and operate with the package physically absent |
-| Lovelace/dashboard backend | **Remove — Wave 1** | Presentation/product state; MCP must continue without it |
+| Lovelace/dashboard backend | **Removed — Wave 1** | Presentation/product state; MCP remains protected by protocol-level CI |
 | UI panels / panel registration | **Remove — Wave 1** | Presentation concern; backend config APIs remain |
 | Automation / scripts / blueprints / helper product | **Remove — Wave 2** | Decision/orchestration layer belongs outside the runtime |
 | Logbook/history product, energy, map, voice presentation, cloud | **Remove — later waves** | Product features, subject to dependency discovery |
