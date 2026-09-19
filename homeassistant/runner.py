@@ -168,6 +168,7 @@ class RuntimeConfig:
     log_no_color: bool = False
 
     debug: bool = False
+    open_ui: bool = False
 
     safe_mode: bool = False
 

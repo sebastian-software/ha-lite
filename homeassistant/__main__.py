@@ -99,6 +99,9 @@ def get_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--debug", action="store_true", help="Start Home Assistant in debug mode"
     )
+    parser.add_argument(
+        "--open-ui", action="store_true", help="Open the webinterface in a browser"
+    )
 
     skip_pip_group = parser.add_mutually_exclusive_group()
     skip_pip_group.add_argument(
@@ -200,6 +203,7 @@ def main() -> int:
             skip_pip_packages=args.skip_pip_packages,
             recovery_mode=args.recovery_mode,
             debug=args.debug,
+            open_ui=args.open_ui,
             safe_mode=safe_mode,
         )
 
