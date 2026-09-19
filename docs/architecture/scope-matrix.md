@@ -51,7 +51,9 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | file_upload | DELETE initially | UI/product support unless an integration proves need. |
 | backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. |
 | cloud / Nabu Casa | DELETE | Product/cloud service outside scope. |
-| Assist / conversation / intent / STT / TTS | DELETE | Intelligence/user interaction belongs outside core. |
+| conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
+| MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
+| STT / TTS / voice presentation | DELETE / INVESTIGATE | Voice product surface is not retained merely because Conversation/MCP is retained; reassess concrete runtime dependencies before deletion. |
 | media source/browser | DELETE initially | Product feature; device media controls can remain. |
 | bluetooth | KEEP | Discovery/transport for physical integrations. |
 | dhcp | KEEP | Discovery infrastructure. |
@@ -83,6 +85,6 @@ Calculate transitive runtime requirements for Shelly, MQTT, Matter, Hue and Fron
 
 1. Frontend, Lovelace, panels and UI-only support.
 2. Automation, scripts, blueprints and automation helpers.
-3. Product features: logbook/history UI, energy, map, voice/assist, cloud.
+3. Product features: logbook/history UI, energy, map, voice presentation and cloud. Preserve the Conversation/LLM subset required by MCP.
 4. Unselected integrations, after representative dependency closure is generated.
 5. Persistence/configuration simplification only after the reduced runtime boots and representative integrations pass lifecycle tests.
