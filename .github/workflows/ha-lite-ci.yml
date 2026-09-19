@@ -99,9 +99,25 @@ jobs:
             tests/test_config_entries.py \
             tests/test_loader.py \
             tests/test_setup.py \
+            tests/helpers/test_aiohttp_client.py \
+            tests/helpers/test_config_entry_flow.py \
+            tests/helpers/test_config_entry_oauth2_flow.py \
             tests/helpers/test_device_registry.py \
+            tests/helpers/test_dispatcher.py \
+            tests/helpers/test_entity.py \
+            tests/helpers/test_entity_component.py \
+            tests/helpers/test_entity_platform.py \
             tests/helpers/test_entity_registry.py \
-            tests/helpers/test_storage.py
+            tests/helpers/test_event.py \
+            tests/helpers/test_issue_registry.py \
+            tests/helpers/test_restore_state.py \
+            tests/helpers/test_service.py \
+            tests/helpers/test_service_info.py \
+            tests/helpers/test_state.py \
+            tests/helpers/test_storage.py \
+            tests/helpers/test_system_info.py \
+            tests/helpers/test_translation.py \
+            tests/helpers/test_update_coordinator.py
 
   headless-infrastructure:
     name: Headless infrastructure tests
@@ -130,10 +146,18 @@ jobs:
             --timeout=20 \
             --durations=20 \
             -p no:sugar \
+            tests/components/api \
             tests/components/auth \
             tests/components/http \
             tests/components/websocket_api \
             tests/components/config \
+            tests/components/logger \
+            tests/components/system_log \
+            tests/components/system_health \
+            tests/components/application_credentials \
+            tests/components/webhook \
+            tests/components/persistent_notification \
+            tests/components/homeassistant \
             tests/components/network \
             tests/components/zeroconf \
             tests/components/bluetooth \
@@ -142,6 +166,65 @@ jobs:
             tests/components/usb \
             tests/components/repairs \
             tests/components/diagnostics
+
+  entity-domain-substrate:
+    name: "Entity domain: ${{ matrix.domain }}"
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - alarm_control_panel
+          - binary_sensor
+          - button
+          - camera
+          - climate
+          - cover
+          - date
+          - datetime
+          - event
+          - fan
+          - image
+          - light
+          - lock
+          - media_player
+          - notify
+          - number
+          - select
+          - sensor
+          - siren
+          - switch
+          - text
+          - time
+          - update
+          - vacuum
+          - valve
+          - water_heater
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Run entity-domain tests
+        run: |
+          . venv/bin/activate
+          python -b -X dev -m pytest -q \
+            --timeout=20 \
+            --durations=20 \
+            -p no:sugar \
+            "tests/components/${{ matrix.domain }}"
 
   retained-integrations:
     name: "Integration: ${{ matrix.integration }}"
