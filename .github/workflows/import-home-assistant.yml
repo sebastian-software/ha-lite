@@ -1,0 +1,53 @@
+name: Import Home Assistant Core
+
+on:
+  push:
+    paths:
+      - ".github/workflows/import-home-assistant.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out ha-lite
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch Home Assistant Core 2026.9.3
+        run: |
+          git clone --depth 1 --branch 2026.9.3 https://github.com/home-assistant/core.git /tmp/home-assistant-core
+
+      - name: Import upstream source
+        run: |
+          rsync -a --delete             --exclude '.git/'             --exclude '.github/workflows/import-home-assistant.yml'             --exclude 'README.md'             --exclude 'docs/'             --exclude 'tools/analyze_ha_imports.py'             /tmp/home-assistant-core/ ./
+
+      - name: Record upstream baseline
+        run: |
+          cat > UPSTREAM.md <<'EOF'
+          # Upstream baseline
+
+          ha-lite was initially seeded from Home Assistant Core tag `2026.9.3`.
+
+          Upstream repository: `home-assistant/core`
+
+          The source import intentionally preserves the ha-lite README, architecture documents,
+          ADRs, and local analysis tooling.
+
+          Future upstream changes are expected to be curated rather than blindly merged.
+          EOF
+
+      - name: Commit imported source
+        run: |
+          git config user.name "ha-lite import"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to import"
+            exit 0
+          fi
+          git commit -m "chore: import Home Assistant Core 2026.9.3"
+          git push
