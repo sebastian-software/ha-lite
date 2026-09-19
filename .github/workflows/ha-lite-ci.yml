@@ -1,0 +1,205 @@
+name: ha-lite CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ha-lite-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_CACHE_DIR: /tmp/uv-cache
+  APT_CACHE_VERSION: "1"
+  HASS_CI: "1"
+  PYTHONASYNCIODEBUG: "1"
+
+jobs:
+  prepare:
+    name: Prepare Home Assistant test environment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      python-version: ${{ steps.meta.outputs.python_version }}
+      uv-version: ${{ steps.meta.outputs.uv_version }}
+      cache-key: ${{ steps.meta.outputs.cache_key }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - id: meta
+        name: Resolve tool versions and cache key
+        shell: bash
+        run: |
+          python_version="$(cat .python-version)"
+          uv_version="$(grep '^uv==' requirements.txt | cut -d= -f3)"
+          hash="$(sha256sum requirements.txt requirements_all.txt requirements_test.txt requirements_test_pre_commit.txt homeassistant/package_constraints.txt | sha256sum | cut -d' ' -f1)"
+          echo "python_version=${python_version}" >> "$GITHUB_OUTPUT"
+          echo "uv_version=${uv_version}" >> "$GITHUB_OUTPUT"
+          echo "cache_key=ha-lite-venv-${hash}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and cache test environment
+        uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ steps.meta.outputs.python_version }}
+          uv-version: ${{ steps.meta.outputs.uv_version }}
+          python-cache-key: ${{ steps.meta.outputs.cache_key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+          save: "true"
+
+      - name: Compile English translations
+        shell: bash
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+
+      - name: Basic import sanity
+        shell: bash
+        run: |
+          . venv/bin/activate
+          python -c "import homeassistant; import homeassistant.bootstrap; print(homeassistant.__version__)"
+
+  core-runtime:
+    name: Core runtime tests
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Test core lifecycle and registries
+        run: |
+          . venv/bin/activate
+          python -b -X dev -m pytest -q \
+            --timeout=20 \
+            --durations=20 \
+            -p no:sugar \
+            tests/test_bootstrap.py \
+            tests/test_core.py \
+            tests/test_config_entries.py \
+            tests/test_loader.py \
+            tests/test_setup.py \
+            tests/helpers/test_device_registry.py \
+            tests/helpers/test_entity_registry.py \
+            tests/helpers/test_storage.py
+
+  headless-infrastructure:
+    name: Headless infrastructure tests
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Test API, discovery and operational substrate
+        run: |
+          . venv/bin/activate
+          python -b -X dev -m pytest -q \
+            --timeout=20 \
+            --durations=20 \
+            -p no:sugar \
+            tests/components/auth \
+            tests/components/http \
+            tests/components/websocket_api \
+            tests/components/config \
+            tests/components/network \
+            tests/components/zeroconf \
+            tests/components/bluetooth \
+            tests/components/dhcp \
+            tests/components/ssdp \
+            tests/components/usb \
+            tests/components/repairs \
+            tests/components/diagnostics
+
+  retained-integrations:
+    name: "Integration: ${{ matrix.integration }}"
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        integration:
+          - shelly
+          - mqtt
+          - matter
+          - hue
+          - fronius
+          - modbus
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Run integration tests
+        run: |
+          . venv/bin/activate
+          python -b -X dev -m pytest -q \
+            --timeout=20 \
+            --durations=20 \
+            -p no:sugar \
+            "tests/components/${{ matrix.integration }}"
+
+  static-sanity:
+    name: Static sanity
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Run focused prek checks
+        env:
+          PREK_SKIP: no-commit-to-branch,mypy,pylint,gen_requirements_all,hassfest,hassfest-metadata,hassfest-mypy-config,zizmor
+        run: |
+          . venv/bin/activate
+          prek run --all-files
