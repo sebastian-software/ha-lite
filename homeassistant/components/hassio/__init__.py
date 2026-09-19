@@ -37,6 +37,7 @@ from homeassistant.helpers.typing import ConfigType
 # for hassio to import its platforms
 # backup is pre-imported to ensure that the backup integration does not load
 # it from the event loop
+from . import addon_panel  # noqa: F401
 from . import (  # noqa: F401
     backup,
     binary_sensor,
