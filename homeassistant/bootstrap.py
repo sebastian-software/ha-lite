@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING, Any, override
 # _ModuleLock('cryptography.hazmat.backends.openssl.backend')
 import cryptography.hazmat.backends.openssl.backend  # noqa: F401
 import voluptuous as vol
-import yarl
 
 from . import (
     block_async_io,
@@ -292,10 +291,7 @@ PRELOAD_STORAGE = [
     "core.network",
     "http.auth",
     "image",
-    "lovelace_dashboards",
-    "lovelace_resources",
     "core.uuid",
-    "lovelace.map",
     "bluetooth.passive_update_processor",
     "bluetooth.remote_scanners",
     "assist_pipeline.pipelines",
@@ -415,30 +411,7 @@ async def async_setup_hass(
 
         await async_from_config_dict({"recovery_mode": {}}, hass)
 
-    if runtime_config.open_ui:
-        hass.add_job(open_hass_ui, hass)
-
     return hass
-
-
-def open_hass_ui(hass: core.HomeAssistant) -> None:
-    """Open the UI."""
-    import webbrowser  # noqa: PLC0415
-
-    if hass.config.api is None or "frontend" not in hass.config.components:
-        _LOGGER.warning("Cannot launch the UI because frontend not loaded")
-        return
-
-    scheme = "https" if hass.config.api.use_ssl else "http"
-    url = str(
-        yarl.URL.build(scheme=scheme, host="127.0.0.1", port=hass.config.api.port)
-    )
-
-    if not webbrowser.open(url):
-        _LOGGER.warning(
-            "Unable to open the Home Assistant UI in a browser. Open it yourself at %s",
-            url,
-        )
 
 
 def _init_blocking_io_modules_in_executor() -> None:
