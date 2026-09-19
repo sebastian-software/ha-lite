@@ -201,6 +201,13 @@ jobs:
       - name: Run focused prek checks
         env:
           PREK_SKIP: no-commit-to-branch,mypy,pylint,gen_requirements_all,hassfest,hassfest-metadata,hassfest-mypy-config,zizmor
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
         run: |
           . venv/bin/activate
-          prek run --all-files
+          base="${PR_BASE_SHA:-${PUSH_BEFORE_SHA}}"
+          if [[ -z "${base}" || "${base}" =~ ^0+$ ]]; then
+            prek run --all-files
+          else
+            prek run --from-ref "${base}" --to-ref HEAD
+          fi
