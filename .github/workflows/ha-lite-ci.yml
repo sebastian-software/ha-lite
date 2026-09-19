@@ -157,7 +157,9 @@ jobs:
             tests/components/application_credentials \
             tests/components/webhook \
             tests/components/persistent_notification \
-            tests/components/homeassistant \
+            tests/components/homeassistant/test_init.py \
+            tests/components/homeassistant/test_exposed_entities.py \
+            tests/components/homeassistant/test_repairs.py \
             tests/components/network \
             tests/components/zeroconf \
             tests/components/bluetooth \
@@ -213,6 +215,12 @@ jobs:
           python-cache-key: ${{ needs.prepare.outputs.cache-key }}
           uv-cache-dir: ${{ env.UV_CACHE_DIR }}
           apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Install camera system dependency
+        if: matrix.domain == 'camera'
+        uses: ./.github/actions/cache-apt-packages
+        with:
+          packages: libturbojpeg
+          version: ${{ env.APT_CACHE_VERSION }}
       - name: Compile English translations
         run: |
           . venv/bin/activate
