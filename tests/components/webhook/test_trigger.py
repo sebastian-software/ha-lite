@@ -1,7 +1,7 @@
 """The tests for the webhook automation trigger."""
 
 from ipaddress import ip_address
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -66,9 +66,6 @@ async def test_webhook_post(
     hass: HomeAssistant, hass_client_no_auth: ClientSessionGenerator
 ) -> None:
     """Test triggering with a POST webhook."""
-    # Set up fake cloud
-    hass.config.components.add("cloud")
-
     events = []
 
     @callback
@@ -114,15 +111,6 @@ async def test_webhook_post(
     # No hook received
     await hass.async_block_till_done()
     assert len(events) == 1
-
-    # Request from Home Assistant Cloud remote UI
-    with patch(
-        "hass_nabucasa.remote.is_cloud_request", Mock(get=Mock(return_value=True))
-    ):
-        await client.post("/api/webhook/post_webhook", data={"hello": "world"})
-
-    # No hook received
-    await hass.async_block_till_done()
     assert len(events) == 1
 
 
@@ -336,9 +324,6 @@ async def test_webhook_template(
     hass: HomeAssistant, hass_client_no_auth: ClientSessionGenerator
 ) -> None:
     """Test triggering with a template webhook."""
-    # Set up fake cloud
-    hass.config.components.add("cloud")
-
     events = []
 
     @callback

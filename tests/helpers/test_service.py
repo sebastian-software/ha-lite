@@ -16,8 +16,8 @@ import voluptuous as vol
 from homeassistant import config_entries, exceptions
 from homeassistant.auth.permissions import PolicyPermissions
 import homeassistant.components  # noqa: F401
+from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN
 from homeassistant.components.group import DOMAIN as GROUP_DOMAIN, Group
-from homeassistant.components.input_button import DOMAIN as INPUT_BUTTON_DOMAIN
 from homeassistant.components.logger import DOMAIN as LOGGER_DOMAIN
 from homeassistant.components.shell_command import DOMAIN as SHELL_COMMAND_DOMAIN
 from homeassistant.components.system_health import DOMAIN as SYSTEM_HEALTH_DOMAIN
@@ -1237,8 +1237,8 @@ async def test_async_get_all_descriptions_failing_integration(
     logger_config = {LOGGER_DOMAIN: {}}
     await async_setup_component(hass, LOGGER_DOMAIN, logger_config)
 
-    input_button_config = {INPUT_BUTTON_DOMAIN: {}}
-    await async_setup_component(hass, INPUT_BUTTON_DOMAIN, input_button_config)
+    button_config = {BUTTON_DOMAIN: {}}
+    await async_setup_component(hass, BUTTON_DOMAIN, button_config)
 
     async def wrap_get_integrations(
         hass: HomeAssistant, domains: Iterable[str]
@@ -1265,9 +1265,9 @@ async def test_async_get_all_descriptions_failing_integration(
 
     assert descriptions[LOGGER_DOMAIN]["set_level"] == {"fields": {}}
 
-    assert "description" not in descriptions[INPUT_BUTTON_DOMAIN]["press"]
-    assert descriptions[INPUT_BUTTON_DOMAIN]["press"]["fields"] == {}
-    assert "target" in descriptions[INPUT_BUTTON_DOMAIN]["press"]
+    assert "description" not in descriptions[BUTTON_DOMAIN]["press"]
+    assert descriptions[BUTTON_DOMAIN]["press"]["fields"] == {}
+    assert "target" in descriptions[BUTTON_DOMAIN]["press"]
 
     hass.services.async_register(LOGGER_DOMAIN, "new_service", lambda x: None, None)
     service.async_set_service_schema(

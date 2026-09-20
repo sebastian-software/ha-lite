@@ -1,6 +1,5 @@
 """Provides triggers for switch platform."""
 
-from homeassistant.components.input_boolean import DOMAIN as INPUT_BOOLEAN_DOMAIN
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.automation import DomainSpec
@@ -10,7 +9,6 @@ from .const import DOMAIN
 
 SWITCH_DOMAIN_SPECS: dict[str, DomainSpec] = {
     DOMAIN: DomainSpec(),
-    INPUT_BOOLEAN_DOMAIN: DomainSpec(),
 }
 
 TRIGGERS: dict[str, type[Trigger]] = {

@@ -2,7 +2,7 @@
 
 from http import HTTPStatus
 from ipaddress import ip_address
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from aiohttp import web
 from aiohttp.test_utils import TestClient
@@ -230,8 +230,6 @@ async def test_webhook_not_allowed_method(hass: HomeAssistant) -> None:
 
 async def test_webhook_local_only(hass: HomeAssistant, mock_client) -> None:
     """Test posting a webhook with local only."""
-    hass.config.components.add("cloud")
-
     hooks = []
     webhook_id = webhook.async_generate_id()
 
@@ -258,16 +256,6 @@ async def test_webhook_local_only(hass: HomeAssistant, mock_client) -> None:
         resp = await mock_client.post(f"/api/webhook/{webhook_id}", json={"data": True})
     assert resp.status == HTTPStatus.OK
     # No hook received
-    assert len(hooks) == 1
-
-    # Request from Home Assistant Cloud remote UI
-    with patch(
-        "hass_nabucasa.remote.is_cloud_request", Mock(get=Mock(return_value=True))
-    ):
-        resp = await mock_client.post(f"/api/webhook/{webhook_id}", json={"data": True})
-
-    # No hook received
-    assert resp.status == HTTPStatus.OK
     assert len(hooks) == 1
 
 

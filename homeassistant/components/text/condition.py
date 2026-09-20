@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, override
 
 import voluptuous as vol
 
-from homeassistant.components.input_text import DOMAIN as INPUT_TEXT_DOMAIN
 from homeassistant.const import CONF_OPTIONS
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import config_validation as cv
@@ -34,7 +33,6 @@ class TextIsEqualToCondition(EntityConditionBase):
 
     _domain_specs = {
         DOMAIN: DomainSpec(),
-        INPUT_TEXT_DOMAIN: DomainSpec(),
     }
     _schema = _TEXT_CONDITION_SCHEMA
 

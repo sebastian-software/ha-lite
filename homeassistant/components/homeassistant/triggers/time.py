@@ -8,7 +8,6 @@ from typing import Any, NamedTuple
 import voluptuous as vol
 
 from homeassistant.components import sensor
-from homeassistant.components.input_datetime import DOMAIN as INPUT_DATETIME_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import (
     CONF_AT,
@@ -41,12 +40,12 @@ from homeassistant.helpers.trigger import TriggerActionType, TriggerInfo
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 
-_TIME_TRIGGER_ENTITY = vol.All(str, cv.entity_domain(["input_datetime", "sensor"]))
+_TIME_TRIGGER_ENTITY = vol.All(str, cv.entity_domain(["sensor"]))
 _TIME_AT_SCHEMA = vol.Any(cv.time, _TIME_TRIGGER_ENTITY)
 
 _TIME_TRIGGER_ENTITY_WITH_OFFSET = vol.Schema(
     {
-        vol.Required(CONF_ENTITY_ID): cv.entity_domain(["input_datetime", "sensor"]),
+        vol.Required(CONF_ENTITY_ID): cv.entity_domain(["sensor"]),
         vol.Optional(CONF_OFFSET): cv.time_period,
     }
 )
@@ -68,8 +67,8 @@ _TIME_TRIGGER_SCHEMA = vol.Any(
     _TIME_TRIGGER_ENTITY_WITH_OFFSET,
     valid_at_template,
     msg=(
-        "Expected HH:MM, HH:MM:SS, an Entity ID with domain 'input_datetime' or "
-        "'sensor', a combination of a timestamp sensor entity"
+        "Expected HH:MM, HH:MM:SS, an Entity ID with domain 'sensor', "
+        "a combination of a timestamp sensor entity"
         " and an offset, or Limited Template"
     ),
 )
@@ -94,7 +93,7 @@ class TrackEntity(NamedTuple):
     callback: Callable
 
 
-async def async_attach_trigger(  # noqa: C901
+async def async_attach_trigger(
     hass: HomeAssistant,
     config: ConfigType,
     action: TriggerActionType,
@@ -162,69 +161,7 @@ async def async_attach_trigger(  # noqa: C901
         trigger_dt: datetime | None
 
         # Check state of entity. If valid, set up a listener.
-        if new_state.domain == INPUT_DATETIME_DOMAIN:
-            if has_date := new_state.attributes["has_date"]:
-                year = new_state.attributes["year"]
-                month = new_state.attributes["month"]
-                day = new_state.attributes["day"]
-            if has_time := new_state.attributes["has_time"]:
-                hour = new_state.attributes["hour"]
-                minute = new_state.attributes["minute"]
-                second = new_state.attributes["second"]
-            else:
-                # If no time then use midnight.
-                hour = minute = second = 0
-
-            if has_date:
-                # If input_datetime has date, then track point in time.
-                trigger_dt = (
-                    datetime(
-                        year,
-                        month,
-                        day,
-                        hour,
-                        minute,
-                        second,
-                        tzinfo=dt_util.get_default_time_zone(),
-                    )
-                    + offset
-                )
-                # Only set up listener if time is now or in the future.
-                if trigger_dt >= dt_util.now():
-                    remove = async_track_point_in_time(
-                        hass,
-                        partial(
-                            time_automation_listener,
-                            f"time set in {entity_id}",
-                            entity_id=entity_id,
-                        ),
-                        trigger_dt,
-                    )
-            elif has_time:
-                # Else if it has time, then track time change.
-                if offset != timedelta(0):
-                    # Create a temporary datetime object to get an offset.
-                    temp_dt = dt_util.now().replace(
-                        hour=hour, minute=minute, second=second, microsecond=0
-                    )
-                    temp_dt += offset
-                    # Ignore the date and apply the offset even if it wraps
-                    # around to the next day.
-                    hour = temp_dt.hour
-                    minute = temp_dt.minute
-                    second = temp_dt.second
-                remove = async_track_time_change(
-                    hass,
-                    partial(
-                        time_automation_listener,
-                        f"time set in {entity_id}",
-                        entity_id=entity_id,
-                    ),
-                    hour=hour,
-                    minute=minute,
-                    second=second,
-                )
-        elif (
+        if (
             new_state.domain == SENSOR_DOMAIN
             and new_state.attributes.get(EntityStateAttribute.DEVICE_CLASS)
             in (sensor.SensorDeviceClass.TIMESTAMP, sensor.SensorDeviceClass.UPTIME)
@@ -261,8 +198,7 @@ async def async_attach_trigger(  # noqa: C901
                 raise HomeAssistantError(
                     f"Limited Template for 'at' rendered a"
                     f" unexpected value '{render}', expected"
-                    " HH:MM, HH:MM:SS or Entity ID with domain"
-                    " 'input_datetime' or 'sensor'"
+                    " HH:MM, HH:MM:SS or Entity ID with domain 'sensor'"
                 ) from exc
 
         if isinstance(at_time, str):

@@ -3,16 +3,16 @@
 import asyncio
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from unittest.mock import Mock, PropertyMock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
-from homeassistant import config_entries, data_entry_flow, setup
-from homeassistant.core import DOMAIN as HOMEASSISTANT_DOMAIN, HomeAssistant
+from homeassistant import config_entries, data_entry_flow
+from homeassistant.core import HomeAssistant
 from homeassistant.core_config import async_process_ha_core_config
 from homeassistant.helpers import config_entry_flow
 
-from tests.common import MockConfigEntry, MockModule, mock_integration, mock_platform
+from tests.common import MockConfigEntry, mock_platform
 
 
 @contextmanager
@@ -402,117 +402,6 @@ async def test_webhook_config_flow_registers_webhook(
     assert result["data"]["webhook_id"] is not None
 
 
-async def test_webhook_create_cloudhook(
-    hass: HomeAssistant, webhook_flow_conf: None
-) -> None:
-    """Test cloudhook will be created if subscribed."""
-    assert await setup.async_setup_component(hass, "cloud", {})
-
-    async_setup_entry = Mock(return_value=True)
-    async_unload_entry = Mock(return_value=True)
-
-    mock_integration(
-        hass,
-        MockModule(
-            "test_single",
-            async_setup_entry=async_setup_entry,
-            async_unload_entry=async_unload_entry,
-            async_remove_entry=config_entry_flow.webhook_async_remove_entry,
-        ),
-    )
-    mock_platform(hass, "test_single.config_flow", None)
-
-    result = await hass.config_entries.flow.async_init(
-        "test_single", context={"source": config_entries.SOURCE_USER}
-    )
-    assert result["type"] is data_entry_flow.FlowResultType.FORM
-
-    with (
-        patch(
-            "hass_nabucasa.cloudhooks.Cloudhooks.async_create",
-            return_value={"cloudhook_url": "https://example.com"},
-        ) as mock_create,
-        patch(
-            "hass_nabucasa.Cloud.subscription_expired",
-            new_callable=PropertyMock(return_value=False),
-        ),
-        patch(
-            "hass_nabucasa.Cloud.is_logged_in",
-            new_callable=PropertyMock(return_value=True),
-        ),
-        patch(
-            "hass_nabucasa.iot_base.BaseIoT.connected",
-            new_callable=PropertyMock(return_value=True),
-        ),
-    ):
-        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
-
-    assert result["type"] is data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert result["description_placeholders"]["webhook_url"] == "https://example.com"
-    assert len(mock_create.mock_calls) == 1
-    assert len(async_setup_entry.mock_calls) == 1
-
-    with patch(
-        "hass_nabucasa.cloudhooks.Cloudhooks.async_delete",
-        return_value={"cloudhook_url": "https://example.com"},
-    ) as mock_delete:
-        result = await hass.config_entries.async_remove(result["result"].entry_id)
-
-    assert len(mock_delete.mock_calls) == 1
-    assert result["require_restart"] is False
-    await hass.async_block_till_done()
-
-
-async def test_webhook_create_cloudhook_aborts_not_connected(
-    hass: HomeAssistant, webhook_flow_conf: None
-) -> None:
-    """Test cloudhook aborts if subscribed but not connected."""
-    assert await setup.async_setup_component(hass, "cloud", {})
-
-    async_setup_entry = Mock(return_value=True)
-    async_unload_entry = Mock(return_value=True)
-
-    mock_integration(
-        hass,
-        MockModule(
-            "test_single",
-            async_setup_entry=async_setup_entry,
-            async_unload_entry=async_unload_entry,
-            async_remove_entry=config_entry_flow.webhook_async_remove_entry,
-        ),
-    )
-    mock_platform(hass, "test_single.config_flow", None)
-
-    result = await hass.config_entries.flow.async_init(
-        "test_single", context={"source": config_entries.SOURCE_USER}
-    )
-    assert result["type"] is data_entry_flow.FlowResultType.FORM
-
-    with (
-        patch(
-            "hass_nabucasa.cloudhooks.Cloudhooks.async_create",
-            return_value={"cloudhook_url": "https://example.com"},
-        ),
-        patch(
-            "hass_nabucasa.Cloud.subscription_expired",
-            new_callable=PropertyMock(return_value=False),
-        ),
-        patch(
-            "hass_nabucasa.Cloud.is_logged_in",
-            new_callable=PropertyMock(return_value=True),
-        ),
-        patch(
-            "hass_nabucasa.iot_base.BaseIoT.connected",
-            new_callable=PropertyMock(return_value=False),
-        ),
-    ):
-        result = await hass.config_entries.flow.async_configure(result["flow_id"], {})
-
-    assert result["type"] is data_entry_flow.FlowResultType.ABORT
-    assert result["reason"] == "cloud_not_connected"
-    assert result["translation_domain"] == HOMEASSISTANT_DOMAIN
-
-
 async def test_webhook_reconfigure_flow(
     hass: HomeAssistant, webhook_flow_conf: None
 ) -> None:
@@ -553,54 +442,3 @@ async def test_webhook_reconfigure_flow(
     assert config_entry.data["webhook_id"] == "12345"
     assert config_entry.data["cloudhook"] is False
     assert config_entry.data["other_entry_data"] == "not_changed"
-
-
-async def test_webhook_reconfigure_cloudhook(
-    hass: HomeAssistant, webhook_flow_conf: None
-) -> None:
-    """Test reconfigure updates to cloudhook if subscribed."""
-    assert await setup.async_setup_component(hass, "cloud", {})
-
-    config_entry = MockConfigEntry(
-        domain="test_single", data={"webhook_id": "12345", "cloudhook": False}
-    )
-    config_entry.add_to_hass(hass)
-
-    flow = config_entries.HANDLERS["test_single"]()
-    flow.hass = hass
-    flow.context = {
-        "source": config_entries.SOURCE_RECONFIGURE,
-        "entry_id": config_entry.entry_id,
-    }
-
-    result = await flow.async_step_reconfigure()
-    assert result["type"] is data_entry_flow.FlowResultType.FORM
-    assert result["step_id"] == "reconfigure"
-
-    with (
-        patch(
-            "hass_nabucasa.cloudhooks.Cloudhooks.async_create",
-            return_value={"cloudhook_url": "https://example.com"},
-        ) as mock_create,
-        patch(
-            "hass_nabucasa.Cloud.subscription_expired",
-            new_callable=PropertyMock(return_value=False),
-        ),
-        patch(
-            "hass_nabucasa.Cloud.is_logged_in",
-            new_callable=PropertyMock(return_value=True),
-        ),
-        patch(
-            "hass_nabucasa.iot_base.BaseIoT.connected",
-            new_callable=PropertyMock(return_value=True),
-        ),
-    ):
-        result = await flow.async_step_reconfigure(user_input={})
-
-    assert result["type"] == data_entry_flow.FlowResultType.ABORT
-    assert result["reason"] == "reconfigure_successful"
-    assert result["description_placeholders"] == {"webhook_url": "https://example.com"}
-    assert len(mock_create.mock_calls) == 1
-
-    assert config_entry.data["webhook_id"] == "12345"
-    assert config_entry.data["cloudhook"] is True

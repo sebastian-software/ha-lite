@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, override
 
 import voluptuous as vol
 
-from homeassistant.components.input_number import DOMAIN as INPUT_NUMBER_DOMAIN
 from homeassistant.components.number import DOMAIN as NUMBER_DOMAIN
 from homeassistant.components.sensor import (
     CONF_STATE_CLASS,
@@ -95,9 +94,7 @@ PARALLEL_UPDATES = 0
 
 PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(
     {
-        vol.Required(CONF_ENTITIES): cv.entities_domain(
-            [SENSOR_DOMAIN, NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN]
-        ),
+        vol.Required(CONF_ENTITIES): cv.entities_domain([SENSOR_DOMAIN, NUMBER_DOMAIN]),
         vol.Required(CONF_TYPE): vol.All(cv.string, vol.In(SENSOR_TYPES.values())),
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
         vol.Optional(CONF_UNIQUE_ID): cv.string,

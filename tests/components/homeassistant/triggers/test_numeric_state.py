@@ -30,27 +30,12 @@ from tests.common import assert_setup_component, async_fire_time_changed, mock_c
 async def setup_comp(hass: HomeAssistant) -> None:
     """Initialize components."""
     mock_component(hass, "group")
-    await async_setup_component(
-        hass,
-        "input_number",
-        {
-            "input_number": {
-                "value_3": {"min": 0, "max": 255, "initial": 3},
-                "value_5": {"min": 0, "max": 255, "initial": 5},
-                "value_8": {"min": 0, "max": 255, "initial": 8},
-                "value_10": {"min": 0, "max": 255, "initial": 10},
-                "value_12": {"min": 0, "max": 255, "initial": 12},
-                "value_100": {"min": 0, "max": 255, "initial": 100},
-            }
-        },
-    )
+    for value in (3, 5, 8, 10, 12, 100):
+        hass.states.async_set(f"sensor.value_{value}", value)
     hass.states.async_set("number.value_10", 10)
-    hass.states.async_set("sensor.value_10", 10)
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_not_fires_on_entity_removal(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -78,9 +63,7 @@ async def test_if_not_fires_on_entity_removal(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_fires_on_entity_change_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -129,9 +112,7 @@ async def test_if_fires_on_entity_change_below(
     assert service_calls[0].data["id"] == 0
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_fires_on_entity_change_below_uuid(
     hass: HomeAssistant,
     entity_registry: er.EntityRegistry,
@@ -188,9 +169,7 @@ async def test_if_fires_on_entity_change_below_uuid(
     assert service_calls[0].data["id"] == 0
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_fires_on_entity_change_over_to_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -219,9 +198,7 @@ async def test_if_fires_on_entity_change_over_to_below(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_fires_on_entities_change_over_to_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -254,9 +231,7 @@ async def test_if_fires_on_entities_change_over_to_below(
     assert len(service_calls) == 2
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_not_fires_on_entity_change_below_to_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -297,9 +272,7 @@ async def test_if_not_fires_on_entity_change_below_to_below(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_not_below_fires_on_entity_change_to_equal(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -328,9 +301,7 @@ async def test_if_not_below_fires_on_entity_change_to_equal(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize(
-    "below", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("below", [10, "number.value_10", "sensor.value_10"])
 async def test_if_not_fires_on_initial_entity_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -359,9 +330,7 @@ async def test_if_not_fires_on_initial_entity_below(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize(
-    "above", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("above", [10, "number.value_10", "sensor.value_10"])
 async def test_if_not_fires_on_initial_entity_above(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -390,9 +359,7 @@ async def test_if_not_fires_on_initial_entity_above(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize(
-    "above", [10, "input_number.value_10", "number.value_10", "sensor.value_10"]
-)
+@pytest.mark.parametrize("above", [10, "number.value_10", "sensor.value_10"])
 async def test_if_fires_on_entity_change_above(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -444,7 +411,7 @@ async def test_if_fires_on_entity_unavailable_at_startup(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize("above", [10, "input_number.value_10"])
+@pytest.mark.parametrize("above", [10, "sensor.value_10"])
 async def test_if_fires_on_entity_change_below_to_above(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -474,7 +441,7 @@ async def test_if_fires_on_entity_change_below_to_above(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("above", [10, "input_number.value_10"])
+@pytest.mark.parametrize("above", [10, "sensor.value_10"])
 async def test_if_not_fires_on_entity_change_above_to_above(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -509,7 +476,7 @@ async def test_if_not_fires_on_entity_change_above_to_above(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("above", [10, "input_number.value_10"])
+@pytest.mark.parametrize("above", [10, "sensor.value_10"])
 async def test_if_not_above_fires_on_entity_change_to_equal(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -543,9 +510,9 @@ async def test_if_not_above_fires_on_entity_change_to_equal(
     ("above", "below"),
     [
         (5, 10),
-        (5, "input_number.value_10"),
-        ("input_number.value_5", 10),
-        ("input_number.value_5", "input_number.value_10"),
+        (5, "sensor.value_10"),
+        ("sensor.value_5", 10),
+        ("sensor.value_5", "sensor.value_10"),
     ],
 )
 async def test_if_fires_on_entity_change_below_range(
@@ -583,9 +550,9 @@ async def test_if_fires_on_entity_change_below_range(
     ("above", "below"),
     [
         (5, 10),
-        (5, "input_number.value_10"),
-        ("input_number.value_5", 10),
-        ("input_number.value_5", "input_number.value_10"),
+        (5, "sensor.value_10"),
+        ("sensor.value_5", 10),
+        ("sensor.value_5", "sensor.value_10"),
     ],
 )
 async def test_if_fires_on_entity_change_below_above_range(
@@ -620,9 +587,9 @@ async def test_if_fires_on_entity_change_below_above_range(
     ("above", "below"),
     [
         (5, 10),
-        (5, "input_number.value_10"),
-        ("input_number.value_5", 10),
-        ("input_number.value_5", "input_number.value_10"),
+        (5, "sensor.value_10"),
+        ("sensor.value_5", 10),
+        ("sensor.value_5", "sensor.value_10"),
     ],
 )
 async def test_if_fires_on_entity_change_over_to_below_range(
@@ -661,9 +628,9 @@ async def test_if_fires_on_entity_change_over_to_below_range(
     ("above", "below"),
     [
         (5, 10),
-        (5, "input_number.value_10"),
-        ("input_number.value_5", 10),
-        ("input_number.value_5", "input_number.value_10"),
+        (5, "sensor.value_10"),
+        ("sensor.value_5", 10),
+        ("sensor.value_5", "sensor.value_10"),
     ],
 )
 async def test_if_fires_on_entity_change_over_to_below_above_range(
@@ -698,7 +665,7 @@ async def test_if_fires_on_entity_change_over_to_below_above_range(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize("below", [100, "input_number.value_100"])
+@pytest.mark.parametrize("below", [100, "sensor.value_100"])
 async def test_if_not_fires_if_entity_not_match(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -737,7 +704,7 @@ async def test_if_not_fires_and_warns_if_below_entity_unknown(
                 "trigger": {
                     "platform": "numeric_state",
                     "entity_id": "test.entity",
-                    "below": "input_number.unknown",
+                    "below": "sensor.unknown",
                 },
                 "action": {"service": "test.automation"},
             }
@@ -755,7 +722,7 @@ async def test_if_not_fires_and_warns_if_below_entity_unknown(
     assert caplog.record_tuples[0][1] == logging.WARNING
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_if_fires_on_entity_change_below_with_attribute(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -783,7 +750,7 @@ async def test_if_fires_on_entity_change_below_with_attribute(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_if_not_fires_on_entity_change_not_below_with_attribute(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -808,7 +775,7 @@ async def test_if_not_fires_on_entity_change_not_below_with_attribute(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_if_fires_on_attribute_change_with_attribute_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -837,7 +804,7 @@ async def test_if_fires_on_attribute_change_with_attribute_below(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_if_not_fires_on_attribute_change_with_attribute_not_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -863,7 +830,7 @@ async def test_if_not_fires_on_attribute_change_with_attribute_not_below(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_if_not_fires_on_entity_change_with_attribute_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -889,7 +856,7 @@ async def test_if_not_fires_on_entity_change_with_attribute_below(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_if_not_fires_on_entity_change_with_not_attribute_below(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -915,7 +882,7 @@ async def test_if_not_fires_on_entity_change_with_not_attribute_below(
     assert len(service_calls) == 0
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_fires_on_attr_change_with_attribute_below_and_multiple_attr(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -947,7 +914,7 @@ async def test_fires_on_attr_change_with_attribute_below_and_multiple_attr(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("below", [10, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10, "sensor.value_10"])
 async def test_template_list(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: int | str
 ) -> None:
@@ -975,7 +942,7 @@ async def test_template_list(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("below", [10.0, "input_number.value_10"])
+@pytest.mark.parametrize("below", [10.0, "sensor.value_10"])
 async def test_template_string(
     hass: HomeAssistant, service_calls: list[ServiceCall], below: float | str
 ) -> None:
@@ -1051,9 +1018,9 @@ async def test_not_fires_on_attr_change_with_attr_not_below_multiple_attr(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_action(
@@ -1104,9 +1071,9 @@ async def test_if_action(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fails_setup_bad_for(
@@ -1160,9 +1127,9 @@ async def test_if_fails_setup_for_without_above_below(hass: HomeAssistant) -> No
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_not_fires_on_entity_change_with_for(
@@ -1204,9 +1171,9 @@ async def test_if_not_fires_on_entity_change_with_for(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_not_fires_on_entities_change_with_for_after_stop(
@@ -1270,9 +1237,9 @@ async def test_if_not_fires_on_entities_change_with_for_after_stop(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_entity_change_with_for_attribute_change(
@@ -1320,9 +1287,9 @@ async def test_if_fires_on_entity_change_with_for_attribute_change(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_entity_change_with_for(
@@ -1359,7 +1326,7 @@ async def test_if_fires_on_entity_change_with_for(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("above", [10, "input_number.value_10"])
+@pytest.mark.parametrize("above", [10, "sensor.value_10"])
 async def test_wait_template_with_trigger(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -1407,9 +1374,9 @@ async def test_wait_template_with_trigger(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_entities_change_no_overlap(
@@ -1466,9 +1433,9 @@ async def test_if_fires_on_entities_change_no_overlap(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_entities_change_overlap(
@@ -1536,9 +1503,9 @@ async def test_if_fires_on_entities_change_overlap(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_change_with_for_template_1(
@@ -1580,9 +1547,9 @@ async def test_if_fires_on_change_with_for_template_1(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_change_with_for_template_2(
@@ -1624,9 +1591,9 @@ async def test_if_fires_on_change_with_for_template_2(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_change_with_for_template_3(
@@ -1706,9 +1673,9 @@ async def test_if_not_fires_on_error_with_for_template(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_invalid_for_template(
@@ -1745,9 +1712,9 @@ async def test_invalid_for_template(
     ("above", "below"),
     [
         (8, 12),
-        (8, "input_number.value_12"),
-        ("input_number.value_8", 12),
-        ("input_number.value_8", "input_number.value_12"),
+        (8, "sensor.value_12"),
+        ("sensor.value_8", 12),
+        ("sensor.value_8", "sensor.value_12"),
     ],
 )
 async def test_if_fires_on_entities_change_overlap_for_template(
@@ -1826,13 +1793,13 @@ async def test_below_above(hass: HomeAssistant) -> None:
 
 
 async def test_schema_unacceptable_entities(hass: HomeAssistant) -> None:
-    """Test input_number, number & sensor only is accepted for above/below."""
+    """Test number & sensor only is accepted for above/below."""
     with pytest.raises(vol.Invalid):
         await numeric_state_trigger.async_validate_trigger_config(
             hass,
             {
                 "platform": "numeric_state",
-                "above": "input_datetime.some_input",
+                "above": "light.some_light",
                 "below": 1000,
             },
         )
@@ -1841,13 +1808,13 @@ async def test_schema_unacceptable_entities(hass: HomeAssistant) -> None:
             hass,
             {
                 "platform": "numeric_state",
-                "below": "input_datetime.some_input",
+                "below": "light.some_light",
                 "above": 1200,
             },
         )
 
 
-@pytest.mark.parametrize("above", [3, "input_number.value_3"])
+@pytest.mark.parametrize("above", [3, "sensor.value_3"])
 async def test_attribute_if_fires_on_entity_change_with_both_filters(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:
@@ -1876,7 +1843,7 @@ async def test_attribute_if_fires_on_entity_change_with_both_filters(
     assert len(service_calls) == 1
 
 
-@pytest.mark.parametrize("above", [3, "input_number.value_3"])
+@pytest.mark.parametrize("above", [3, "sensor.value_3"])
 async def test_attribute_if_not_fires_on_entities_change_with_for_after_stop(
     hass: HomeAssistant, service_calls: list[ServiceCall], above: int | str
 ) -> None:

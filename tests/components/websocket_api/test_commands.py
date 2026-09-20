@@ -2824,51 +2824,6 @@ async def test_subscribe_trigger_config_error(
     assert "Error handling message" not in caplog.text
 
 
-async def test_subscribe_trigger_template_error_spams_log(
-    hass: HomeAssistant,
-    websocket_client: MockHAClientWebSocket,
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    """Test that a failing trigger template spams the log.
-
-    This documents unwanted behavior. Unlike subscribe_condition and
-    test_condition, subscribe_trigger does not suppress repeated template
-    variable errors: a trigger is evaluated event-driven by its platform (here
-    via async_track_template_result), outside any trace context, so the
-    trace-based suppression used for conditions does not apply. This should be
-    fixed in the future so the error is suppressed/forwarded instead of being
-    logged on every re-render.
-    """
-    caplog.set_level(logging.WARNING)
-    hass.states.async_set("sensor.test", "1")
-
-    await websocket_client.send_json_auto_id(
-        {
-            "type": "subscribe_trigger",
-            "trigger": {
-                "platform": "template",
-                "value_template": "{{ states('sensor.test') }}{{ undefined_variable }}",
-            },
-        }
-    )
-
-    msg = await websocket_client.receive_json()
-    assert msg["type"] == const.TYPE_RESULT
-    assert msg["success"]
-
-    # Each re-render of the template logs the undefined variable error again
-    for state in ("2", "3", "4"):
-        hass.states.async_set("sensor.test", state)
-        await hass.async_block_till_done()
-
-    assert (
-        caplog.text.count(
-            "Template variable warning: 'undefined_variable' is undefined"
-        )
-        > 1
-    )
-
-
 async def test_test_condition(
     hass: HomeAssistant, websocket_client: MockHAClientWebSocket
 ) -> None:

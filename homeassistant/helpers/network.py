@@ -6,7 +6,6 @@ from ipaddress import ip_address
 import logging
 
 from aiohttp import hdrs
-from hass_nabucasa import remote
 import yarl
 
 from homeassistant.core import HomeAssistant
@@ -349,29 +348,15 @@ def _get_external_url(
 
 
 def _get_cloud_url(hass: HomeAssistant, require_current_request: bool = False) -> str:
-    """Get external Home Assistant Cloud URL of this instance."""
-    if "cloud" in hass.config.components:
-        # Local import to avoid circular dependencies
-        from homeassistant.components.cloud import (  # noqa: PLC0415
-            CloudNotAvailable,
-            async_remote_ui_url,
-        )
+    """Get external Home Assistant Cloud URL of this instance.
 
-        try:
-            cloud_url = yarl.URL(async_remote_ui_url(hass))
-        except CloudNotAvailable as err:
-            raise NoURLAvailableError from err
-
-        if not require_current_request or _match_request_host_port(cloud_url):
-            return normalize_url(str(cloud_url))
-
+    ha-lite has no cloud integration, so there is never a cloud URL. Callers
+    still ask for one through `require_cloud`/`prefer_cloud`, so this keeps
+    raising rather than disappearing.
+    """
     raise NoURLAvailableError
 
 
 def is_cloud_connection(hass: HomeAssistant) -> bool:
     """Return True if the current connection is a nabucasa cloud connection."""
-
-    if "cloud" not in hass.config.components:
-        return False
-
-    return remote.is_cloud_request.get()
+    return False

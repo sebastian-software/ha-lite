@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from homeassistant.const import CONF_ENTITY_ID, STATE_UNAVAILABLE, STATE_UNKNOWN
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
 
 from tests.components.common import (
@@ -21,12 +21,6 @@ from tests.components.common import (
 async def target_selects(hass: HomeAssistant) -> dict[str, list[str]]:
     """Create multiple select entities associated with different targets."""
     return await target_entities(hass, "select")
-
-
-@pytest.fixture
-async def target_input_selects(hass: HomeAssistant) -> dict[str, list[str]]:
-    """Create multiple input_select entities associated with different targets."""
-    return await target_entities(hass, "input_select")
 
 
 @pytest.mark.parametrize(
@@ -128,32 +122,6 @@ async def test_select_state_trigger(
     )
 
 
-@pytest.mark.parametrize(
-    ("trigger_target_config", "entity_id", "entities_in_target"),
-    parametrize_target_entities("input_select"),
-)
-@pytest.mark.parametrize(("trigger", "states"), STATE_SEQUENCE)
-async def test_input_select_state_trigger(
-    hass: HomeAssistant,
-    target_input_selects: dict[str, list[str]],
-    trigger_target_config: dict,
-    entity_id: str,
-    entities_in_target: int,
-    trigger: str,
-    states: list[TriggerStateDescription],
-) -> None:
-    """Test that the select trigger fires when targeted input_select state changes."""
-    await _assert_select_trigger_fires(
-        hass,
-        target_entities=target_input_selects,
-        trigger_target_config=trigger_target_config,
-        entity_id=entity_id,
-        entities_in_target=entities_in_target,
-        trigger=trigger,
-        states=states,
-    )
-
-
 async def _assert_select_trigger_fires(
     hass: HomeAssistant,
     target_entities: dict[str, list[str]],
@@ -192,38 +160,3 @@ async def _assert_select_trigger_fires(
 
 
 # --- Cross-domain test ---
-
-
-async def test_select_trigger_fires_for_both_domains(
-    hass: HomeAssistant,
-) -> None:
-    """Test that the select trigger fires for both select and input_select entities."""
-    calls: list[str] = []
-    entity_id_select = "select.test_select"
-    entity_id_input_select = "input_select.test_input_select"
-
-    hass.states.async_set(entity_id_select, "option_a")
-    hass.states.async_set(entity_id_input_select, "option_a")
-    await hass.async_block_till_done()
-
-    await arm_trigger(
-        hass,
-        "select.selection_changed",
-        None,
-        {CONF_ENTITY_ID: [entity_id_select, entity_id_input_select]},
-        calls,
-    )
-
-    # select entity changes - should trigger
-    hass.states.async_set(entity_id_select, "option_b")
-    await hass.async_block_till_done()
-    assert len(calls) == 1
-    assert calls[0] == entity_id_select
-    calls.clear()
-
-    # input_select entity changes - should also trigger
-    hass.states.async_set(entity_id_input_select, "option_b")
-    await hass.async_block_till_done()
-    assert len(calls) == 1
-    assert calls[0] == entity_id_input_select
-    calls.clear()

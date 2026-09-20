@@ -16,7 +16,6 @@ from tests.components.common import (
     assert_condition_behavior_all,
     assert_condition_behavior_any,
     assert_condition_options_supported,
-    create_target_condition,
     parametrize_condition_states_all,
     parametrize_condition_states_any,
     parametrize_target_entities,
@@ -28,12 +27,6 @@ from tests.components.common import (
 async def target_selects(hass: HomeAssistant) -> dict[str, list[str]]:
     """Create multiple select entities associated with different targets."""
     return await target_entities(hass, "select")
-
-
-@pytest.fixture
-async def target_input_selects(hass: HomeAssistant) -> dict[str, list[str]]:
-    """Create multiple input_select entities associated with different targets."""
-    return await target_entities(hass, "input_select")
 
 
 @pytest.mark.parametrize(
@@ -131,113 +124,7 @@ async def test_select_condition_behavior_all(
     )
 
 
-@pytest.mark.parametrize(
-    ("condition_target_config", "entity_id", "entities_in_target"),
-    parametrize_target_entities("input_select"),
-)
-@pytest.mark.parametrize(
-    ("condition", "condition_options", "states"),
-    parametrize_condition_states_any(
-        condition="select.is_option_selected",
-        condition_options={CONF_OPTION: ["option_a", "option_b"]},
-        target_states=["option_a", "option_b"],
-        other_states=["option_c"],
-    ),
-)
-async def test_input_select_condition_behavior_any(
-    hass: HomeAssistant,
-    target_input_selects: dict[str, list[str]],
-    condition_target_config: dict,
-    entity_id: str,
-    entities_in_target: int,
-    condition: str,
-    condition_options: dict[str, Any],
-    states: list[ConditionStateDescription],
-) -> None:
-    """Test the select condition with input_select entities and 'any' behavior."""
-    await assert_condition_behavior_any(
-        hass,
-        target_entities=target_input_selects,
-        condition_target_config=condition_target_config,
-        entity_id=entity_id,
-        entities_in_target=entities_in_target,
-        condition=condition,
-        condition_options=condition_options,
-        states=states,
-    )
-
-
-@pytest.mark.parametrize(
-    ("condition_target_config", "entity_id", "entities_in_target"),
-    parametrize_target_entities("input_select"),
-)
-@pytest.mark.parametrize(
-    ("condition", "condition_options", "states"),
-    parametrize_condition_states_all(
-        condition="select.is_option_selected",
-        condition_options={CONF_OPTION: ["option_a", "option_b"]},
-        target_states=["option_a", "option_b"],
-        other_states=["option_c"],
-    ),
-)
-async def test_input_select_condition_behavior_all(
-    hass: HomeAssistant,
-    target_input_selects: dict[str, list[str]],
-    condition_target_config: dict,
-    entity_id: str,
-    entities_in_target: int,
-    condition: str,
-    condition_options: dict[str, Any],
-    states: list[ConditionStateDescription],
-) -> None:
-    """Test the select condition with input_select entities and 'all' behavior."""
-    await assert_condition_behavior_all(
-        hass,
-        target_entities=target_input_selects,
-        condition_target_config=condition_target_config,
-        entity_id=entity_id,
-        entities_in_target=entities_in_target,
-        condition=condition,
-        condition_options=condition_options,
-        states=states,
-    )
-
-
 # --- Cross-domain test ---
-
-
-async def test_select_condition_evaluates_both_domains(
-    hass: HomeAssistant,
-) -> None:
-    """Test select condition evaluates both select and input_select."""
-    entity_id_select = "select.test_select"
-    entity_id_input_select = "input_select.test_input_select"
-
-    hass.states.async_set(entity_id_select, "option_a")
-    hass.states.async_set(entity_id_input_select, "option_a")
-    await hass.async_block_till_done()
-
-    cond = await create_target_condition(
-        hass,
-        condition="select.is_option_selected",
-        target={CONF_ENTITY_ID: [entity_id_select, entity_id_input_select]},
-        behavior="any",
-        condition_options={CONF_OPTION: ["option_a", "option_b"]},
-    )
-
-    assert cond.async_check() is True
-
-    # Set one to a non-matching option - "any" behavior should still pass
-    hass.states.async_set(entity_id_select, "option_c")
-    await hass.async_block_till_done()
-
-    assert cond.async_check() is True
-
-    # Set both to non-matching options
-    hass.states.async_set(entity_id_input_select, "option_c")
-    await hass.async_block_till_done()
-
-    assert cond.async_check() is False
 
 
 # --- Schema validation tests ---

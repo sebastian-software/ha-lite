@@ -24,7 +24,6 @@ from homeassistant.components.cover import (
     CoverDeviceClass,
 )
 from homeassistant.components.http.data_validator import RequestDataValidator
-from homeassistant.components.input_button import DOMAIN as INPUT_BUTTON_DOMAIN
 from homeassistant.components.lock import (
     DOMAIN as LOCK_DOMAIN,
     SERVICE_LOCK,
@@ -187,7 +186,7 @@ class OnOffIntentHandler(intent.ServiceIntentHandler):
         """Call service on entity with handling for special cases."""
         hass = intent_obj.hass
 
-        if state.domain in (BUTTON_DOMAIN, INPUT_BUTTON_DOMAIN):
+        if state.domain == BUTTON_DOMAIN:
             if service != SERVICE_TURN_ON:
                 raise intent.IntentHandleError(
                     f"Entity {state.entity_id} cannot be turned off"

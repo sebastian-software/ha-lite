@@ -18,8 +18,7 @@ from freezegun.api import FrozenDateTimeFactory
 import pytest
 
 from homeassistant.auth.providers.homeassistant import HassAuthProvider
-from homeassistant.components import cloud, http, onboarding
-from homeassistant.components.cloud import CloudNotAvailable
+from homeassistant.components import http, onboarding
 from homeassistant.components.http import DOMAIN
 from homeassistant.components.http.config import (
     _DEFAULT_CONFIG,
@@ -795,76 +794,6 @@ async def test_ssl_issue_if_no_urls_configured(
         patch(
             "homeassistant.util.ssl.server_context_modern",
             side_effect=server_context_modern,
-        ),
-    ):
-        assert await async_setup_component(
-            hass,
-            DOMAIN,
-            {"http": {"ssl_certificate": cert_path, "ssl_key": key_path}},
-        )
-        await hass.async_start()
-        await hass.async_block_till_done()
-
-    assert ("http", "ssl_configured_without_configured_urls") in issue_registry.issues
-
-
-async def test_ssl_issue_if_using_cloud(
-    hass: HomeAssistant,
-    tmp_path: Path,
-    issue_registry: ir.IssueRegistry,
-) -> None:
-    """Test raising no SSL issue if not right configured but using cloud."""
-    assert hass.config.external_url is None
-    assert hass.config.internal_url is None
-
-    cert_path, key_path, _ = await hass.async_add_executor_job(
-        _setup_empty_ssl_pem_files, tmp_path
-    )
-
-    with (
-        patch("ssl.SSLContext.load_cert_chain"),
-        patch.object(cloud, "async_remote_ui_url", return_value="https://example.com"),
-        patch(
-            "homeassistant.util.ssl.server_context_modern",
-            side_effect=server_context_modern,
-        ),
-    ):
-        assert await async_setup_component(
-            hass,
-            DOMAIN,
-            {"http": {"ssl_certificate": cert_path, "ssl_key": key_path}},
-        )
-        await hass.async_start()
-        await hass.async_block_till_done()
-
-    assert (
-        "http",
-        "ssl_configured_without_configured_urls",
-    ) not in issue_registry.issues
-
-
-async def test_ssl_issue_if_not_connected_to_cloud(
-    hass: HomeAssistant,
-    tmp_path: Path,
-    issue_registry: ir.IssueRegistry,
-) -> None:
-    """Test raising no SSL issue if not right configured and not connected to cloud."""
-    assert hass.config.external_url is None
-    assert hass.config.internal_url is None
-
-    cert_path, key_path, _ = await hass.async_add_executor_job(
-        _setup_empty_ssl_pem_files, tmp_path
-    )
-
-    with (
-        patch("ssl.SSLContext.load_cert_chain"),
-        patch(
-            "homeassistant.util.ssl.server_context_modern",
-            side_effect=server_context_modern,
-        ),
-        patch(
-            "homeassistant.components.cloud.async_remote_ui_url",
-            side_effect=CloudNotAvailable,
         ),
     ):
         assert await async_setup_component(

@@ -68,181 +68,6 @@ async def test_if_fires_using_at(
 
 
 @pytest.mark.parametrize(
-    ("has_date", "has_time"), [(True, True), (True, False), (False, True)]
-)
-async def test_if_fires_using_at_input_datetime(
-    hass: HomeAssistant,
-    freezer: FrozenDateTimeFactory,
-    service_calls: list[ServiceCall],
-    has_date,
-    has_time,
-) -> None:
-    """Test for firing at input_datetime."""
-    await async_setup_component(
-        hass,
-        "input_datetime",
-        {"input_datetime": {"trigger": {"has_date": has_date, "has_time": has_time}}},
-    )
-    now = dt_util.now()
-
-    trigger_dt = now.replace(
-        hour=5 if has_time else 0, minute=0, second=0, microsecond=0
-    ) + timedelta(2)
-
-    await hass.services.async_call(
-        "input_datetime",
-        "set_datetime",
-        {
-            ATTR_ENTITY_ID: "input_datetime.trigger",
-            "datetime": str(trigger_dt.replace(tzinfo=None)),
-        },
-        blocking=True,
-    )
-    await hass.async_block_till_done()
-
-    time_that_will_not_match_right_away = trigger_dt - timedelta(minutes=1)
-
-    some_data = (
-        "{{ trigger.platform }}-{{ trigger.now.day }}"
-        "-{{ trigger.now.hour }}-{{trigger.entity_id}}"
-    )
-
-    freezer.move_to(dt_util.as_utc(time_that_will_not_match_right_away))
-    assert await async_setup_component(
-        hass,
-        automation.DOMAIN,
-        {
-            automation.DOMAIN: {
-                "trigger": {"platform": "time", "at": "input_datetime.trigger"},
-                "action": {
-                    "service": "test.automation",
-                    "data_template": {"some": some_data},
-                },
-            }
-        },
-    )
-    await hass.async_block_till_done()
-
-    async_fire_time_changed(hass, trigger_dt + timedelta(seconds=1))
-    await hass.async_block_till_done()
-
-    assert len(service_calls) == 2
-    assert (
-        service_calls[1].data["some"]
-        == f"time-{trigger_dt.day}-{trigger_dt.hour}-input_datetime.trigger"
-    )
-
-    if has_date:
-        trigger_dt += timedelta(days=1)
-    if has_time:
-        trigger_dt += timedelta(hours=1)
-
-    await hass.services.async_call(
-        "input_datetime",
-        "set_datetime",
-        {
-            ATTR_ENTITY_ID: "input_datetime.trigger",
-            "datetime": str(trigger_dt.replace(tzinfo=None)),
-        },
-        blocking=True,
-    )
-    assert len(service_calls) == 3
-    await hass.async_block_till_done()
-
-    async_fire_time_changed(hass, trigger_dt + timedelta(seconds=1))
-    await hass.async_block_till_done()
-
-    assert len(service_calls) == 4
-    assert (
-        service_calls[3].data["some"]
-        == f"time-{trigger_dt.day}-{trigger_dt.hour}-input_datetime.trigger"
-    )
-
-
-@pytest.mark.parametrize(("hour"), [0, 5, 23])
-@pytest.mark.parametrize(
-    ("has_date", "has_time"), [(True, True), (False, True), (True, False)]
-)
-@pytest.mark.parametrize(
-    ("offset", "delta"),
-    [
-        ("00:00:10", timedelta(seconds=10)),
-        ("-00:00:10", timedelta(seconds=-10)),
-        ({"minutes": 5}, timedelta(minutes=5)),
-        ("01:00:10", timedelta(hours=1, seconds=10)),
-    ],
-)
-async def test_if_fires_using_at_input_datetime_with_offset(
-    hass: HomeAssistant,
-    freezer: FrozenDateTimeFactory,
-    service_calls: list[ServiceCall],
-    has_date: bool,
-    has_time: bool,
-    offset: str,
-    delta: timedelta,
-    hour: int,
-) -> None:
-    """Test for firing at input_datetime."""
-    await async_setup_component(
-        hass,
-        "input_datetime",
-        {"input_datetime": {"trigger": {"has_date": has_date, "has_time": has_time}}},
-    )
-    now = dt_util.now()
-
-    start_dt = now.replace(
-        hour=hour if has_time else 0, minute=0, second=0, microsecond=0
-    ) + timedelta(2)
-    trigger_dt = start_dt + delta
-
-    await hass.services.async_call(
-        "input_datetime",
-        "set_datetime",
-        {
-            ATTR_ENTITY_ID: "input_datetime.trigger",
-            "datetime": str(start_dt.replace(tzinfo=None)),
-        },
-        blocking=True,
-    )
-    await hass.async_block_till_done()
-
-    time_that_will_not_match_right_away = trigger_dt - timedelta(minutes=1)
-
-    some_data = (
-        "{{ trigger.platform }}-{{ trigger.now.day }}"
-        "-{{ trigger.now.hour }}-{{trigger.entity_id}}"
-    )
-
-    freezer.move_to(dt_util.as_utc(time_that_will_not_match_right_away))
-    assert await async_setup_component(
-        hass,
-        automation.DOMAIN,
-        {
-            automation.DOMAIN: {
-                "trigger": {
-                    "platform": "time",
-                    "at": {"entity_id": "input_datetime.trigger", "offset": offset},
-                },
-                "action": {
-                    "service": "test.automation",
-                    "data_template": {"some": some_data},
-                },
-            }
-        },
-    )
-    await hass.async_block_till_done()
-
-    async_fire_time_changed(hass, trigger_dt + timedelta(seconds=1))
-    await hass.async_block_till_done()
-
-    assert len(service_calls) == 2
-    assert (
-        service_calls[1].data["some"]
-        == f"time-{trigger_dt.day}-{trigger_dt.hour}-input_datetime.trigger"
-    )
-
-
-@pytest.mark.parametrize(
     ("conf_at", "trigger_deltas"),
     [
         (
@@ -781,11 +606,9 @@ async def test_if_fires_using_at_sensor_dict_without_offset(
 @pytest.mark.parametrize(
     "conf",
     [
-        {"platform": "time", "at": "input_datetime.bla"},
         {"platform": "time", "at": "sensor.bla"},
         {"platform": "time", "at": "12:34"},
         {"platform": "time", "at": "{{ '12:34' }}"},
-        {"platform": "time", "at": "{{ 'input_datetime.bla' }}"},
         {"platform": "time", "at": "{{ 'sensor.bla' }}"},
         {"platform": "time", "at": {"entity_id": "sensor.bla", "offset": "-00:01"}},
         {
@@ -812,80 +635,6 @@ def test_schema_invalid(conf) -> None:
     """Make sure we don't accept number for 'at' value."""
     with pytest.raises(vol.Invalid):
         time.TRIGGER_SCHEMA(conf)
-
-
-async def test_datetime_in_past_on_load(
-    hass: HomeAssistant, service_calls: list[ServiceCall]
-) -> None:
-    """Test time trigger works if input_datetime is in past."""
-    await async_setup_component(
-        hass,
-        "input_datetime",
-        {"input_datetime": {"my_trigger": {"has_date": True, "has_time": True}}},
-    )
-
-    now = dt_util.now()
-    past = now - timedelta(days=2)
-    future = now + timedelta(days=1)
-
-    await hass.services.async_call(
-        "input_datetime",
-        "set_datetime",
-        {
-            ATTR_ENTITY_ID: "input_datetime.my_trigger",
-            "datetime": str(past.replace(tzinfo=None)),
-        },
-        blocking=True,
-    )
-    assert len(service_calls) == 1
-    await hass.async_block_till_done()
-
-    assert await async_setup_component(
-        hass,
-        automation.DOMAIN,
-        {
-            automation.DOMAIN: {
-                "trigger": {"platform": "time", "at": "input_datetime.my_trigger"},
-                "action": {
-                    "service": "test.automation",
-                    "data_template": {
-                        "some": (
-                            "{{ trigger.platform }}"
-                            "-{{ trigger.now.day }}"
-                            "-{{ trigger.now.hour }}"
-                            "-{{trigger.entity_id}}"
-                        )
-                    },
-                },
-            }
-        },
-    )
-
-    async_fire_time_changed(hass, now)
-    await hass.async_block_till_done()
-
-    assert len(service_calls) == 1
-
-    await hass.services.async_call(
-        "input_datetime",
-        "set_datetime",
-        {
-            ATTR_ENTITY_ID: "input_datetime.my_trigger",
-            "datetime": str(future.replace(tzinfo=None)),
-        },
-        blocking=True,
-    )
-    assert len(service_calls) == 2
-    await hass.async_block_till_done()
-
-    async_fire_time_changed(hass, future + timedelta(seconds=1))
-    await hass.async_block_till_done()
-
-    assert len(service_calls) == 3
-    assert (
-        service_calls[2].data["some"]
-        == f"time-{future.day}-{future.hour}-input_datetime.my_trigger"
-    )
 
 
 @pytest.mark.parametrize(
@@ -918,10 +667,7 @@ async def test_if_at_template_renders_bad_value(
 
     await hass.async_block_till_done()
 
-    assert (
-        "expected HH:MM, HH:MM:SS or Entity ID with domain 'input_datetime' or 'sensor'"
-        in caplog.text
-    )
+    assert "expected HH:MM, HH:MM:SS or Entity ID with domain 'sensor'" in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -1067,27 +813,17 @@ async def test_if_fires_using_weekday_with_entity(
     freezer: FrozenDateTimeFactory,
     service_calls: list[ServiceCall],
 ) -> None:
-    """Test for firing on weekday with input_datetime entity."""
-    await async_setup_component(
-        hass,
-        "input_datetime",
-        {"input_datetime": {"trigger": {"has_date": False, "has_time": True}}},
-    )
-
+    """Test for firing on weekday with a timestamp sensor entity."""
     # Freeze time to Monday, January 2, 2023 at 5:00:00
     monday_trigger = dt_util.as_utc(datetime(2023, 1, 2, 5, 0, 0, 0))
 
-    await hass.services.async_call(
-        "input_datetime",
-        "set_datetime",
-        {
-            ATTR_ENTITY_ID: "input_datetime.trigger",
-            "time": "05:00:00",
-        },
-        blocking=True,
+    hass.states.async_set(
+        "sensor.trigger",
+        monday_trigger.isoformat(),
+        {ATTR_DEVICE_CLASS: SensorDeviceClass.TIMESTAMP},
     )
 
-    freezer.move_to(monday_trigger)
+    freezer.move_to(monday_trigger - timedelta(minutes=1))
 
     assert await async_setup_component(
         hass,
@@ -1096,7 +832,7 @@ async def test_if_fires_using_weekday_with_entity(
             automation.DOMAIN: {
                 "trigger": {
                     "platform": "time",
-                    "at": "input_datetime.trigger",
+                    "at": "sensor.trigger",
                     "weekday": "mon",
                 },
                 "action": {
@@ -1119,7 +855,7 @@ async def test_if_fires_using_weekday_with_entity(
     automation_calls = [call for call in service_calls if call.domain == "test"]
     assert len(automation_calls) == 1
     assert "Monday" in automation_calls[0].data["some"]
-    assert automation_calls[0].data["entity"] == "input_datetime.trigger"
+    assert automation_calls[0].data["entity"] == "sensor.trigger"
 
     # Fire on Tuesday - should not trigger
     tuesday_trigger = dt_util.as_utc(datetime(2023, 1, 3, 5, 0, 0, 0))

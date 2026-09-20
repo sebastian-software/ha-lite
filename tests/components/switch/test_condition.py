@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from homeassistant.const import CONF_ENTITY_ID, STATE_OFF, STATE_ON
+from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 
 from tests.components.common import (
@@ -12,7 +12,6 @@ from tests.components.common import (
     assert_condition_behavior_all,
     assert_condition_behavior_any,
     assert_condition_options_supported,
-    create_target_condition,
     parametrize_condition_states_all,
     parametrize_condition_states_any,
     parametrize_target_entities,
@@ -24,12 +23,6 @@ from tests.components.common import (
 async def target_switches(hass: HomeAssistant) -> dict[str, list[str]]:
     """Create multiple switch entities associated with different targets."""
     return await target_entities(hass, "switch", domain_excluded="light")
-
-
-@pytest.fixture
-async def target_input_booleans(hass: HomeAssistant) -> dict[str, list[str]]:
-    """Create multiple input_boolean entities associated with different targets."""
-    return await target_entities(hass, "input_boolean")
 
 
 @pytest.mark.parametrize(
@@ -169,98 +162,3 @@ CONDITION_STATES_ALL = [
         other_states=[STATE_ON],
     ),
 ]
-
-
-@pytest.mark.parametrize(
-    ("condition_target_config", "entity_id", "entities_in_target"),
-    parametrize_target_entities("input_boolean"),
-)
-@pytest.mark.parametrize(
-    ("condition", "condition_options", "states"),
-    CONDITION_STATES,
-)
-async def test_input_boolean_state_condition_behavior_any(
-    hass: HomeAssistant,
-    target_input_booleans: dict[str, list[str]],
-    condition_target_config: dict,
-    entity_id: str,
-    entities_in_target: int,
-    condition: str,
-    condition_options: dict[str, Any],
-    states: list[ConditionStateDescription],
-) -> None:
-    """Test the switch condition fires for input_boolean with 'any' behavior."""
-    await assert_condition_behavior_any(
-        hass,
-        target_entities=target_input_booleans,
-        condition_target_config=condition_target_config,
-        entity_id=entity_id,
-        entities_in_target=entities_in_target,
-        condition=condition,
-        condition_options=condition_options,
-        states=states,
-    )
-
-
-@pytest.mark.parametrize(
-    ("condition_target_config", "entity_id", "entities_in_target"),
-    parametrize_target_entities("input_boolean"),
-)
-@pytest.mark.parametrize(
-    ("condition", "condition_options", "states"),
-    CONDITION_STATES_ALL,
-)
-async def test_input_boolean_state_condition_behavior_all(
-    hass: HomeAssistant,
-    target_input_booleans: dict[str, list[str]],
-    condition_target_config: dict,
-    entity_id: str,
-    entities_in_target: int,
-    condition: str,
-    condition_options: dict[str, Any],
-    states: list[ConditionStateDescription],
-) -> None:
-    """Test the switch condition fires for input_boolean with 'all' behavior."""
-    await assert_condition_behavior_all(
-        hass,
-        target_entities=target_input_booleans,
-        condition_target_config=condition_target_config,
-        entity_id=entity_id,
-        entities_in_target=entities_in_target,
-        condition=condition,
-        condition_options=condition_options,
-        states=states,
-    )
-
-
-async def test_switch_condition_evaluates_both_domains(
-    hass: HomeAssistant,
-) -> None:
-    """Test switch condition evaluates both switch and input_boolean."""
-    entity_id_switch = "switch.test_switch"
-    entity_id_input_boolean = "input_boolean.test_input_boolean"
-
-    hass.states.async_set(entity_id_switch, STATE_OFF)
-    hass.states.async_set(entity_id_input_boolean, STATE_OFF)
-    await hass.async_block_till_done()
-
-    condition = await create_target_condition(
-        hass,
-        condition="switch.is_on",
-        target={CONF_ENTITY_ID: [entity_id_switch, entity_id_input_boolean]},
-        behavior="any",
-    )
-
-    # Both off - condition should be false
-    assert condition.async_check() is False
-
-    # switch entity turns on - condition should be true
-    hass.states.async_set(entity_id_switch, STATE_ON)
-    await hass.async_block_till_done()
-    assert condition.async_check() is True
-
-    # Reset switch, turn on input_boolean - condition should still be true
-    hass.states.async_set(entity_id_switch, STATE_OFF)
-    hass.states.async_set(entity_id_input_boolean, STATE_ON)
-    await hass.async_block_till_done()
-    assert condition.async_check() is True
