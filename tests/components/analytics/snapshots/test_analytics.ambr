@@ -155,56 +155,6 @@
     'version': '1970.1.0',
   })
 # ---
-# name: test_send_with_energy_config
-  dict({
-    'certificate': False,
-    'custom_integrations': list([
-    ]),
-    'energy': dict({
-      'configured': True,
-    }),
-    'installation_type': 'Home Assistant Tests',
-    'integrations': list([
-    ]),
-    'recorder': dict({
-      'engine': 'sqlite',
-      'version': AwesomeVersion,
-    }),
-    'uuid': 'abcdefg',
-    'version': '1970.1.0',
-  })
-# ---
-# name: test_send_with_no_energy
-  dict({
-    'certificate': False,
-    'custom_integrations': list([
-    ]),
-    'installation_type': 'Home Assistant Tests',
-    'integrations': list([
-    ]),
-    'uuid': 'abcdefg',
-    'version': '1970.1.0',
-  })
-# ---
-# name: test_send_with_no_energy_config
-  dict({
-    'certificate': False,
-    'custom_integrations': list([
-    ]),
-    'energy': dict({
-      'configured': False,
-    }),
-    'installation_type': 'Home Assistant Tests',
-    'integrations': list([
-    ]),
-    'recorder': dict({
-      'engine': 'sqlite',
-      'version': AwesomeVersion,
-    }),
-    'uuid': 'abcdefg',
-    'version': '1970.1.0',
-  })
-# ---
 # name: test_send_with_recorder
   dict({
     'certificate': True,
