@@ -15,7 +15,18 @@
     "  retained       - part of the runtime; expected to stay",
     "  adapter        - coupling lives in a removable platform-adapter file, so",
     "                   the target leaves with that file rather than on its own",
-    "  patch_required - genuine coupling that needs a decoupling change first"
+    "  patch_required - genuine coupling that needs a decoupling change first",
+    "",
+    "'cross_cutting_platforms' are platform files the runtime loads BY NAME via",
+    "async_get_platform, never by import, and dispatches to generically. The",
+    "edge graph cannot see them, so deleting a provider removes a capability",
+    "without breaking an import. They do not grow the closure -- the runtime",
+    "requires no particular provider -- but providers outside it are reported",
+    "as 'capability at risk'.",
+    "",
+    "Self-scoped platforms are deliberately absent: config_flow, diagnostics,",
+    "application_credentials and config only extend their own integration, so",
+    "they leave with it and warning about them would be noise."
   ],
   "roots": {
     "entity_domain_substrate": [
@@ -79,6 +90,14 @@
       "zeroconf"
     ]
   },
+  "cross_cutting_platforms": [
+    "backup",
+    "condition",
+    "intent",
+    "reproduce_state",
+    "significant_change",
+    "trigger"
+  ],
   "accepted_transitive": {
     "backup": {
       "status": "patch_required",

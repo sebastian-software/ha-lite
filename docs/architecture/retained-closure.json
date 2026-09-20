@@ -1669,5 +1669,314 @@
     "unreviewed_closure_members": [],
     "stale_accepted_entries": [],
     "missing_roots": []
+  },
+  "capability_at_risk": {
+    "air_quality": {
+      "integration_type": "entity",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "alert": {
+      "integration_type": "unknown",
+      "platforms": [
+        "reproduce_state"
+      ]
+    },
+    "assist_satellite": {
+      "integration_type": "entity",
+      "platforms": [
+        "condition",
+        "intent",
+        "trigger"
+      ]
+    },
+    "aws_s3": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "azure_storage": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "backblaze_b2": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "battery": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "calendar": {
+      "integration_type": "entity",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "cloudflare_r2": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "door": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "doorbell": {
+      "integration_type": "system",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "dropbox": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "garage_door": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "gate": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "geo_location": {
+      "integration_type": "entity",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "google_drive": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "group": {
+      "integration_type": "helper",
+      "platforms": [
+        "reproduce_state"
+      ]
+    },
+    "humidity": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "idrive_e2": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "illuminance": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "kitchen_sink": {
+      "integration_type": "unknown",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "knx": {
+      "integration_type": "hub",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "lg_netcast": {
+      "integration_type": "device",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "litejet": {
+      "integration_type": "hub",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "moisture": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "moon": {
+      "integration_type": "service",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "motion": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "occupancy": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "onedrive": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "onedrive_for_business": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "power": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "remote": {
+      "integration_type": "entity",
+      "platforms": [
+        "condition",
+        "reproduce_state",
+        "significant_change",
+        "trigger"
+      ]
+    },
+    "samsungtv": {
+      "integration_type": "device",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "sftp_storage": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "shopping_list": {
+      "integration_type": "unknown",
+      "platforms": [
+        "intent"
+      ]
+    },
+    "sun": {
+      "integration_type": "service",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "synology_dsm": {
+      "integration_type": "device",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "tag": {
+      "integration_type": "entity",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "temperature": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "todo": {
+      "integration_type": "entity",
+      "platforms": [
+        "condition",
+        "intent",
+        "trigger"
+      ]
+    },
+    "vibration": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "weather": {
+      "integration_type": "entity",
+      "platforms": [
+        "intent",
+        "significant_change"
+      ]
+    },
+    "webdav": {
+      "integration_type": "service",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "webostv": {
+      "integration_type": "device",
+      "platforms": [
+        "trigger"
+      ]
+    },
+    "window": {
+      "integration_type": "system",
+      "platforms": [
+        "condition",
+        "trigger"
+      ]
+    },
+    "zha": {
+      "integration_type": "hub",
+      "platforms": [
+        "backup"
+      ]
+    },
+    "zwave_js": {
+      "integration_type": "hub",
+      "platforms": [
+        "trigger"
+      ]
+    }
   }
 }

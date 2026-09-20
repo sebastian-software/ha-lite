@@ -51,6 +51,53 @@ edge as soft is what showed the coupling was removable; #19 then removed it.
 Soft edges are not discarded. They are reported as **latent coupling**: the
 things that would widen the closure if they ever hardened.
 
+## What the import graph cannot see
+
+Some platforms are loaded **by name**, through `async_get_platform`, and never
+imported. `helpers/trigger.py` looks for `<domain>/trigger.py`, `condition.py`
+does the same for conditions, and the runtime then dispatches to whatever it
+finds. No edge exists, so the closure is blind to them.
+
+This is not a bug in the closure: providing a platform is genuinely not a
+dependency. Nothing in the retained runtime *requires* any particular provider,
+so counting these as hard edges would drag every domain shipping a
+`trigger.py` into the retained set. But deleting a provider removes a
+capability **without breaking a single import**, which the closure alone would
+never warn about.
+
+#19 found this the expensive way. Deleting Template also removed
+`template/trigger.py`, and with it `platform: template` for
+`websocket_api.subscribe_trigger` — noticed only because one test happened to
+use it.
+
+The tool therefore reports **capability at risk** separately: providers of
+runtime-resolved platforms that sit outside the closure. The platforms it
+watches are listed in `cross_cutting_platforms` in the config. Self-scoped
+platforms are deliberately excluded — `config_flow`, `diagnostics` and
+`application_credentials` only extend their own integration, so they leave
+with it, and 939 config-flow warnings would be noise.
+
+### The device-class providers
+
+The first run of this report surfaced something larger than the Template case.
+Fourteen `integration_type: system` components sit outside the closure and
+exist *only* to provide triggers and conditions over entity device classes:
+
+`battery`, `door`, `doorbell`, `garage_door`, `gate`, `humidity`,
+`illuminance`, `moisture`, `motion`, `occupancy`, `power`, `temperature`,
+`vibration`, `window`
+
+`motion/trigger.py`, for example, is twenty lines that define `motion.detected`
+and `motion.cleared` over `binary_sensor` entities whose device class is
+motion. It imports `binary_sensor`; `binary_sensor` does not import it. That
+direction is exactly why the closure cannot see it.
+
+These are plausibly substrate rather than product — "trigger when motion is
+detected" is the kind of primitive a device runtime exposes to an agent — and
+they are already in bootstrap's `DEFAULT_INTEGRATIONS`. Whether they become
+roots is an open decision, not something the tool should assume. Until it is
+taken, #27 must not delete them by reachability alone.
+
 ## Roots
 
 Roots are declared in `script/ha_lite_closure_config.json` and mirror the job
@@ -94,6 +141,10 @@ Of the 19 transitively required domains, 8 are `retained`, 6 are `adapter` and 5
 The closure is small — 5% of the tree. The 1,415 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
+
+Reachability is necessary but not sufficient. 47 of those candidates provide a
+runtime-resolved platform, so #27 must work the capability-at-risk list as well
+as the closure: deleting them breaks nothing and still costs something.
 
 The closure is also not yet minimal. Six of its members are held in only by
 platform-adapter files: `condition.py`, `trigger.py`, `device_action.py`,
