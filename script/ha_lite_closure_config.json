@@ -1,0 +1,204 @@
+{
+  "_comment": [
+    "Input for script/ha_lite_closure.py.",
+    "",
+    "'roots' are the anchors the retained runtime is defined by. They mirror the",
+    "job matrices in .github/workflows/ha-lite-ci.yml: what CI protects is what",
+    "ha-lite promises to keep working.",
+    "",
+    "'accepted_transitive' records every domain the closure pulls in that is not",
+    "itself a root, with a reviewed reason. A domain reaching the closure without",
+    "an entry here fails the check, so new coupling from retained code into an",
+    "unreviewed component cannot land silently.",
+    "",
+    "status values:",
+    "  retained       - part of the runtime; expected to stay",
+    "  adapter        - coupling lives in a removable platform-adapter file, so",
+    "                   the target leaves with that file rather than on its own",
+    "  patch_required - genuine coupling that needs a decoupling change first"
+  ],
+  "roots": {
+    "entity_domain_substrate": [
+      "alarm_control_panel",
+      "binary_sensor",
+      "button",
+      "camera",
+      "climate",
+      "cover",
+      "date",
+      "datetime",
+      "event",
+      "fan",
+      "image",
+      "light",
+      "lock",
+      "media_player",
+      "notify",
+      "number",
+      "select",
+      "sensor",
+      "siren",
+      "switch",
+      "text",
+      "time",
+      "update",
+      "vacuum",
+      "valve",
+      "water_heater"
+    ],
+    "retained_integrations": [
+      "fronius",
+      "hue",
+      "matter",
+      "modbus",
+      "mqtt",
+      "shelly"
+    ],
+    "runtime_infrastructure": [
+      "api",
+      "application_credentials",
+      "auth",
+      "bluetooth",
+      "config",
+      "conversation",
+      "dhcp",
+      "diagnostics",
+      "homeassistant",
+      "http",
+      "logger",
+      "mcp_server",
+      "network",
+      "persistent_notification",
+      "repairs",
+      "ssdp",
+      "system_health",
+      "system_log",
+      "usb",
+      "webhook",
+      "websocket_api",
+      "zeroconf"
+    ]
+  },
+  "accepted_transitive": {
+    "backup": {
+      "status": "patch_required",
+      "reason": "Reached only through hassio. Leaves with the hassio patch unless headless backup semantics keep it.",
+      "issue": 30
+    },
+    "device_automation": {
+      "status": "adapter",
+      "reason": "Entity domains ship device_action.py/device_trigger.py adapters for Home Assistant device automation.",
+      "issue": 19
+    },
+    "device_tracker": {
+      "status": "patch_required",
+      "reason": "DHCP discovery watches device_tracker registrations from its own __init__, so this is runtime coupling rather than an adapter file.",
+      "issue": 20
+    },
+    "file_upload": {
+      "status": "patch_required",
+      "reason": "MQTT certificate configuration UX. The dependency findings call for accepting certificate material through the API instead.",
+      "issue": 22
+    },
+    "hassio": {
+      "status": "patch_required",
+      "reason": "Matter imports Home Assistant OS add-on lifecycle directly. Needs the portability patch that configures an external Matter Server endpoint.",
+      "issue": 25
+    },
+    "humidifier": {
+      "status": "retained",
+      "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
+      "issue": null
+    },
+    "image_upload": {
+      "status": "adapter",
+      "reason": "Declared dependency of person; leaves with it.",
+      "issue": 20
+    },
+    "infrared": {
+      "status": "retained",
+      "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
+      "issue": null
+    },
+    "input_boolean": {
+      "status": "adapter",
+      "reason": "Reached from switch/condition.py, a device-automation adapter.",
+      "issue": 19
+    },
+    "input_button": {
+      "status": "adapter",
+      "reason": "Reached from button/trigger.py, a device-automation adapter.",
+      "issue": 19
+    },
+    "input_datetime": {
+      "status": "adapter",
+      "reason": "Reached from homeassistant/triggers/time.py, a device-automation adapter.",
+      "issue": 19
+    },
+    "input_select": {
+      "status": "adapter",
+      "reason": "Reached from select/condition.py, a device-automation adapter.",
+      "issue": 19
+    },
+    "input_text": {
+      "status": "adapter",
+      "reason": "Reached from text/condition.py, a device-automation adapter.",
+      "issue": 19
+    },
+    "intent": {
+      "status": "retained",
+      "reason": "Declared dependency of conversation. The overview keeps conversation/intent/LLM primitives because mcp_server requires them.",
+      "issue": null
+    },
+    "lawn_mower": {
+      "status": "retained",
+      "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
+      "issue": null
+    },
+    "llm": {
+      "status": "retained",
+      "reason": "LLM API substrate behind mcp_server; entity domains expose themselves to it through llm.py.",
+      "issue": null
+    },
+    "media_source": {
+      "status": "adapter",
+      "reason": "Reached from camera/media_source.py, a product adapter.",
+      "issue": 22
+    },
+    "onboarding": {
+      "status": "patch_required",
+      "reason": "The Matter config flow reads onboarding state. Needs the same portability patch as hassio.",
+      "issue": 22
+    },
+    "person": {
+      "status": "adapter",
+      "reason": "Reached from zone/condition.py, a device-automation adapter.",
+      "issue": 20
+    },
+    "recorder": {
+      "status": "retained",
+      "reason": "Current persistence machinery, imported by sensor/recorder.py for statistics. Its replacement is Wave 5, not a Wave 4 deletion.",
+      "issue": 28
+    },
+    "scene": {
+      "status": "adapter",
+      "reason": "Reached from config/scene.py, a backend config panel adapter.",
+      "issue": 20
+    },
+    "stream": {
+      "status": "retained",
+      "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",
+      "issue": null
+    },
+    "web_rtc": {
+      "status": "retained",
+      "reason": "Camera WebRTC ICE infrastructure (integration_type: system), imported by camera/__init__.py at module level.",
+      "issue": null
+    },
+    "zone": {
+      "status": "adapter",
+      "reason": "Reached from device_tracker/device_trigger.py, a device-automation adapter.",
+      "issue": 20
+    }
+  }
+}
