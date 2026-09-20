@@ -427,7 +427,7 @@ async def test_setup_after_deps_all_present(hass: HomeAssistant) -> None:
 async def test_setup_after_deps_in_stage_1(hass: HomeAssistant) -> None:
     """Test after_dependencies are promoted in stage 1."""
     # This test relies on this
-    assert "cloud" in bootstrap.STAGE_1_INTEGRATIONS
+    assert "mqtt_eventstream" in bootstrap.STAGE_1_INTEGRATIONS
     order = []
 
     def gen_domain_setup(domain):
@@ -455,19 +455,20 @@ async def test_setup_after_deps_in_stage_1(hass: HomeAssistant) -> None:
     mock_integration(
         hass,
         MockModule(
-            domain="cloud",
-            async_setup=gen_domain_setup("cloud"),
+            domain="mqtt_eventstream",
+            async_setup=gen_domain_setup("mqtt_eventstream"),
             partial_manifest={"after_dependencies": ["normal_integration"]},
         ),
     )
 
     await bootstrap._async_set_up_integrations(
-        hass, {"cloud": {}, "normal_integration": {}, "an_after_dep": {}}
+        hass,
+        {"mqtt_eventstream": {}, "normal_integration": {}, "an_after_dep": {}},
     )
 
     assert "normal_integration" in hass.config.components
-    assert "cloud" in hass.config.components
-    assert order == ["an_after_dep", "normal_integration", "cloud"]
+    assert "mqtt_eventstream" in hass.config.components
+    assert order == ["an_after_dep", "normal_integration", "mqtt_eventstream"]
 
 
 @pytest.mark.parametrize("load_registries", [False])
@@ -482,7 +483,7 @@ async def test_setup_after_deps_manifests_are_loaded_even_if_not_setup(
     up to date before the after dep can be imported.
     """
     # This test relies on this
-    assert "cloud" in bootstrap.STAGE_1_INTEGRATIONS
+    assert "mqtt_eventstream" in bootstrap.STAGE_1_INTEGRATIONS
     order = []
 
     def gen_domain_setup(domain):
@@ -528,22 +529,22 @@ async def test_setup_after_deps_manifests_are_loaded_even_if_not_setup(
     mock_integration(
         hass,
         MockModule(
-            domain="cloud",
-            async_setup=gen_domain_setup("cloud"),
+            domain="mqtt_eventstream",
+            async_setup=gen_domain_setup("mqtt_eventstream"),
             partial_manifest={"after_dependencies": ["normal_integration"]},
         ),
     )
 
     await bootstrap._async_set_up_integrations(
-        hass, {"cloud": {}, "normal_integration": {}}
+        hass, {"mqtt_eventstream": {}, "normal_integration": {}}
     )
 
     assert "normal_integration" in hass.config.components
-    assert "cloud" in hass.config.components
+    assert "mqtt_eventstream" in hass.config.components
     assert "an_after_dep" not in hass.config.components
     assert "an_after_dep_of_after_dep" not in hass.config.components
     assert "an_after_dep_of_after_dep_of_after_dep" not in hass.config.components
-    assert order == ["normal_integration", "cloud"]
+    assert order == ["normal_integration", "mqtt_eventstream"]
     assert loader.async_get_loaded_integration(hass, "an_after_dep") is not None
     assert (
         loader.async_get_loaded_integration(hass, "an_after_dep_of_after_dep")
@@ -992,7 +993,7 @@ async def test_setup_hass_recovery_mode(
     assert len(browser_setup.mock_calls) == 0
 
 
-@pytest.mark.parametrize("domain", ["cloud", "backup"])
+@pytest.mark.parametrize("domain", ["backup"])
 async def test_setup_hass_recovery_mode_with_failing_integration(
     mock_enable_logging: AsyncMock,
     mock_is_virtual_env: Mock,
@@ -1001,7 +1002,7 @@ async def test_setup_hass_recovery_mode_with_failing_integration(
     mock_process_ha_config_upgrade: Mock,
     domain: str,
 ) -> None:
-    """Test recovery mode still starts if cloud or backup fails to set up."""
+    """Test recovery mode still starts if backup fails to set up."""
     with patch(
         f"homeassistant.components.{domain}.async_setup",
         side_effect=Exception(f"{domain} setup failed"),

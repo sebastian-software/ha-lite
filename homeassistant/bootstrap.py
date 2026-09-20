@@ -42,14 +42,12 @@ from .components import (
     device_automation as device_automation_pre_import,  # noqa: F401
     diagnostics as diagnostics_pre_import,  # noqa: F401
     file_upload as file_upload_pre_import,  # noqa: F401
-    group as group_pre_import,  # noqa: F401
     http as http_import,  # noqa: F401 - not named pre_import since it has requirements
     image_upload as image_upload_import,  # noqa: F401 - not named pre_import since it has requirements
     onboarding as onboarding_pre_import,  # noqa: F401
     person as person_pre_import,  # noqa: F401
     recorder as recorder_import,  # noqa: F401 - not named pre_import since it has requirements
     repairs as repairs_pre_import,  # noqa: F401
-    search as search_pre_import,  # noqa: F401
     sensor as sensor_pre_import,  # noqa: F401
     system_log as system_log_pre_import,  # noqa: F401
     webhook as webhook_pre_import,  # noqa: F401
@@ -192,8 +190,6 @@ STAGE_1_INTEGRATIONS = {
     *DISCOVERY_INTEGRATIONS,
     # To make sure we forward data to other instances
     "mqtt_eventstream",
-    # To provide account link implementations
-    "cloud",
     # Ensure supervisor is available
     "hassio",
 }
@@ -230,17 +226,6 @@ DEFAULT_INTEGRATIONS = {
     "tag",
     "zone",
     #
-    # Built-in helpers:
-    "counter",
-    "input_boolean",
-    "input_button",
-    "input_datetime",
-    "input_number",
-    "input_select",
-    "input_text",
-    "schedule",
-    "timer",
-    #
     # Base platforms:
     # Note: Calendar and todo are not included to prevent them from registering
     # their frontend panels when there are no calendar or todo integrations.
@@ -265,7 +250,6 @@ DEFAULT_INTEGRATIONS = {
 DEFAULT_INTEGRATIONS_RECOVERY_MODE = {
     # These integrations are set up if recovery mode is activated.
     "backup",
-    "cloud",
 }
 DEFAULT_INTEGRATIONS_SUPERVISOR = {
     # These integrations are set up if using the Supervisor

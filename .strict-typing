@@ -67,7 +67,6 @@ homeassistant.components.airzone_cloud.*
 homeassistant.components.aladdin_connect.*
 homeassistant.components.alarm_control_panel.*
 homeassistant.components.alert.*
-homeassistant.components.alexa.*
 homeassistant.components.alexa_devices.*
 homeassistant.components.alpha_vantage.*
 homeassistant.components.altruist.*
@@ -120,7 +119,6 @@ homeassistant.components.binary_sensor.*
 homeassistant.components.bitcoin.*
 homeassistant.components.blockchain.*
 homeassistant.components.blue_current.*
-homeassistant.components.blueprint.*
 homeassistant.components.bluesound.*
 homeassistant.components.bluetooth.*
 homeassistant.components.bluetooth_adapters.*
@@ -145,7 +143,6 @@ homeassistant.components.chef_iq.*
 homeassistant.components.clickatell.*
 homeassistant.components.clicksend.*
 homeassistant.components.climate.*
-homeassistant.components.cloud.*
 homeassistant.components.co2signal.*
 homeassistant.components.comelit.*
 homeassistant.components.command_line.*
@@ -153,7 +150,6 @@ homeassistant.components.compit.*
 homeassistant.components.config.*
 homeassistant.components.configurator.*
 homeassistant.components.cookidoo.*
-homeassistant.components.counter.*
 homeassistant.components.cover.*
 homeassistant.components.cpuspeed.*
 homeassistant.components.crownstone.*
@@ -309,9 +305,6 @@ homeassistant.components.incomfort.*
 homeassistant.components.indevolt.*
 homeassistant.components.inels.*
 homeassistant.components.infrared.*
-homeassistant.components.input_button.*
-homeassistant.components.input_select.*
-homeassistant.components.input_text.*
 homeassistant.components.integration.*
 homeassistant.components.intelliclima.*
 homeassistant.components.intent.*
@@ -513,7 +506,6 @@ homeassistant.components.samsung_infrared.*
 homeassistant.components.samsungtv.*
 homeassistant.components.saunum.*
 homeassistant.components.scene.*
-homeassistant.components.schedule.*
 homeassistant.components.schlage.*
 homeassistant.components.scrape.*
 homeassistant.components.script.*
@@ -593,7 +585,6 @@ homeassistant.components.tile.*
 homeassistant.components.tilt_ble.*
 homeassistant.components.time.*
 homeassistant.components.time_date.*
-homeassistant.components.timer.*
 homeassistant.components.tod.*
 homeassistant.components.todo.*
 homeassistant.components.tolo.*
