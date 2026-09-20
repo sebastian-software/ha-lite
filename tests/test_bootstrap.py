@@ -866,9 +866,11 @@ async def test_setup_hass_takes_longer_than_log_slow_startup(
         await asyncio.sleep(0.2)
         return True
 
+    # Binary-exact intervals keep the watcher's modulo-based log cadence
+    # deterministic while accelerating the startup check for this test.
     with (
-        patch.object(bootstrap, "LOG_SLOW_STARTUP_INTERVAL", 0.005),
-        patch.object(bootstrap, "SLOW_STARTUP_CHECK_INTERVAL", 0.005),
+        patch.object(bootstrap, "LOG_SLOW_STARTUP_INTERVAL", 1 / 64),
+        patch.object(bootstrap, "SLOW_STARTUP_CHECK_INTERVAL", 1 / 64),
         patch(
             "homeassistant.components.light.async_setup",
             side_effect=_async_setup_that_blocks_startup,
