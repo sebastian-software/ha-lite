@@ -10,7 +10,6 @@ from . import (
     area_registry,
     auth,
     auth_provider_homeassistant,
-    automation,
     category_registry,
     config_entries,
     core,
@@ -19,7 +18,6 @@ from . import (
     floor_registry,
     label_registry,
     scene,
-    script,
 )
 from .const import DOMAIN
 
