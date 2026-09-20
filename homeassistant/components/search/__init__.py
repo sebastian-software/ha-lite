@@ -9,10 +9,8 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant.components import group, person, websocket_api
-from homeassistant.components.group import DOMAIN as GROUP_DOMAIN
 from homeassistant.components.homeassistant import scene
-from homeassistant.components.scene import DOMAIN as SCENE_DOMAIN
-from homeassistant.core import HomeAssistant, callback, split_entity_id
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import (
     area_registry as ar,
     config_validation as cv,
@@ -279,15 +277,6 @@ class Searcher:
             if domain in self.EXIST_AS_ENTITY:
                 self._add(ItemType(domain), entity_id)
 
-        # Automations referencing this entity
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_entity(self.hass, entity_id),
-        )
-
-        # Scripts referencing this entity
-        self._add(ItemType.SCRIPT, script.scripts_with_entity(self.hass, entity_id))
-
         # Groups that have this entity as a member
         self._add(ItemType.GROUP, group.groups_with_entity(self.hass, entity_id))
 
@@ -300,15 +289,6 @@ class Searcher:
     @callback
     def _async_search_floor(self, floor_id: str) -> None:
         """Find results for a floor."""
-        # Automations referencing this floor
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_floor(self.hass, floor_id),
-        )
-
-        # Scripts referencing this floor
-        self._add(ItemType.SCRIPT, script.scripts_with_floor(self.hass, floor_id))
-
         for area_entry in ar.async_entries_for_floor(self._area_registry, floor_id):
             self._add(ItemType.AREA, area_entry.id)
             self._async_search_area(area_entry.id, entry_point=False)
@@ -320,17 +300,6 @@ class Searcher:
         Note: We currently only support the classic groups, thus
         we don't look up the area/floor for a group entity.
         """
-        # Automations referencing this group
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_entity(self.hass, group_entity_id),
-        )
-
-        # Scripts referencing this group
-        self._add(
-            ItemType.SCRIPT, script.scripts_with_entity(self.hass, group_entity_id)
-        )
-
         # Scenes that reference this group
         self._add(ItemType.SCENE, scene.scenes_with_entity(self.hass, group_entity_id))
 
@@ -363,15 +332,6 @@ class Searcher:
             if domain in self.EXIST_AS_ENTITY:
                 self._add(ItemType(domain), entity_entry.entity_id)
 
-        # Automations referencing this label
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_label(self.hass, label_id),
-        )
-
-        # Scripts referencing this label
-        self._add(ItemType.SCRIPT, script.scripts_with_label(self.hass, label_id))
-
     @callback
     def _async_search_person(self, person_entity_id: str) -> None:
         """Find results for a person."""
@@ -379,17 +339,6 @@ class Searcher:
         if entity_entry := self._async_resolve_up_entity(person_entity_id):
             # Add labels of this person entity
             self._add(ItemType.LABEL, entity_entry.labels)
-
-        # Automations referencing this person
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_entity(self.hass, person_entity_id),
-        )
-
-        # Scripts referencing this person
-        self._add(
-            ItemType.SCRIPT, script.scripts_with_entity(self.hass, person_entity_id)
-        )
 
         # Add all member entities of this person
         for entity_id in person.entities_in_person(self.hass, person_entity_id):
@@ -404,29 +353,11 @@ class Searcher:
             # Add labels of this scene entity
             self._add(ItemType.LABEL, entity_entry.labels)
 
-        # Automations referencing this scene
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_entity(self.hass, scene_entity_id),
-        )
-
-        # Scripts referencing this scene
-        self._add(
-            ItemType.SCRIPT, script.scripts_with_entity(self.hass, scene_entity_id)
-        )
-
         # Add all entities in this scene
         for entity in scene.entities_in_scene(self.hass, scene_entity_id):
             self._add(ItemType.ENTITY, entity)
             self._async_resolve_up_entity(entity)
 
-
-    @callback
-    def _async_search_script_blueprint(self, blueprint_path: str) -> None:
-        """Find results for a script blueprint."""
-        self._add(
-            ItemType.SCRIPT, script.scripts_with_blueprint(self.hass, blueprint_path)
-        )
 
     @callback
     def _async_resolve_up_device(self, device_id: str) -> dr.AnyDeviceEntry | None:
