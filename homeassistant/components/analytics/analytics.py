@@ -16,10 +16,6 @@ import aiohttp
 from homeassistant import config as conf_util
 from homeassistant.components import hassio
 from homeassistant.components.api import ATTR_INSTALLATION_TYPE
-from homeassistant.components.energy import (
-    DOMAIN as ENERGY_DOMAIN,
-    is_configured as energy_is_configured,
-)
 from homeassistant.components.labs import async_is_preview_feature_enabled
 from homeassistant.components.recorder import (
     DOMAIN as RECORDER_DOMAIN,
@@ -66,10 +62,8 @@ from .const import (
     ATTR_BASE,
     ATTR_BOARD,
     ATTR_CERTIFICATE,
-    ATTR_CONFIGURED,
     ATTR_CUSTOM_INTEGRATIONS,
     ATTR_DIAGNOSTICS,
-    ATTR_ENERGY,
     ATTR_ENGINE,
     ATTR_HEALTHY,
     ATTR_INTEGRATION_COUNT,
@@ -446,11 +440,6 @@ class Analytics:
             payload[ATTR_CUSTOM_INTEGRATIONS] = custom_integrations
             if supervisor_info is not None:
                 payload[ATTR_ADDONS] = addons
-
-            if ENERGY_DOMAIN in enabled_domains:
-                payload[ATTR_ENERGY] = {
-                    ATTR_CONFIGURED: await energy_is_configured(hass)
-                }
 
             if RECORDER_DOMAIN in enabled_domains:
                 instance = get_recorder_instance(hass)
