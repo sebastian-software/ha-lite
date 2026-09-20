@@ -42,11 +42,11 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | config | KEEP / REDUCE | Backend configuration useful; remove frontend/panel coupling. |
 | system_health | KEEP / REDUCE | Headless operations need health data. |
 | logger | KEEP | Operational infrastructure. |
-| logbook | DELETE | Human-facing historical narrative. |
-| history | DELETE | Human-facing history product; raw history reconsider separately. |
+| logbook | **REMOVED** | Human-facing historical narrative; physically removed in Wave 3 together with its per-integration describe platforms. |
+| history | **REMOVED** | Human-facing history product; physically removed in Wave 3. Raw state history stays a Recorder concern (#28). |
 | recorder | INVESTIGATE | Current persistence/history machinery; candidate for replacement. |
 | long-term statistics | DELETE initially | Product analytics/history concern. |
-| energy | DELETE | Product/domain aggregation, not device boundary. |
+| energy | **REMOVED** | Product/domain aggregation; physically removed in Wave 3 after decoupling Analytics reporting. |
 | map | DELETE | UI/product feature. |
 | file_upload | DELETE initially | UI/product support unless an integration proves need. |
 | backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. |
