@@ -209,6 +209,38 @@ def build_closure(
     return reached, reason
 
 
+def collect_platform_providers(
+    platforms: list[str], domains: set[str]
+) -> dict[str, list[str]]:
+    """Return the domains providing each runtime-resolved platform.
+
+    A platform file is loaded by name through `async_get_platform`, never
+    imported, so none of this shows up in the edge graph. Providing a platform
+    is not a dependency either: the runtime dispatches to whatever is there.
+    Deleting a provider therefore removes a capability without breaking an
+    import, which is exactly what the closure alone cannot warn about.
+    """
+    providers: dict[str, list[str]] = {}
+    for platform in platforms:
+        providers[platform] = sorted(
+            domain
+            for domain in domains
+            if (COMPONENTS / domain / f"{platform}.py").is_file()
+        )
+    return providers
+
+
+def integration_type(domain: str) -> str:
+    """Return a domain's manifest integration_type, or 'unknown'."""
+    manifest = COMPONENTS / domain / "manifest.json"
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+    except OSError, json.JSONDecodeError:
+        return "unknown"
+    value = data.get("integration_type", "unknown")
+    return value if isinstance(value, str) else "unknown"
+
+
 def load_config() -> dict:
     """Return the checked-in roots and accepted transitive members."""
     config: dict = json.loads(CONFIG.read_text(encoding="utf-8"))
@@ -237,6 +269,21 @@ def analyze() -> dict:
         if not edge.hard and edge.source in closure and edge.target not in closure
     ]
 
+    # Capabilities the retained runtime can dispatch to, whose providers the
+    # closure cannot see. These do not grow the closure; they are a deletion
+    # warning list.
+    platforms: list[str] = config["cross_cutting_platforms"]
+    providers = collect_platform_providers(platforms, domains)
+    at_risk: dict[str, dict] = {}
+    for platform, domain_list in providers.items():
+        for domain in domain_list:
+            if domain in closure:
+                continue
+            entry = at_risk.setdefault(
+                domain, {"integration_type": integration_type(domain), "platforms": []}
+            )
+            entry["platforms"].append(platform)
+
     return {
         "domains": domains,
         "edges": edges,
@@ -248,6 +295,8 @@ def analyze() -> dict:
         "unreviewed": unreviewed,
         "stale_accepted": stale_accepted,
         "latent": latent,
+        "platform_providers": providers,
+        "capability_at_risk": at_risk,
     }
 
 
@@ -271,6 +320,12 @@ def as_json(result: dict) -> dict:
             "unreviewed_closure_members": result["unreviewed"],
             "stale_accepted_entries": result["stale_accepted"],
             "missing_roots": result["missing_roots"],
+        },
+        # Not part of the closure. Consult before bulk deletion: removing these
+        # drops a runtime capability without breaking any import.
+        "capability_at_risk": {
+            domain: result["capability_at_risk"][domain]
+            for domain in sorted(result["capability_at_risk"])
         },
     }
 
@@ -319,6 +374,23 @@ def print_report(result: dict) -> None:
             print(
                 f"| `{target}` | `{edge.source}` | {edge.kind} | `{edge.via}`{suffix} |"
             )
+
+    at_risk = result["capability_at_risk"]
+    if at_risk:
+        by_type: dict[str, list[str]] = defaultdict(list)
+        for domain, info in at_risk.items():
+            by_type[info["integration_type"]].append(domain)
+        print(f"\n## Capability at risk ({len(at_risk)} domains)\n")
+        print(
+            "Providers of runtime-resolved platforms that sit outside the closure.\n"
+            "They are reachable by name, not by import, so deleting them removes a\n"
+            "capability without breaking anything. Consult before bulk deletion.\n"
+        )
+        print("| integration_type | Domains |")
+        print("| --- | --- |")
+        for kind in sorted(by_type):
+            names = ", ".join(f"`{d}`" for d in sorted(by_type[kind]))
+            print(f"| {kind} | {names} |")
 
     findings = result["unreviewed"] + result["stale_accepted"] + result["missing_roots"]
     print("\n## Findings\n")
