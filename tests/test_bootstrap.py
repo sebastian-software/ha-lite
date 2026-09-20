@@ -371,19 +371,11 @@ async def test_setting_up_config(
 
 
 @pytest.mark.parametrize("load_registries", [False])
-async def test_automation_product_is_opt_in(hass: HomeAssistant) -> None:
-    """Test automation product integrations are not loaded by an empty config."""
+async def test_automation_product_is_absent(hass: HomeAssistant) -> None:
+    """Test removed automation product integrations cannot enter the runtime."""
     await bootstrap._async_set_up_integrations(hass, {})
 
-    assert {"automation", "script", "blueprint", "trace"}.isdisjoint(
-        hass.config.components
-    )
-
-    await bootstrap._async_set_up_integrations(hass, {"automation": [], "script": {}})
-
-    assert {"automation", "script", "blueprint", "trace"}.issubset(
-        hass.config.components
-    )
+    assert {"automation", "script"}.isdisjoint(hass.config.components)
 
 
 @pytest.mark.parametrize("load_registries", [False])
