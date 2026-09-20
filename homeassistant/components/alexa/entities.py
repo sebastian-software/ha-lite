@@ -438,7 +438,7 @@ class GenericCapabilities(AlexaEntity):
     @override
     def default_display_categories(self) -> list[str]:
         """Return the display categories for this entity."""
-        if self.entity.domain == AUTOMATION_DOMAIN:
+        if self.entity.domain == "automation":
             return [DisplayCategory.ACTIVITY_TRIGGER]
 
         return [DisplayCategory.OTHER]
