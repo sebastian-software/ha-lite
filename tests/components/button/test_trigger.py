@@ -60,12 +60,6 @@ async def test_button_trigger_options_validation(
             ("button", config, entity_id, entities)
             for (config, entity_id, entities) in parametrize_target_entities("button")
         ],
-        *[
-            ("input_button", config, entity_id, entities)
-            for (config, entity_id, entities) in parametrize_target_entities(
-                "input_button"
-            )
-        ],
     ],
     indirect=["target_entities_indirect"],
 )

@@ -243,22 +243,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             ssl_certificate is not None
             and (hass.config.external_url or hass.config.internal_url) is None
         ):
-            from homeassistant.components.cloud import (  # noqa: PLC0415
-                CloudNotAvailable,
-                async_remote_ui_url,
+            ir.async_create_issue(
+                hass,
+                DOMAIN,
+                "ssl_configured_without_configured_urls",
+                is_fixable=False,
+                severity=ir.IssueSeverity.ERROR,
+                translation_key="ssl_configured_without_configured_urls",
             )
-
-            try:
-                async_remote_ui_url(hass)
-            except CloudNotAvailable:
-                ir.async_create_issue(
-                    hass,
-                    DOMAIN,
-                    "ssl_configured_without_configured_urls",
-                    is_fixable=False,
-                    severity=ir.IssueSeverity.ERROR,
-                    translation_key="ssl_configured_without_configured_urls",
-                )
 
     hass.bus.async_listen_once(EVENT_HOMEASSISTANT_START, _async_check_ssl_issue)
 

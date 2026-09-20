@@ -1525,7 +1525,7 @@ SERVICE_SCHEMA = vol.All(
 
 NUMERIC_STATE_THRESHOLD_SCHEMA = vol.Any(
     vol.Coerce(float),
-    vol.All(str, entity_domain(["input_number", "number", "sensor", "zone"])),
+    vol.All(str, entity_domain(["number", "sensor", "zone"])),
 )
 
 CONDITION_BASE_SCHEMA: VolDictType = {

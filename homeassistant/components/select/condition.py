@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 import voluptuous as vol
 
-from homeassistant.components.input_select import DOMAIN as INPUT_SELECT_DOMAIN
 from homeassistant.const import CONF_OPTIONS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
@@ -30,7 +29,6 @@ IS_OPTION_SELECTED_SCHEMA = ENTITY_STATE_CONDITION_SCHEMA_ANY_ALL.extend(
 
 SELECT_DOMAIN_SPECS: dict[str, DomainSpec] = {
     DOMAIN: DomainSpec(),
-    INPUT_SELECT_DOMAIN: DomainSpec(),
 }
 
 

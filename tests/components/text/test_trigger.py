@@ -4,7 +4,6 @@ from typing import Any
 
 import pytest
 
-from homeassistant.components.input_text import DOMAIN as INPUT_TEXT_DOMAIN
 from homeassistant.components.text.const import DOMAIN
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
@@ -122,12 +121,6 @@ async def target_texts(hass: HomeAssistant) -> dict[str, list[str]]:
     return await target_entities(hass, DOMAIN)
 
 
-@pytest.fixture
-async def target_input_texts(hass: HomeAssistant) -> dict[str, list[str]]:
-    """Create multiple input_text entities associated with different targets."""
-    return await target_entities(hass, INPUT_TEXT_DOMAIN)
-
-
 @pytest.mark.parametrize(
     ("trigger_key", "base_options", "supports_behavior", "supports_duration"),
     [
@@ -186,48 +179,6 @@ async def test_text_state_trigger(
         calls.clear()
 
         # Check if changing other texts also triggers
-        for other_entity_id in other_entity_ids:
-            set_or_remove_state(hass, other_entity_id, included_state)
-        await hass.async_block_till_done()
-        assert len(calls) == (entities_in_target - 1) * state["count"]
-        calls.clear()
-
-
-@pytest.mark.parametrize(
-    ("trigger_target_config", "entity_id", "entities_in_target"),
-    parametrize_target_entities(INPUT_TEXT_DOMAIN),
-)
-@pytest.mark.parametrize(("trigger", "states"), TEST_TRIGGER_STATES)
-async def test_input_text_state_trigger(
-    hass: HomeAssistant,
-    target_input_texts: dict[str, list[str]],
-    trigger_target_config: dict,
-    entity_id: str,
-    entities_in_target: int,
-    trigger: str,
-    states: list[BasicTriggerStateDescription],
-) -> None:
-    """Test text.changed trigger fires on any input_text state change."""
-    calls: list[str] = []
-    other_entity_ids = set(target_input_texts["included_entities"]) - {entity_id}
-
-    # Set all input_texts, including the tested input_text, to the initial state
-    for eid in target_input_texts["included_entities"]:
-        set_or_remove_state(hass, eid, states[0]["included_state"])
-    await hass.async_block_till_done()
-
-    await arm_trigger(hass, trigger, None, trigger_target_config, calls)
-
-    for state in states[1:]:
-        included_state = state["included_state"]
-        set_or_remove_state(hass, entity_id, included_state)
-        await hass.async_block_till_done()
-        assert len(calls) == state["count"]
-        for call in calls:
-            assert call == entity_id
-        calls.clear()
-
-        # Check if changing other input_texts also triggers
         for other_entity_id in other_entity_ids:
             set_or_remove_state(hass, other_entity_id, included_state)
         await hass.async_block_till_done()

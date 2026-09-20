@@ -283,7 +283,7 @@ async def test_turn_on_intent(hass: HomeAssistant) -> None:
     assert call.data == {"entity_id": ["light.test_light"]}
 
 
-@pytest.mark.parametrize("domain", ["button", "input_button"])
+@pytest.mark.parametrize("domain", ["button"])
 async def test_turn_on_intent_button(
     hass: HomeAssistant, entity_registry: er.EntityRegistry, domain
 ) -> None:

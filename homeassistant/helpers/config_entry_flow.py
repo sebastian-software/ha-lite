@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, cast, override
 
 from homeassistant import config_entries
 from homeassistant.components import onboarding
-from homeassistant.core import DOMAIN as HOMEASSISTANT_DOMAIN, HomeAssistant
+from homeassistant.core import HomeAssistant
 
 from .typing import DiscoveryInfoType
 
@@ -236,13 +236,6 @@ class WebhookFlowHandler(config_entries.ConfigFlow):
                 else "user"
             )
 
-        # Local import to be sure cloud is loaded and setup
-        from homeassistant.components.cloud import (  # noqa: PLC0415
-            async_active_subscription,
-            async_create_cloudhook,
-            async_is_connected,
-        )
-
         # Local import to be sure webhook is loaded and setup
         from homeassistant.components.webhook import (  # noqa: PLC0415
             async_generate_id,
@@ -255,20 +248,10 @@ class WebhookFlowHandler(config_entries.ConfigFlow):
         else:
             webhook_id = async_generate_id()
 
-        if "cloud" in self.hass.config.components and async_active_subscription(
-            self.hass
-        ):
-            if not async_is_connected(self.hass):
-                return self.async_abort(
-                    reason="cloud_not_connected",
-                    translation_domain=HOMEASSISTANT_DOMAIN,
-                )
-
-            webhook_url = await async_create_cloudhook(self.hass, webhook_id)
-            cloudhook = True
-        else:
-            webhook_url = async_generate_url(self.hass, webhook_id)
-            cloudhook = False
+        webhook_url = async_generate_url(self.hass, webhook_id)
+        # Kept in entry data for integrations that still read it; ha-lite has no
+        # cloud to create a cloudhook with.
+        cloudhook = False
 
         self._description_placeholder["webhook_url"] = webhook_url
 
@@ -314,11 +297,8 @@ def register_webhook_flow(
 async def webhook_async_remove_entry(
     hass: HomeAssistant, entry: config_entries.ConfigEntry
 ) -> None:
-    """Remove a webhook config entry."""
-    if not entry.data.get("cloudhook") or "cloud" not in hass.config.components:
-        return
+    """Remove a webhook config entry.
 
-    # Local import to be sure cloud is loaded and setup
-    from homeassistant.components.cloud import async_delete_cloudhook  # noqa: PLC0415
-
-    await async_delete_cloudhook(hass, entry.data["webhook_id"])
+    Retained as the `async_remove_entry` hook that webhook integrations register.
+    Cloudhooks were the only thing to clean up here, so it now does nothing.
+    """

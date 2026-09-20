@@ -1,6 +1,5 @@
 """Provides triggers for selects."""
 
-from homeassistant.components.input_select import DOMAIN as INPUT_SELECT_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.automation import DomainSpec
 from homeassistant.helpers.trigger import (
@@ -13,7 +12,6 @@ from .const import DOMAIN
 
 SELECT_DOMAIN_SPECS: dict[str, DomainSpec] = {
     DOMAIN: DomainSpec(),
-    INPUT_SELECT_DOMAIN: DomainSpec(),
 }
 
 
