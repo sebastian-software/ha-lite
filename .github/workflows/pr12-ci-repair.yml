@@ -1,0 +1,146 @@
+name: PR 12 repair validation
+
+on:
+  push:
+    branches: [wave-1-delete-lovelace]
+    paths: [.github/workflows/pr12-ci-repair.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.repository == 'sebastian-software/ha-lite' && github.ref == 'refs/heads/wave-1-delete-lovelace'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      UV_CACHE_DIR: /tmp/uv-cache
+      APT_CACHE_VERSION: 1
+      HASS_CI: 1
+      PYTHONASYNCIODEBUG: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify repair starting point
+        run: |
+          test "$(git rev-parse HEAD^)" = f9f61ea3cf694349eae4471bfd59ade57a479d35
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: 3.14.5
+          uv-version: 0.12.5
+          python-cache-key: ha-lite-venv-d3273e77c8db67f1b47b48826aa114099d5160401a6c4627870f20c6c6bd4792
+          uv-cache-dir: /tmp/uv-cache
+          apt-cache-version: 1
+          save: 'false'
+      - name: Apply deterministic test timing and focused lint corrections
+        run: |
+          . venv/bin/activate
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          path = Path('tests/test_bootstrap.py')
+          text = path.read_text()
+          replacements = {
+              'patch.object(bootstrap, "LOG_SLOW_STARTUP_INTERVAL", 0.005),':
+                  'patch.object(bootstrap, "LOG_SLOW_STARTUP_INTERVAL", 1 / 64),',
+              'patch.object(bootstrap, "SLOW_STARTUP_CHECK_INTERVAL", 0.005),':
+                  'patch.object(bootstrap, "SLOW_STARTUP_CHECK_INTERVAL", 1 / 64),',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'Unexpected match count for {old!r}')
+              text = text.replace(old, new)
+          old = '    with (\n        patch.object(bootstrap, "LOG_SLOW_STARTUP_INTERVAL", 1 / 64),'
+          new = (
+              '    # Binary-exact intervals keep the watcher\'s modulo-based log cadence\n'
+              '    # deterministic while accelerating the startup check for this test.\n'
+              + old
+          )
+          if text.count(old) != 1:
+              raise SystemExit('Unexpected slow-startup context')
+          path.write_text(text.replace(old, new))
+
+          files = subprocess.check_output(
+              ['git', 'diff', '--name-only', '--diff-filter=ACMR',
+               'fea34fa119a6fe4457e25c123ea08dc6c9ac9301...HEAD', '--', '*.py'],
+              text=True,
+          ).splitlines()
+          if not files:
+              raise SystemExit('No changed Python files')
+          subprocess.run(['ruff', 'check', '--fix', *files], check=True)
+          subprocess.run(['ruff', 'format', *files], check=True)
+          subprocess.run(['ruff', 'check', *files], check=True)
+          subprocess.run(['ruff', 'format', '--check', *files], check=True)
+          subprocess.run(['git', 'diff', '--check'], check=True)
+          subprocess.run(['git', 'diff', '--stat'], check=True)
+          subprocess.run(['git', 'diff'], check=True)
+          PY
+      - name: Validate the repaired startup warning and retained HTTP contracts
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all > /tmp/pr12-translations.log
+          python -b -X dev -m pytest -q --timeout=20 -p no:sugar \
+            tests/test_bootstrap.py::test_setup_hass_takes_longer_than_log_slow_startup \
+            tests/components/http/test_cors.py \
+            tests/components/http/test_static.py \
+            tests/components/http/test_ban.py \
+            tests/components/mcp_server
+      - name: Create a reviewed-later commit object without updating any branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . venv/bin/activate
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          repo = 'sebastian-software/ha-lite'
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+
+          def post(endpoint, body):
+              return json.loads(subprocess.check_output(
+                  ['gh', 'api', '--method', 'POST', endpoint, '--input', '-'],
+                  input=json.dumps(body), text=True,
+              ))
+
+          parent = git('rev-parse', 'HEAD')
+          base_tree = git('rev-parse', 'HEAD^{tree}')
+          allowed = set(git(
+              'diff', '--name-only', '--diff-filter=ACMR',
+              'fea34fa119a6fe4457e25c123ea08dc6c9ac9301...HEAD', '--', '*.py'
+          ).splitlines())
+          paths = git('diff', '--name-only').splitlines()
+          if not paths or not set(paths).issubset(allowed):
+              raise SystemExit(f'Unexpected modified paths: {paths}')
+          elements = [
+              {'path': path, 'mode': '100644', 'type': 'blob',
+               'content': Path(path).read_text()}
+              for path in paths
+          ]
+          elements.append({
+              'path': '.github/workflows/pr12-ci-repair.yml',
+              'mode': '100644', 'type': 'blob', 'sha': None,
+          })
+          tree = post(f'repos/{repo}/git/trees', {
+              'base_tree': base_tree, 'tree': elements,
+          })
+          commit = post(f'repos/{repo}/git/commits', {
+              'message': (
+                  'tests: stabilize headless startup regression and finish lint cleanup\n\n'
+                  'Use binary-exact intervals for the modulo-based startup watcher.\n'
+                  'Apply the repository-pinned Ruff checks to changed Python files.\n'
+                  'Preserve all runtime suites and remove the temporary validation job.'
+              ),
+              'tree': tree['sha'], 'parents': [parent],
+          })
+          print(f"REPAIR_COMMIT={commit['sha']}")
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write(f"Validated repair commit: `{commit['sha']}`\n\n")
+              summary.write('No branch was updated. The commit removes this temporary workflow.\n')
+          PY
