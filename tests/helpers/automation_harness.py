@@ -87,7 +87,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         name = item.get("alias") or f"automation {index}"
 
         try:
-            trigger_config = cv.TRIGGER_SCHEMA(item.get("triggers", item.get("trigger")))
+            trigger_config = cv.TRIGGER_SCHEMA(
+                item.get("triggers", item.get("trigger"))
+            )
             trigger_config = await trigger_helper.async_validate_trigger_config(
                 hass, trigger_config
             )
@@ -98,10 +100,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             )
 
             conditions = []
-            if (raw_conditions := item.get("conditions", item.get("condition"))) is not None:
+            if (
+                raw_conditions := item.get("conditions", item.get("condition"))
+            ) is not None:
                 condition_config = cv.CONDITIONS_SCHEMA(raw_conditions)
-                condition_config = await condition_helper.async_validate_conditions_config(
-                    hass, condition_config
+                condition_config = (
+                    await condition_helper.async_validate_conditions_config(
+                        hass, condition_config
+                    )
                 )
                 conditions = [
                     await condition_helper.async_from_config(hass, condition)
@@ -178,7 +184,12 @@ async def async_setup_script(hass: HomeAssistant, config: ConfigType) -> bool:
             )
             continue
 
-        action_script = script_helper.Script(hass, sequence, service_name, SCRIPT_DOMAIN)
+        action_script = script_helper.Script(
+            hass,
+            sequence,
+            service_name,
+            SCRIPT_DOMAIN,
+        )
         scripts[service_name] = action_script
 
         async def async_run_script(
