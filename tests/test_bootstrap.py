@@ -843,7 +843,7 @@ async def test_setup_hass(
     assert hass == async_get_hass()
 
 
-@pytest.mark.parametrize("hass_config", [{"browser": {}, "frontend": {}}])
+@pytest.mark.parametrize("hass_config", [{"browser": {}, "light": {}}])
 @pytest.mark.usefixtures("mock_hass_config")
 async def test_setup_hass_takes_longer_than_log_slow_startup(
     mock_enable_logging: AsyncMock,
@@ -853,13 +853,16 @@ async def test_setup_hass_takes_longer_than_log_slow_startup(
     mock_process_ha_config_upgrade: Mock,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """Test it works."""
+    """Test slow integration setup is reported without a frontend."""
     verbose = Mock()
     log_rotate_days = Mock()
     log_file = Mock()
     log_no_color = Mock()
 
-    async def _async_setup_that_blocks_startup(*args, **kwargs):
+    async def _async_setup_that_blocks_startup(
+        hass: HomeAssistant, config: ConfigType
+    ) -> bool:
+        """Delay a retained integration's startup."""
         await asyncio.sleep(0.2)
         return True
 
@@ -867,7 +870,7 @@ async def test_setup_hass_takes_longer_than_log_slow_startup(
         patch.object(bootstrap, "LOG_SLOW_STARTUP_INTERVAL", 0.005),
         patch.object(bootstrap, "SLOW_STARTUP_CHECK_INTERVAL", 0.005),
         patch(
-            "homeassistant.components.frontend.async_setup",
+            "homeassistant.components.light.async_setup",
             side_effect=_async_setup_that_blocks_startup,
         ),
     ):
