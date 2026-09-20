@@ -34,8 +34,6 @@ class ItemType(StrEnum):
     """Item types."""
 
     AREA = "area"
-    AUTOMATION = "automation"
-    AUTOMATION_BLUEPRINT = "automation_blueprint"
     CONFIG_ENTRY = "config_entry"
     DEVICE = "device"
     ENTITY = "entity"
@@ -45,8 +43,6 @@ class ItemType(StrEnum):
     LABEL = "label"
     PERSON = "person"
     SCENE = "scene"
-    SCRIPT = "script"
-    SCRIPT_BLUEPRINT = "script_blueprint"
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -139,9 +135,6 @@ class Searcher:
             if device_entry := self._device_registry.async_get(device.id):
                 self._add(ItemType.CONFIG_ENTRY, device_entry.config_entries)
 
-            # Automations and scripts referencing this device
-            self._async_add_automations_and_scripts_for_device(device)
-
             # Entities of this device
             for entity_entry in er.async_entries_for_device(
                 self._entity_registry, device.id
@@ -225,7 +218,6 @@ class Searcher:
             # Add labels of this device
             self._add(ItemType.LABEL, device_entry.labels)
 
-
         # Entities of this device
         for entity_entry in er.async_entries_for_device(
             self._entity_registry, device_id
@@ -241,25 +233,6 @@ class Searcher:
         ):
             self._add(ItemType.DEVICE, child_device_entry.id)
             self._async_search_device(child_device_entry.id, entry_point=False)
-
-    @callback
-    def _async_search_referenced_device(self, device_id: str) -> None:
-        """Add a device referenced by an automation or script.
-
-        An automation or script created before a composite device was split
-        references the composite device id, which is not a live device. It is
-        expanded to the live split device ids, so the real devices are returned.
-        Any other id (a live device, or a stale reference) is added unchanged.
-        """
-        split_devices = self._device_registry.async_get_devices_for_composite_device_id(
-            device_id
-        )
-        device_ids: Iterable[str] = (
-            [device.id for device in split_devices] if split_devices else (device_id,)
-        )
-        for resolved_device_id in device_ids:
-            self._add(ItemType.DEVICE, resolved_device_id)
-            self._async_resolve_up_device(resolved_device_id)
 
     @callback
     def _async_search_entity(self, entity_id: str, *, entry_point: bool = True) -> None:
@@ -311,7 +284,6 @@ class Searcher:
     @callback
     def _async_search_label(self, label_id: str) -> None:
         """Find results for a label."""
-
         # Areas with this label
         for area_entry in ar.async_entries_for_label(self._area_registry, label_id):
             self._add(ItemType.AREA, area_entry.id)
@@ -357,7 +329,6 @@ class Searcher:
         for entity in scene.entities_in_scene(self.hass, scene_entity_id):
             self._add(ItemType.ENTITY, entity)
             self._async_resolve_up_entity(entity)
-
 
     @callback
     def _async_resolve_up_device(self, device_id: str) -> dr.AnyDeviceEntry | None:
