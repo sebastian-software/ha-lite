@@ -144,7 +144,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 parent_id = None if context is None else context.id
                 trigger_context = Context(parent_id=parent_id)
                 return await action_script.async_run(variables, trigger_context)
-            except (vol.Invalid, HomeAssistantError):
+            except vol.Invalid, HomeAssistantError:
                 # Script already logs execution errors. The removed Automation
                 # integration swallowed these so another matching trigger can
                 # still provide a result, e.g. a Conversation response.
@@ -175,9 +175,7 @@ async def async_setup_script(hass: HomeAssistant, config: ConfigType) -> bool:
     for service_name, item in raw_scripts.items():
         try:
             sequence = cv.SCRIPT_SCHEMA(item.get("sequence", []))
-            sequence = await script_helper.async_validate_actions_config(
-                hass, sequence
-            )
+            sequence = await script_helper.async_validate_actions_config(hass, sequence)
         except (vol.Invalid, HomeAssistantError) as err:
             _LOGGER.error(
                 "Script %s could not be prepared and has been disabled: %s",
