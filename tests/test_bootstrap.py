@@ -379,9 +379,7 @@ async def test_automation_product_is_opt_in(hass: HomeAssistant) -> None:
         hass.config.components
     )
 
-    await bootstrap._async_set_up_integrations(
-        hass, {"automation": [], "script": {}}
-    )
+    await bootstrap._async_set_up_integrations(hass, {"automation": [], "script": {}})
 
     assert {"automation", "script", "blueprint", "trace"}.issubset(
         hass.config.components
