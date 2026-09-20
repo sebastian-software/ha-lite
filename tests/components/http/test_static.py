@@ -48,8 +48,7 @@ async def test_static_resource_show_index(
 async def test_async_register_static_paths(
     hass: HomeAssistant, hass_client: ClientSessionGenerator
 ) -> None:
-    """Test registering multiple static paths."""
-    assert await async_setup_component(hass, "frontend", {})
+    """Test registering multiple static paths without a frontend."""
     path = str(Path(__file__).parent)
     await hass.http.async_register_static_paths(
         [
