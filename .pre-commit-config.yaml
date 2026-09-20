@@ -6,8 +6,6 @@ repos:
         args:
           - --fix
       - id: ruff-format
-        args:
-          - --diff
         files: ^((homeassistant|pylint|script|tests)/.+)?[^/]+\.(py|pyi)$
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.3
