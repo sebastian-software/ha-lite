@@ -81,17 +81,17 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,503 |
+| Component domains in tree | 1,502 |
 | Declared roots | 54 |
 | Retained closure | 78 |
-| Deletion candidates | 1,425 |
+| Deletion candidates | 1,424 |
 
 Of the 24 transitively required domains, 8 are `retained`, 11 are `adapter`
 and 5 are `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 5% of the tree. The 1,425 candidates outside it are
+The closure is small — 5% of the tree. The 1,424 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 

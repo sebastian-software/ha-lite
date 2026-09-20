@@ -151,22 +151,27 @@ def collect_edges() -> tuple[set[str], list[Edge]]:
     edges: list[Edge] = []
 
     for directory in sorted(p for p in COMPONENTS.iterdir() if p.is_dir()):
+        manifest = directory / "manifest.json"
+        # A manifest is what makes a directory an integration. Anything else
+        # under components/ is build output such as __pycache__, which exists
+        # in a working checkout but not in a fresh clone.
+        if not manifest.is_file():
+            continue
+
         domain = directory.name
         domains.add(domain)
 
-        manifest = directory / "manifest.json"
-        if manifest.is_file():
-            via = str(manifest.relative_to(ROOT))
-            try:
-                data = json.loads(manifest.read_text(encoding="utf-8"))
-            except json.JSONDecodeError:
-                data = {}
-            for key in ("dependencies", "after_dependencies"):
-                edges.extend(
-                    Edge(domain, dep, key, via)
-                    for dep in data.get(key, [])
-                    if dep != domain
-                )
+        via = str(manifest.relative_to(ROOT))
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            data = {}
+        for key in ("dependencies", "after_dependencies"):
+            edges.extend(
+                Edge(domain, dep, key, via)
+                for dep in data.get(key, [])
+                if dep != domain
+            )
 
         for path in sorted(directory.rglob("*.py")):
             try:
