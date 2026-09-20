@@ -225,10 +225,10 @@ DEFAULT_INTEGRATIONS = {
     "system_health",
     #
     # Key-feature:
-    "automation",
+    # Automation and script are intentionally opt-in in ha-lite. The generic
+    # trigger/condition/action, event and service runtimes remain available.
     "person",
     "scene",
-    "script",
     "tag",
     "zone",
     #
