@@ -16,7 +16,6 @@ import aiohttp
 from homeassistant import config as conf_util
 from homeassistant.components import hassio
 from homeassistant.components.api import ATTR_INSTALLATION_TYPE
-from homeassistant.components.automation import DOMAIN as AUTOMATION_DOMAIN
 from homeassistant.components.energy import (
     DOMAIN as ENERGY_DOMAIN,
     is_configured as energy_is_configured,
@@ -101,6 +100,7 @@ from .const import (
     STORAGE_VERSION,
 )
 
+AUTOMATION_DOMAIN = "automation"
 DATA_ANALYTICS_MODIFIERS = "analytics_modifiers"
 
 type AnalyticsModifier = Callable[
