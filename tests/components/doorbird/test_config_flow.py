@@ -293,7 +293,6 @@ async def test_form_zeroconf_correct_oui(
     assert result["errors"] == {}
 
     with (
-        patch("homeassistant.components.logbook.async_setup", return_value=True),
         patch(
             "homeassistant.components.doorbird.async_setup", return_value=True
         ) as mock_setup,
