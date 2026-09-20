@@ -305,3 +305,20 @@ jobs:
           else
             prek run --from-ref "${base}" --to-ref HEAD
           fi
+
+      - name: Check the retained dependency closure
+        run: |
+          . venv/bin/activate
+          python script/ha_lite_closure.py --check
+
+      - name: Verify the committed closure is current
+        run: |
+          . venv/bin/activate
+          python script/ha_lite_closure.py \
+            --write docs/architecture/retained-closure.json >/dev/null
+          if ! git diff --exit-code -- docs/architecture/retained-closure.json; then
+            echo "::error::docs/architecture/retained-closure.json is stale." \
+                 "Regenerate it with:" \
+                 "python3 script/ha_lite_closure.py --write docs/architecture/retained-closure.json"
+            exit 1
+          fi
