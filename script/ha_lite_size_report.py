@@ -8,17 +8,19 @@ from pathlib import Path
 import subprocess
 import sys
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass
 class Metric:
+    """Accumulated file count, line count and byte size for one metric row."""
+
     files: int = 0
     lines: int = 0
     bytes: int = 0
 
     def add(self, path: Path) -> None:
+        """Fold one file's size into this metric."""
         data = path.read_bytes()
         self.files += 1
         self.bytes += len(data)
@@ -97,9 +99,7 @@ def main() -> int:
         print(
             f"| {name} | {metric.files:,} | {metric.lines:,} | {fmt_bytes(metric.bytes)} |"
         )
-    print(
-        f"| Top-level component domains | {len(component_domains):,} | — | — |"
-    )
+    print(f"| Top-level component domains | {len(component_domains):,} | — | — |")
 
     return 0
 
