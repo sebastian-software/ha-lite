@@ -137,26 +137,32 @@ async def test_cors_middleware_with_cors_allowed_view(hass: HomeAssistant) -> No
     await hass.http.app.startup()
 
 
-async def test_cors_works_with_frontend(
+async def test_cors_works_with_api(
     hass: HomeAssistant, hass_client: ClientSessionGenerator
 ) -> None:
-    """Test CORS works with the frontend."""
+    """Test configured CORS works with the API without a frontend."""
     assert await async_setup_component(
         hass,
-        "frontend",
-        {"http": {"cors_allowed_origins": ["http://home-assistant.io"]}},
+        "api",
+        {"http": {"cors_allowed_origins": [TRUSTED_ORIGIN]}},
     )
     client = await hass_client()
-    resp = await client.get("/")
+    resp = await client.get("/api/", headers={ORIGIN: TRUSTED_ORIGIN})
     assert resp.status == HTTPStatus.OK
+    assert resp.headers[ACCESS_CONTROL_ALLOW_ORIGIN] == TRUSTED_ORIGIN
+    assert await resp.json() == {"message": "API running."}
+
+    resp = await client.get("/api/", headers={ORIGIN: "https://untrusted.example"})
+    assert resp.status == HTTPStatus.OK
+    assert ACCESS_CONTROL_ALLOW_ORIGIN not in resp.headers
 
 
 async def test_cors_on_static_files(
     hass: HomeAssistant, hass_client: ClientSessionGenerator
 ) -> None:
-    """Test that we enable CORS for static files."""
+    """Test that we enable CORS for static files without a frontend."""
     assert await async_setup_component(
-        hass, "frontend", {"http": {"cors_allowed_origins": ["http://www.example.com"]}}
+        hass, DOMAIN, {"http": {"cors_allowed_origins": ["http://www.example.com"]}}
     )
     await hass.http.async_register_static_paths(
         [StaticPathConfig("/something", str(Path(__file__).parent))]
@@ -169,6 +175,12 @@ async def test_cors_on_static_files(
             "origin": "http://www.example.com",
             ACCESS_CONTROL_REQUEST_METHOD: "GET",
         },
+    )
+    assert resp.status == HTTPStatus.OK
+    assert resp.headers[ACCESS_CONTROL_ALLOW_ORIGIN] == "http://www.example.com"
+
+    resp = await client.get(
+        "/something/__init__.py", headers={ORIGIN: "http://www.example.com"}
     )
     assert resp.status == HTTPStatus.OK
     assert resp.headers[ACCESS_CONTROL_ALLOW_ORIGIN] == "http://www.example.com"
