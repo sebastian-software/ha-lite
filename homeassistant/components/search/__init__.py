@@ -8,11 +8,10 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.components import automation, group, person, script, websocket_api
+from homeassistant.components import group, person, websocket_api
 from homeassistant.components.group import DOMAIN as GROUP_DOMAIN
 from homeassistant.components.homeassistant import scene
 from homeassistant.components.scene import DOMAIN as SCENE_DOMAIN
-from homeassistant.components.script import DOMAIN as SCRIPT_DOMAIN
 from homeassistant.core import HomeAssistant, callback, split_entity_id
 from homeassistant.helpers import (
     area_registry as ar,
@@ -81,7 +80,7 @@ def websocket_search_related(
 class Searcher:
     """Find related things."""
 
-    EXIST_AS_ENTITY = {"automation", "group", "person", "scene", "script"}
+    EXIST_AS_ENTITY = {"group", "person", "scene"}
 
     def __init__(
         self,
@@ -130,14 +129,6 @@ class Searcher:
             # Add labels of this area
             self._add(ItemType.LABEL, area_entry.labels)
 
-        # Automations referencing this area
-        self._add(
-            ItemType.AUTOMATION, automation.automations_with_area(self.hass, area_id)
-        )
-
-        # Scripts referencing this area
-        self._add(ItemType.SCRIPT, script.scripts_with_area(self.hass, area_id))
-
         # Entity in this area, will extend this with
         # the entities of the devices in this area
         entity_entries = er.async_entries_for_area(self._entity_registry, area_id)
@@ -170,18 +161,6 @@ class Searcher:
             if entity_entry.domain in self.EXIST_AS_ENTITY:
                 self._add(ItemType(entity_entry.domain), entity_entry.entity_id)
 
-            # Automations referencing this entity
-            self._add(
-                ItemType.AUTOMATION,
-                automation.automations_with_entity(self.hass, entity_entry.entity_id),
-            )
-
-            # Scripts referencing this entity
-            self._add(
-                ItemType.SCRIPT,
-                script.scripts_with_entity(self.hass, entity_entry.entity_id),
-            )
-
             # Groups that have this entity as a member
             self._add(
                 ItemType.GROUP,
@@ -202,80 +181,6 @@ class Searcher:
 
             # Config entries for entities in this area
             self._add(ItemType.CONFIG_ENTRY, entity_entry.config_entry_id)
-
-    @callback
-    def _async_search_automation(self, automation_entity_id: str) -> None:
-        """Find results for an automation."""
-        # Up resolve the automation entity itself
-        if entity_entry := self._async_resolve_up_entity(automation_entity_id):
-            # Add labels of this automation entity
-            self._add(ItemType.LABEL, entity_entry.labels)
-
-        # Find the blueprint used in this automation
-        self._add(
-            ItemType.AUTOMATION_BLUEPRINT,
-            automation.blueprint_in_automation(self.hass, automation_entity_id),
-        )
-
-        # Labels referenced in this automation
-        self._add(
-            ItemType.LABEL,
-            automation.labels_in_automation(self.hass, automation_entity_id),
-        )
-
-        # Floors referenced in this automation
-        self._add(
-            ItemType.FLOOR,
-            automation.floors_in_automation(self.hass, automation_entity_id),
-        )
-
-        # Areas referenced in this automation
-        for area in automation.areas_in_automation(self.hass, automation_entity_id):
-            self._add(ItemType.AREA, area)
-            self._async_resolve_up_area(area)
-
-        # Devices referenced in this automation
-        for device in automation.devices_in_automation(self.hass, automation_entity_id):
-            self._async_search_referenced_device(device)
-
-        # Entities referenced in this automation
-        for entity_id in automation.entities_in_automation(
-            self.hass, automation_entity_id
-        ):
-            self._add(ItemType.ENTITY, entity_id)
-            self._async_resolve_up_entity(entity_id)
-
-            # If this entity also exists as a resource, we add it.
-            domain = split_entity_id(entity_id)[0]
-            if domain in self.EXIST_AS_ENTITY:
-                self._add(ItemType(domain), entity_id)
-
-            # For an automation, we want to unwrap the groups, to ensure we
-            # relate this automation to all those members as well.
-            if domain == GROUP_DOMAIN:
-                for group_entity_id in group.get_entity_ids(self.hass, entity_id):
-                    self._add(ItemType.ENTITY, group_entity_id)
-                    self._async_resolve_up_entity(group_entity_id)
-
-            # For an automation, we want to unwrap the scenes, to ensure we
-            # relate this automation to all referenced entities as well.
-            if domain == SCENE_DOMAIN:
-                for scene_entity_id in scene.entities_in_scene(self.hass, entity_id):
-                    self._add(ItemType.ENTITY, scene_entity_id)
-                    self._async_resolve_up_entity(scene_entity_id)
-
-            # Fully search the script if it is part of an automation.
-            # This makes the automation return all results of the embedded script.
-            if domain == SCRIPT_DOMAIN:
-                self._async_search_script(entity_id, entry_point=False)
-
-    @callback
-    def _async_search_automation_blueprint(self, blueprint_path: str) -> None:
-        """Find results for an automation blueprint."""
-        self._add(
-            ItemType.AUTOMATION,
-            automation.automations_with_blueprint(self.hass, blueprint_path),
-        )
 
     @callback
     def _async_search_config_entry(self, config_entry_id: str) -> None:
@@ -322,8 +227,6 @@ class Searcher:
             # Add labels of this device
             self._add(ItemType.LABEL, device_entry.labels)
 
-        # Automations and scripts referencing this device
-        self._async_add_automations_and_scripts_for_device(device_entry)
 
         # Entities of this device
         for entity_entry in er.async_entries_for_device(
@@ -340,30 +243,6 @@ class Searcher:
         ):
             self._add(ItemType.DEVICE, child_device_entry.id)
             self._async_search_device(child_device_entry.id, entry_point=False)
-
-    @callback
-    def _async_add_automations_and_scripts_for_device(
-        self, device_entry: dr.AnyDeviceEntry
-    ) -> None:
-        """Add automations and scripts referencing a device.
-
-        A device produced by splitting a pre-migration composite device is also
-        matched by automations and scripts referencing the composite device id, so
-        the composite id is searched too. A sibling split's id is never searched, so
-        references to a sibling are not matched.
-        """
-        device_ids = {device_entry.id}
-        if (
-            isinstance(device_entry, dr.DeviceEntry)
-            and device_entry.composite_device_id is not None
-        ):
-            device_ids.add(device_entry.composite_device_id)
-        for device_id in device_ids:
-            self._add(
-                ItemType.AUTOMATION,
-                automation.automations_with_device(self.hass, device_id),
-            )
-            self._add(ItemType.SCRIPT, script.scripts_with_device(self.hass, device_id))
 
     @callback
     def _async_search_referenced_device(self, device_id: str) -> None:
@@ -541,67 +420,6 @@ class Searcher:
             self._add(ItemType.ENTITY, entity)
             self._async_resolve_up_entity(entity)
 
-    @callback
-    def _async_search_script(
-        self, script_entity_id: str, *, entry_point: bool = True
-    ) -> None:
-        """Find results for a script."""
-        # Up resolve the script entity itself
-        entity_entry = self._async_resolve_up_entity(script_entity_id)
-
-        if entity_entry and entry_point:
-            # Add labels of this script entity
-            self._add(ItemType.LABEL, entity_entry.labels)
-
-        # Find the blueprint used in this script
-        self._add(
-            ItemType.SCRIPT_BLUEPRINT,
-            script.blueprint_in_script(self.hass, script_entity_id),
-        )
-
-        # Labels referenced in this script
-        self._add(ItemType.LABEL, script.labels_in_script(self.hass, script_entity_id))
-
-        # Floors referenced in this script
-        self._add(ItemType.FLOOR, script.floors_in_script(self.hass, script_entity_id))
-
-        # Areas referenced in this script
-        for area in script.areas_in_script(self.hass, script_entity_id):
-            self._add(ItemType.AREA, area)
-            self._async_resolve_up_area(area)
-
-        # Devices referenced in this script
-        for device in script.devices_in_script(self.hass, script_entity_id):
-            self._async_search_referenced_device(device)
-
-        # Entities referenced in this script
-        for entity_id in script.entities_in_script(self.hass, script_entity_id):
-            self._add(ItemType.ENTITY, entity_id)
-            self._async_resolve_up_entity(entity_id)
-
-            # If this entity also exists as a resource, we add it.
-            domain = split_entity_id(entity_id)[0]
-            if domain in self.EXIST_AS_ENTITY:
-                self._add(ItemType(domain), entity_id)
-
-            # For an script, we want to unwrap the groups, to ensure we
-            # relate this script to all those members as well.
-            if domain == GROUP_DOMAIN:
-                for group_entity_id in group.get_entity_ids(self.hass, entity_id):
-                    self._add(ItemType.ENTITY, group_entity_id)
-                    self._async_resolve_up_entity(group_entity_id)
-
-            # For an script, we want to unwrap the scenes, to ensure we
-            # relate this script to all referenced entities as well.
-            if domain == SCENE_DOMAIN:
-                for scene_entity_id in scene.entities_in_scene(self.hass, entity_id):
-                    self._add(ItemType.ENTITY, scene_entity_id)
-                    self._async_resolve_up_entity(scene_entity_id)
-
-            # Fully search the script if it is nested.
-            # This makes the script return all results of the embedded script.
-            if domain == SCRIPT_DOMAIN:
-                self._async_search_script(entity_id, entry_point=False)
 
     @callback
     def _async_search_script_blueprint(self, blueprint_path: str) -> None:
