@@ -25,7 +25,6 @@ SECTIONS = (
     area_registry,
     auth,
     auth_provider_homeassistant,
-    automation,
     category_registry,
     config_entries,
     core,
@@ -33,7 +32,6 @@ SECTIONS = (
     entity_registry,
     floor_registry,
     label_registry,
-    script,
     scene,
 )
 
