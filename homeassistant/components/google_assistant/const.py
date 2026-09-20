@@ -29,7 +29,6 @@ from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.lock import DOMAIN as LOCK_DOMAIN
 from homeassistant.components.media_player import DOMAIN as MEDIA_PLAYER_DOMAIN
 from homeassistant.components.scene import DOMAIN as SCENE_DOMAIN
-from homeassistant.components.script import DOMAIN as SCRIPT_DOMAIN
 from homeassistant.components.select import DOMAIN as SELECT_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
@@ -166,7 +165,7 @@ DOMAIN_TO_GOOGLE_TYPES = {
     LOCK_DOMAIN: TYPE_LOCK,
     MEDIA_PLAYER_DOMAIN: TYPE_SETTOP,
     SCENE_DOMAIN: TYPE_SCENE,
-    SCRIPT_DOMAIN: TYPE_SCENE,
+    "script": TYPE_SCENE,
     SELECT_DOMAIN: TYPE_SENSOR,
     SENSOR_DOMAIN: TYPE_SENSOR,
     SWITCH_DOMAIN: TYPE_SWITCH,
