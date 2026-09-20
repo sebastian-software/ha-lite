@@ -10,7 +10,7 @@ import voluptuous as vol
 
 from homeassistant.components import group, person, websocket_api
 from homeassistant.components.homeassistant import scene
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, callback, split_entity_id
 from homeassistant.helpers import (
     area_registry as ar,
     config_validation as cv,
