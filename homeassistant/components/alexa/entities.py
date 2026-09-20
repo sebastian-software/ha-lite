@@ -25,7 +25,6 @@ from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntityStateAttribute,
 )
 from homeassistant.components.alert import DOMAIN as ALERT_DOMAIN
-from homeassistant.components.automation import DOMAIN as AUTOMATION_DOMAIN
 from homeassistant.components.binary_sensor import DOMAIN as BINARY_SENSOR_DOMAIN
 from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN
 from homeassistant.components.camera import DOMAIN as CAMERA_DOMAIN
@@ -63,7 +62,6 @@ from homeassistant.components.remote import (
     RemoteEntityStateAttribute,
 )
 from homeassistant.components.scene import DOMAIN as SCENE_DOMAIN
-from homeassistant.components.script import DOMAIN as SCRIPT_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.timer import DOMAIN as TIMER_DOMAIN
@@ -429,7 +427,7 @@ def async_get_entities(
 
 
 @ENTITY_ADAPTERS.register(ALERT_DOMAIN)
-@ENTITY_ADAPTERS.register(AUTOMATION_DOMAIN)
+@ENTITY_ADAPTERS.register("automation")
 @ENTITY_ADAPTERS.register(GROUP_DOMAIN)
 class GenericCapabilities(AlexaEntity):
     """A generic, on/off device.
@@ -910,7 +908,7 @@ class SceneCapabilities(AlexaEntity):
         yield Alexa(self.entity)
 
 
-@ENTITY_ADAPTERS.register(SCRIPT_DOMAIN)
+@ENTITY_ADAPTERS.register("script")
 class ScriptCapabilities(AlexaEntity):
     """Class to represent Script capabilities."""
 
