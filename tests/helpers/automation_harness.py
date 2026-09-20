@@ -65,8 +65,10 @@ async def _async_reload(hass: HomeAssistant) -> None:
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Wire automation-shaped test config to retained runtime primitives."""
-    raw_items = config.get(DOMAIN, [])
-    items = raw_items if isinstance(raw_items, list) else [raw_items]
+    items = [
+        platform_config
+        for _, platform_config in conf_util.config_per_platform(config, DOMAIN)
+    ]
     data = hass.data.setdefault(_DATA, {"removes": [], "scripts": []})
 
     if not hass.services.has_service(DOMAIN, SERVICE_TURN_OFF):
