@@ -28,14 +28,14 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | onboarding | DELETE / REPLACE | Replace product onboarding with API/CLI bootstrap. |
 | automation | DELETE | Decision engine belongs outside core. |
 | script | DELETE | Behavioral orchestration belongs outside core. |
-| blueprint | DELETE | Automation authoring/distribution. |
+| blueprint | **REMOVED** | Automation authoring/distribution; physically removed in Wave 3 together with Template, its only importer. |
 | scene | INVESTIGATE → likely DELETE | Reconsider generic batch-command primitive separately. |
-| schedule | DELETE | External decision/scheduling layer. |
-| timer | DELETE | Primarily automation state; verify dependencies. |
-| counter | DELETE | Automation helper state. |
-| input_boolean / input_button | DELETE | Virtual automation/UI helpers. |
-| input_datetime / input_number | DELETE | Virtual automation/UI helpers. |
-| input_select / input_text | DELETE | Virtual automation/UI helpers. |
+| schedule | **REMOVED** | External decision/scheduling layer; physically removed in Wave 3. |
+| timer | **REMOVED** | Automation state; physically removed in Wave 3. Runtime scheduling primitives such as `async_track_time_interval` are retained. |
+| counter | **REMOVED** | Automation helper state; physically removed in Wave 3. |
+| input_boolean / input_button | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the switch/button trigger and condition platforms. |
+| input_datetime / input_number | **REMOVED** | Virtual helpers; physically removed in Wave 3. The time trigger now accepts timestamp sensors only. |
+| input_select / input_text | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the select/text trigger and condition platforms. |
 | group | INVESTIGATE | Generic grouping may be useful above core. |
 | person | DELETE initially | Derived product model, not physical device runtime. |
 | zone | DELETE initially | Location/automation behavior; revisit only if required. |
@@ -52,7 +52,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | map | DELETE | UI/product feature. |
 | file_upload | DELETE initially | UI/product support unless an integration proves need. |
 | backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. |
-| cloud / Nabu Casa | DELETE | Product/cloud service outside scope. |
+| cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
 | STT / TTS / voice presentation | DELETE / INVESTIGATE | Voice product surface is not retained merely because Conversation/MCP is retained; reassess concrete runtime dependencies before deletion. |

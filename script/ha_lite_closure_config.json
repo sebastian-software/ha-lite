@@ -120,31 +120,6 @@
       "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
       "issue": null
     },
-    "input_boolean": {
-      "status": "adapter",
-      "reason": "Reached from switch/condition.py, a device-automation adapter.",
-      "issue": 19
-    },
-    "input_button": {
-      "status": "adapter",
-      "reason": "Reached from button/trigger.py, a device-automation adapter.",
-      "issue": 19
-    },
-    "input_datetime": {
-      "status": "adapter",
-      "reason": "Reached from homeassistant/triggers/time.py, a device-automation adapter.",
-      "issue": 19
-    },
-    "input_select": {
-      "status": "adapter",
-      "reason": "Reached from select/condition.py, a device-automation adapter.",
-      "issue": 19
-    },
-    "input_text": {
-      "status": "adapter",
-      "reason": "Reached from text/condition.py, a device-automation adapter.",
-      "issue": 19
-    },
     "intent": {
       "status": "retained",
       "reason": "Declared dependency of conversation. The overview keeps conversation/intent/LLM primitives because mcp_server requires them.",

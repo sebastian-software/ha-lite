@@ -40,12 +40,13 @@ Import edges are classified by how strongly they bind:
 | `import_deferred` | no | Function-local import; removable without restructuring the module. |
 | `import_typing` | no | Guarded by `TYPE_CHECKING`; never executes. |
 
-Only hard edges grow the closure. This distinction is not cosmetic. A single
-deferred import of `cloud` in `http/__init__.py` — a repairs check that runs
-when SSL is configured without a URL — would otherwise drag `cloud`, `alexa`,
-`google_assistant`, `tts`, `stt`, `backup` and `assist_pipeline` into the
-retained set. Counting it as hard coupling would inflate the closure from 78
-domains to 93 and make Wave 4 look far more constrained than it is.
+Only hard edges grow the closure. This distinction is not cosmetic. When the
+tool was introduced, a single deferred import of `cloud` in `http/__init__.py`
+— a repairs check that ran when SSL was configured without a URL — would have
+dragged `cloud`, `alexa`, `google_assistant`, `tts`, `stt`, `backup` and
+`assist_pipeline` into the retained set, inflating the closure from 78 domains
+to 93 and making Wave 4 look far more constrained than it was. Treating that
+edge as soft is what showed the coupling was removable; #19 then removed it.
 
 Soft edges are not discarded. They are reported as **latent coupling**: the
 things that would widen the closure if they ever hardened.
@@ -81,27 +82,27 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,502 |
+| Component domains in tree | 1,488 |
 | Declared roots | 54 |
-| Retained closure | 78 |
-| Deletion candidates | 1,424 |
+| Retained closure | 73 |
+| Deletion candidates | 1,415 |
 
-Of the 24 transitively required domains, 8 are `retained`, 11 are `adapter`
-and 5 are `patch_required`.
+Of the 19 transitively required domains, 8 are `retained`, 6 are `adapter` and 5 are `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 5% of the tree. The 1,424 candidates outside it are
+The closure is small — 5% of the tree. The 1,415 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 
-The closure is also not yet minimal. Eleven of its members are held in only by
+The closure is also not yet minimal. Six of its members are held in only by
 platform-adapter files: `condition.py`, `trigger.py`, `device_action.py`,
 `device_trigger.py`, `media_source.py`. This is the same shape as the
 per-integration `logbook.py` files removed in #21 — the adapter is deletable
 independently of the domain that hosts it, and the target leaves with it.
-Those eleven should fall out of the closure during Waves 3 and 4 rather than
-needing separate decoupling work.
+#19 confirmed the pattern by removing the five `input_*` helpers this way:
+dropping one entry from each domain's `_domain_specs` was enough to make them
+fall out of the closure, after which they could simply be deleted.
 
 The five `patch_required` members are the real blockers, and
 `dependency-findings-2026.9.3.md` predicted four of them:
