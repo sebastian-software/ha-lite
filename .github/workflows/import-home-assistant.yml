@@ -36,7 +36,6 @@ jobs:
             --exclude '.github/workflows/' \
             --exclude 'README.md' \
             --exclude 'docs/' \
-            --exclude 'tools/analyze_ha_imports.py' \
             /tmp/home-assistant-core/ ./
 
       - name: Record upstream baseline

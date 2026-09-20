@@ -4,6 +4,8 @@
 
 This is the first architectural classification, **not yet a proven deletion list**. Before deletion, each item must be checked against both Home Assistant integration manifests and actual Python imports.
 
+That check is now automated: `script/ha_lite_closure.py` computes the retained closure from both graphs, and [retained-closure.md](retained-closure.md) records what it currently says. This matrix remains the design intent; the closure is the evidence.
+
 Guiding rule: keep machinery required to discover, configure, identify, observe and control devices; remove product behavior and presentation.
 
 | Area / HA component | Initial | Rationale / next check |
