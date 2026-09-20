@@ -29,6 +29,13 @@ def _log(level: int, message: str, **kwargs: Any) -> None:
     _LOGGER.log(level, message, **kwargs)
 
 
+def async_mock_service(
+    hass: HomeAssistant, service: str, handler: Any
+) -> None:
+    """Register a test-owned harness service without product translations."""
+    hass.services.async_register(DOMAIN, service, handler)
+
+
 async def _async_detach(hass: HomeAssistant) -> None:
     """Detach all triggers and stop action scripts created by the harness."""
     data = hass.data.get(_DATA)
@@ -54,7 +61,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         async def async_turn_off(_call: ServiceCall) -> None:
             await _async_detach(hass)
 
-        hass.services.async_register(DOMAIN, SERVICE_TURN_OFF, async_turn_off)
+        async_mock_service(hass, SERVICE_TURN_OFF, async_turn_off)
 
     for index, item in enumerate(items):
         trigger_config = cv.TRIGGER_SCHEMA(item.get("triggers", item.get("trigger")))
