@@ -500,7 +500,6 @@ async def websocket_device_capture(
     # Audio will follow as events
     connection.send_result(msg["id"])
 
-    # Record to logbook
     hass.bus.async_fire(
         EVENT_RECORDING,
         {
