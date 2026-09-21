@@ -16,6 +16,8 @@ Tests protecting retained core/runtime behavior and retained integrations remain
 
 Tests may be removed when the production behavior they protect is explicitly removed from ha-lite scope. When behavior remains but moves from a UI/product interface to a headless interface, tests should be adapted rather than deleted.
 
+Scope removal is the only justification. A test that is merely redundant, while the behavior it covers stays in scope, is left alone: ADR 0014 explains why efficiency does not buy the divergence.
+
 Before the first production-code deletion, establish a CI baseline covering:
 
 - core lifecycle, config entries, loading and setup;
