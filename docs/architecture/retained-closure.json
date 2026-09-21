@@ -1,10 +1,12 @@
 {
   "closure": [
+    "air_quality",
     "alarm_control_panel",
     "api",
     "application_credentials",
     "auth",
     "backup",
+    "battery",
     "binary_sensor",
     "bluetooth",
     "button",
@@ -19,15 +21,21 @@
     "device_tracker",
     "dhcp",
     "diagnostics",
+    "door",
+    "doorbell",
     "event",
     "fan",
     "file_upload",
     "fronius",
+    "garage_door",
+    "gate",
     "hassio",
     "homeassistant",
     "http",
     "hue",
     "humidifier",
+    "humidity",
+    "illuminance",
     "image",
     "image_upload",
     "infrared",
@@ -42,13 +50,17 @@
     "media_player",
     "media_source",
     "modbus",
+    "moisture",
+    "motion",
     "mqtt",
     "network",
     "notify",
     "number",
+    "occupancy",
     "onboarding",
     "persistent_notification",
     "person",
+    "power",
     "recorder",
     "repairs",
     "scene",
@@ -61,24 +73,30 @@
     "switch",
     "system_health",
     "system_log",
+    "temperature",
     "text",
     "time",
     "update",
     "usb",
     "vacuum",
     "valve",
+    "vibration",
     "water_heater",
+    "weather",
     "web_rtc",
     "webhook",
     "websocket_api",
+    "window",
     "zeroconf",
     "zone"
   ],
   "roots": [
+    "air_quality",
     "alarm_control_panel",
     "api",
     "application_credentials",
     "auth",
+    "battery",
     "binary_sensor",
     "bluetooth",
     "button",
@@ -91,12 +109,18 @@
     "datetime",
     "dhcp",
     "diagnostics",
+    "door",
+    "doorbell",
     "event",
     "fan",
     "fronius",
+    "garage_door",
+    "gate",
     "homeassistant",
     "http",
     "hue",
+    "humidity",
+    "illuminance",
     "image",
     "light",
     "lock",
@@ -105,11 +129,15 @@
     "mcp_server",
     "media_player",
     "modbus",
+    "moisture",
+    "motion",
     "mqtt",
     "network",
     "notify",
     "number",
+    "occupancy",
     "persistent_notification",
+    "power",
     "repairs",
     "select",
     "sensor",
@@ -119,15 +147,18 @@
     "switch",
     "system_health",
     "system_log",
+    "temperature",
     "text",
     "time",
     "update",
     "usb",
     "vacuum",
     "valve",
+    "vibration",
     "water_heater",
     "webhook",
     "websocket_api",
+    "window",
     "zeroconf"
   ],
   "accepted_transitive": [
@@ -148,6 +179,7 @@
     "recorder",
     "scene",
     "stream",
+    "weather",
     "web_rtc",
     "zone"
   ],
@@ -171,7 +203,6 @@
     "agent_dvr",
     "ai_task",
     "aidot",
-    "air_quality",
     "airgradient",
     "airly",
     "airnow",
@@ -264,7 +295,6 @@
     "balay",
     "balboa",
     "bang_olufsen",
-    "battery",
     "bauknecht",
     "bayesian",
     "bbox",
@@ -402,8 +432,6 @@
     "dlna_dms",
     "dnsip",
     "doods",
-    "door",
-    "doorbell",
     "doorbird",
     "dooya",
     "dormakaba_dkey",
@@ -555,10 +583,8 @@
     "fyta",
     "gaggenau",
     "garadget",
-    "garage_door",
     "garages_amsterdam",
     "gardena_bluetooth",
-    "gate",
     "gatus",
     "gaviota",
     "gc100",
@@ -676,7 +702,6 @@
     "huawei_lte",
     "hue_ble",
     "huisbaasje",
-    "humidity",
     "hunterdouglas_powerview",
     "hurrican_shutters_wholesale",
     "husqvarna_automower",
@@ -699,7 +724,6 @@
     "igloohome",
     "ign_sismologia",
     "ihc",
-    "illuminance",
     "image_processing",
     "imap",
     "imeon_inverter",
@@ -901,7 +925,6 @@
     "modem_callerid",
     "modern_forms",
     "moehlenhoff_alpha2",
-    "moisture",
     "mold_indicator",
     "monarch_money",
     "monessen",
@@ -909,7 +932,6 @@
     "monzo",
     "moon",
     "mopeka",
-    "motion",
     "motion_blinds",
     "motionblinds_ble",
     "motioneye",
@@ -992,7 +1014,6 @@
     "nzbget",
     "oasa_telematics",
     "obihai",
-    "occupancy",
     "octoprint",
     "oem",
     "ogemray",
@@ -1084,7 +1105,6 @@
     "pooldose",
     "poolsense",
     "portainer",
-    "power",
     "powerfox",
     "powerfox_local",
     "powerwall",
@@ -1362,7 +1382,6 @@
     "telnet",
     "teltonika",
     "temper",
-    "temperature",
     "tesla_fleet",
     "tesla_wall_connector",
     "teslemetry",
@@ -1467,7 +1486,6 @@
     "version",
     "vesync",
     "viaggiatreno",
-    "vibration",
     "vicare",
     "victron_ble",
     "victron_gx",
@@ -1495,7 +1513,6 @@
     "watttime",
     "wattwaechter",
     "waze_travel_time",
-    "weather",
     "weatherflow",
     "weatherflow_cloud",
     "weatherkit",
@@ -1510,7 +1527,6 @@
     "wiffi",
     "wiim",
     "wilight",
-    "window",
     "wirelesstag",
     "withings",
     "wiz",
@@ -1595,9 +1611,9 @@
       "via": "homeassistant/components/matter/__init__.py"
     },
     "humidifier": {
-      "source": "mqtt",
+      "source": "humidity",
       "kind": "import_runtime",
-      "via": "homeassistant/components/mqtt/humidifier.py"
+      "via": "homeassistant/components/humidity/condition.py"
     },
     "image_upload": {
       "source": "person",
@@ -1654,6 +1670,11 @@
       "kind": "import_runtime",
       "via": "homeassistant/components/camera/__init__.py"
     },
+    "weather": {
+      "source": "humidity",
+      "kind": "import_runtime",
+      "via": "homeassistant/components/humidity/condition.py"
+    },
     "web_rtc": {
       "source": "camera",
       "kind": "import_runtime",
@@ -1671,13 +1692,6 @@
     "missing_roots": []
   },
   "capability_at_risk": {
-    "air_quality": {
-      "integration_type": "entity",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
     "alert": {
       "integration_type": "unknown",
       "platforms": [
@@ -1710,13 +1724,6 @@
         "backup"
       ]
     },
-    "battery": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
     "calendar": {
       "integration_type": "entity",
       "platforms": [
@@ -1730,37 +1737,10 @@
         "backup"
       ]
     },
-    "door": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
-    "doorbell": {
-      "integration_type": "system",
-      "platforms": [
-        "trigger"
-      ]
-    },
     "dropbox": {
       "integration_type": "service",
       "platforms": [
         "backup"
-      ]
-    },
-    "garage_door": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
-    "gate": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
       ]
     },
     "geo_location": {
@@ -1781,24 +1761,10 @@
         "reproduce_state"
       ]
     },
-    "humidity": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
     "idrive_e2": {
       "integration_type": "service",
       "platforms": [
         "backup"
-      ]
-    },
-    "illuminance": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
       ]
     },
     "kitchen_sink": {
@@ -1825,29 +1791,8 @@
         "trigger"
       ]
     },
-    "moisture": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
     "moon": {
       "integration_type": "service",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
-    "motion": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
-    "occupancy": {
-      "integration_type": "system",
       "platforms": [
         "condition",
         "trigger"
@@ -1863,13 +1808,6 @@
       "integration_type": "service",
       "platforms": [
         "backup"
-      ]
-    },
-    "power": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
       ]
     },
     "remote": {
@@ -1918,33 +1856,12 @@
         "trigger"
       ]
     },
-    "temperature": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
     "todo": {
       "integration_type": "entity",
       "platforms": [
         "condition",
         "intent",
         "trigger"
-      ]
-    },
-    "vibration": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
-        "trigger"
-      ]
-    },
-    "weather": {
-      "integration_type": "entity",
-      "platforms": [
-        "intent",
-        "significant_change"
       ]
     },
     "webdav": {
@@ -1956,13 +1873,6 @@
     "webostv": {
       "integration_type": "device",
       "platforms": [
-        "trigger"
-      ]
-    },
-    "window": {
-      "integration_type": "system",
-      "platforms": [
-        "condition",
         "trigger"
       ]
     },

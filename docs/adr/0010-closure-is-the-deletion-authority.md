@@ -1,0 +1,79 @@
+# ADR 0010: Let the computed closure decide what may be deleted
+
+- Status: Accepted
+- Date: 2026-09-21
+
+## Context
+
+The first reduction waves selected deletion candidates from the scope matrix,
+which classifies components by what they appear to be. That reading is a design
+intent, not evidence. Directory names are a poor proxy for coupling: `cloud`
+looked like an isolated product and turned out to be imported from
+`helpers/config_entry_flow.py`, breaking the webhook flow of eight integrations
+when it was removed.
+
+Wave 4 proposes deleting over a thousand components at once. At that volume,
+per-directory judgement does not scale and a single missed edge is expensive.
+
+Home Assistant states coupling in two places, and they disagree often enough to
+matter: `manifest.json` (`dependencies`, `after_dependencies`) and actual Python
+imports. Neither alone is authoritative.
+
+Not every edge binds equally. A module-level import cannot be removed without
+restructuring the module. A function-local import, a `TYPE_CHECKING` import and
+an `after_dependencies` entry can. Treating them alike is not merely imprecise,
+it changes the answer: one deferred import of `cloud` in `http/__init__.py` — a
+repairs check that ran when SSL was configured without an external URL — would
+have pulled `cloud`, `alexa`, `google_assistant`, `tts`, `stt`, `backup` and
+`assist_pipeline` into the retained set, inflating the closure from 78 domains
+to 93 and making Wave 4 look far more constrained than it was.
+
+## Decision
+
+`script/ha_lite_closure.py` computes the retained closure from both graphs and
+is the authority for deletion. A component may be deleted when it is reachable
+from no declared root; the scope matrix records intent, the closure records
+evidence.
+
+Classify edges by strength. Only hard edges grow the closure:
+
+| Kind | Grows the closure |
+|---|---|
+| `dependencies` | yes |
+| `import_runtime` (module level) | yes |
+| `after_dependencies` | no |
+| `import_deferred` (function local) | no |
+| `import_typing` (`TYPE_CHECKING`) | no |
+
+Soft edges are reported as **latent coupling** rather than discarded: they are
+what would widen the closure if they hardened.
+
+Roots are declared in `script/ha_lite_closure_config.json` and mirror the job
+matrices in `.github/workflows/ha-lite-ci.yml`. What CI protects is what ha-lite
+promises to keep working, so the two must not drift apart.
+
+Every domain that enters the closure without being a root needs a reviewed entry
+in `accepted_transitive` carrying a status (`retained`, `adapter`,
+`patch_required`), a reason and an issue. A domain reaching the closure without
+one fails the check. So does an entry that is no longer reachable.
+
+The check runs in CI, and the generated `docs/architecture/retained-closure.json`
+is committed and verified against a fresh regeneration, so the reviewed allowlist
+cannot drift from the tree.
+
+## Consequences
+
+New coupling from retained code into an unreviewed component is a build failure
+rather than a discovery made months later. Widening the retained surface becomes
+a reviewable change to a checked-in file with a written reason, not a side effect
+of an import.
+
+The closure is computed over what the tree contains, so it is only as good as
+its definition of a component. An early version treated every directory under
+`components/` as a domain, which made a working checkout and a fresh clone
+disagree over `__pycache__`. Rules of this kind belong in
+`tests/script/test_ha_lite_closure.py`, because the gate is only worth as much
+as its own correctness.
+
+Reachability is necessary but not sufficient. It says nothing about capabilities
+resolved by name at runtime; see ADR 0011.

@@ -37,6 +37,8 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | input_datetime / input_number | **REMOVED** | Virtual helpers; physically removed in Wave 3. The time trigger now accepts timestamp sensors only. |
 | input_select / input_text | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the select/text trigger and condition platforms. |
 | group | INVESTIGATE | Generic grouping may be useful above core. |
+| Device-class trigger/condition providers | **KEEP (roots)** | `air_quality`, `battery`, `door`, `doorbell`, `garage_door`, `gate`, `humidity`, `illuminance`, `moisture`, `motion`, `occupancy`, `power`, `temperature`, `vibration`, `window`. The named vocabulary over entity device classes; `binary_sensor` and `sensor` ship none of their own. ADR 0012. |
+| weather | DELETE | Forecast product. No retained integration provides the platform. Reached only through a `DomainSpec` in the temperature/humidity triggers that can never match; decouple in #27. |
 | person | DELETE initially | Derived product model, not physical device runtime. |
 | zone | DELETE initially | Location/automation behavior; revisit only if required. |
 | sun | DELETE | Derived automation input. |

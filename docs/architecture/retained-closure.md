@@ -80,23 +80,23 @@ with it, and 939 config-flow warnings would be noise.
 ### The device-class providers
 
 The first run of this report surfaced something larger than the Template case.
-Fourteen `integration_type: system` components sit outside the closure and
-exist *only* to provide triggers and conditions over entity device classes:
+Fifteen components sat outside the closure and existed almost entirely to
+provide triggers and conditions over entity device classes:
 
-`battery`, `door`, `doorbell`, `garage_door`, `gate`, `humidity`,
-`illuminance`, `moisture`, `motion`, `occupancy`, `power`, `temperature`,
-`vibration`, `window`
+`air_quality`, `battery`, `door`, `doorbell`, `garage_door`, `gate`,
+`humidity`, `illuminance`, `moisture`, `motion`, `occupancy`, `power`,
+`temperature`, `vibration`, `window`
 
 `motion/trigger.py`, for example, is twenty lines that define `motion.detected`
 and `motion.cleared` over `binary_sensor` entities whose device class is
 motion. It imports `binary_sensor`; `binary_sensor` does not import it. That
 direction is exactly why the closure cannot see it.
 
-These are plausibly substrate rather than product — "trigger when motion is
-detected" is the kind of primitive a device runtime exposes to an agent — and
-they are already in bootstrap's `DEFAULT_INTEGRATIONS`. Whether they become
-roots is an open decision, not something the tool should assume. Until it is
-taken, #27 must not delete them by reachability alone.
+They are now roots. `binary_sensor` and `sensor` ship no `trigger.py` or
+`condition.py` of their own — only the legacy device-automation platforms — so
+these fifteen are the entire semantic vocabulary over the two most important
+sensor domains, and `websocket_api` exposes it to external decision engines.
+ADR 0012 records the decision and what it costs.
 
 ## Roots
 
@@ -109,6 +109,7 @@ ha-lite promises to keep working, so the two should not drift apart.
 | Entity-domain substrate | 26 |
 | Retained integrations | 6 |
 | Runtime infrastructure | 22 |
+| Device-class semantics | 15 |
 
 ## The gate
 
@@ -130,19 +131,19 @@ build failure rather than a discovery made months later.
 | Metric | Count |
 |---|---|
 | Component domains in tree | 1,488 |
-| Declared roots | 54 |
-| Retained closure | 73 |
-| Deletion candidates | 1,415 |
+| Declared roots | 69 |
+| Retained closure | 89 |
+| Deletion candidates | 1,399 |
 
-Of the 19 transitively required domains, 8 are `retained`, 6 are `adapter` and 5 are `patch_required`.
+Of the 20 transitively required domains, 8 are `retained`, 6 are `adapter` and 6 are `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 5% of the tree. The 1,415 candidates outside it are
+The closure is small — 6% of the tree. The 1,399 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 
-Reachability is necessary but not sufficient. 47 of those candidates provide a
+Reachability is necessary but not sufficient. 31 of those candidates provide a
 runtime-resolved platform, so #27 must work the capability-at-risk list as well
 as the closure: deleting them breaks nothing and still costs something.
 
@@ -155,7 +156,7 @@ independently of the domain that hosts it, and the target leaves with it.
 dropping one entry from each domain's `_domain_specs` was enough to make them
 fall out of the closure, after which they could simply be deleted.
 
-The five `patch_required` members are the real blockers, and
+The six `patch_required` members are the real blockers, and
 `dependency-findings-2026.9.3.md` predicted four of them:
 
 - `file_upload` ← MQTT certificate configuration UX (#22)
@@ -164,6 +165,10 @@ The five `patch_required` members are the real blockers, and
 - `device_tracker` ← DHCP discovery watching device_tracker registrations (#20)
 - `backup` ← reached only through `hassio`, so it leaves with that patch unless
   headless backup semantics keep it (#30)
+- `weather` ← the `temperature` and `humidity` triggers declare a `DomainSpec`
+  over weather entities. No retained integration provides the weather
+  platform, so the spec can never match; the upstream tests reference weather
+  in 99 places, which is why it is deferred rather than patched (#27)
 
 `device_tracker` is the one the findings document did not anticipate. It is
 also the one that cannot be solved by deleting an adapter file: `dhcp/__init__`
