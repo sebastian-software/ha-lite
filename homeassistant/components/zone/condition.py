@@ -8,10 +8,6 @@ from homeassistant.components.device_tracker import (
     DOMAIN as DEVICE_TRACKER_DOMAIN,
     DeviceTrackerEntityStateAttribute,
 )
-from homeassistant.components.person import (
-    DOMAIN as PERSON_DOMAIN,
-    PersonEntityStateAttribute,
-)
 from homeassistant.const import (
     ATTR_GPS_ACCURACY,
     CONF_ENTITY_ID,
@@ -178,7 +174,6 @@ class ZoneCondition(Condition):
 
 
 _DOMAIN_SPECS: dict[str, DomainSpec] = {
-    PERSON_DOMAIN: DomainSpec(value_source=PersonEntityStateAttribute.IN_ZONES),
     DEVICE_TRACKER_DOMAIN: DomainSpec(
         value_source=DeviceTrackerEntityStateAttribute.IN_ZONES
     ),
@@ -194,7 +189,7 @@ _ZONE_CONDITION_SCHEMA = ENTITY_STATE_CONDITION_SCHEMA_ANY_ALL.extend(
 
 
 class _ZoneTargetConditionBase(EntityConditionBase):
-    """Base for zone-target conditions on person and device_tracker entities."""
+    """Base for zone-target conditions on device_tracker entities."""
 
     _domain_specs = _DOMAIN_SPECS
     _schema = _ZONE_CONDITION_SCHEMA

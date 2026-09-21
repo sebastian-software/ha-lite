@@ -360,10 +360,10 @@ async def test_setting_up_config(
 ) -> None:
     """Test we set up domains in config."""
     await bootstrap._async_set_up_integrations(
-        hass, {"group hello": {}, "homeassistant": {}}
+        hass, {"zone hello": {}, "homeassistant": {}}
     )
 
-    assert "group" in hass.config.components
+    assert "zone" in hass.config.components
     assert all(
         domain in hass.config.components for domain in bootstrap.DEFAULT_INTEGRATIONS
     )
