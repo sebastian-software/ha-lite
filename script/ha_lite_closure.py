@@ -41,6 +41,8 @@ CONFIG = Path(__file__).resolve().parent / "ha_lite_closure_config.json"
 
 MODULE_PREFIX = "homeassistant.components."
 COMPONENTS_PACKAGE = MODULE_PREFIX.rstrip(".")
+# Core is always loaded, so anything it imports is required unconditionally.
+CORE = "<core>"
 
 # Only these grow the closure; every other kind is soft. See the module docstring.
 HARD_KINDS = ("dependencies", "import_runtime")
@@ -189,6 +191,17 @@ def collect_edges() -> tuple[set[str], list[Edge]]:
             collector.visit(tree)
             edges.extend(collector.edges)
 
+    for path in sorted(ROOT.joinpath("homeassistant").rglob("*.py")):
+        if "components" in path.parts or "__pycache__" in path.parts:
+            continue
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError, UnicodeDecodeError:
+            continue
+        collector = ImportCollector(CORE, str(path.relative_to(ROOT)))
+        collector.visit(tree)
+        edges.extend(collector.edges)
+
     return domains, edges
 
 
@@ -202,7 +215,7 @@ def build_closure(
             adjacency[edge.source].append(edge)
 
     reached = {root for root in roots if root in domains}
-    queue = deque(sorted(reached))
+    queue = deque([*sorted(reached), CORE])
     reason: dict[str, Edge] = {}
 
     while queue:

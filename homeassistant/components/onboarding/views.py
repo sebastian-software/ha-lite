@@ -11,7 +11,6 @@ import voluptuous as vol
 
 from homeassistant.auth.const import GROUP_ID_ADMIN
 from homeassistant.auth.providers.homeassistant import HassAuthProvider, InvalidUsername
-from homeassistant.components import person
 from homeassistant.components.auth import indieauth
 from homeassistant.components.http import KEY_HASS, KEY_HASS_REFRESH_TOKEN_ID
 from homeassistant.components.http.data_validator import RequestDataValidator
@@ -215,8 +214,6 @@ class UserOnboardingView(_BaseOnboardingStepView):
                 {"username": data["username"]}
             )
             await hass.auth.async_link_user(user, credentials)
-            if await async_wait_component(hass, "person"):
-                await person.async_create_person(hass, data["name"], user_id=user.id)
 
             # Create default areas using the users supplied language.
             translations = await async_get_translations(

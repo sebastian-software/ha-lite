@@ -133,9 +133,9 @@
       "issue": 19
     },
     "device_tracker": {
-      "status": "patch_required",
-      "reason": "DHCP discovery watches device_tracker registrations from its own __init__, so this is runtime coupling rather than an adapter file.",
-      "issue": 20
+      "status": "retained",
+      "reason": "Entity domain (integration_type: entity) implemented by mqtt/device_tracker.py. DHCP discovery also watches it, but that is not what holds it: it is substrate a retained integration provides, like humidifier and lawn_mower.",
+      "issue": null
     },
     "file_upload": {
       "status": "patch_required",
@@ -151,11 +151,6 @@
       "status": "retained",
       "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
       "issue": null
-    },
-    "image_upload": {
-      "status": "adapter",
-      "reason": "Declared dependency of person; leaves with it.",
-      "issue": 20
     },
     "infrared": {
       "status": "retained",
@@ -187,20 +182,15 @@
       "reason": "The Matter config flow reads onboarding state. Needs the same portability patch as hassio.",
       "issue": 22
     },
-    "person": {
-      "status": "adapter",
-      "reason": "Reached from zone/condition.py, a device-automation adapter.",
-      "issue": 20
-    },
     "recorder": {
       "status": "retained",
       "reason": "Current persistence machinery, imported by sensor/recorder.py for statistics. Its replacement is Wave 5, not a Wave 4 deletion.",
       "issue": 28
     },
     "scene": {
-      "status": "adapter",
-      "reason": "Reached from config/scene.py, a backend config panel adapter.",
-      "issue": 20
+      "status": "retained",
+      "reason": "Entity domain (integration_type: entity) implemented by hue/scene.py and mqtt/scene.py. A Hue scene lives on the bridge, so this is device state rather than automation semantics. The earlier 'adapter off config/scene.py' reading came from a single BFS path and was wrong: deleting that file would not have freed the domain.",
+      "issue": null
     },
     "stream": {
       "status": "retained",
@@ -223,9 +213,9 @@
       "issue": null
     },
     "zone": {
-      "status": "adapter",
-      "reason": "Reached from device_tracker/device_trigger.py, a device-automation adapter.",
-      "issue": 20
+      "status": "retained",
+      "reason": "Declared dependency in device_tracker/manifest.json, and imported from device_tracker/entity.py and legacy.py. Not an adapter: it cannot leave while device_tracker stays.",
+      "issue": null
     }
   }
 }
