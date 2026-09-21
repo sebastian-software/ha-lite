@@ -96,6 +96,50 @@ def test_hard_edges_grow_the_closure(tree: Path, tmp_path: Path) -> None:
     assert result["closure"] == {"alpha", "beta", "gamma"}
 
 
+def test_package_level_import_names_the_domain(tree: Path, tmp_path: Path) -> None:
+    """`from homeassistant.components import beta` binds just as hard.
+
+    The domain is in the import list rather than the module path, and reading
+    only the module path missed 602 such imports across 495 files -- including
+    onboarding's hard import of person, which made person look deletable.
+    """
+    write_component(
+        tree,
+        "alpha",
+        files={"__init__.py": "from homeassistant.components import beta\n"},
+    )
+    write_component(tree, "beta")
+
+    write_config(tmp_path, roots=["alpha"], accepted={})
+    result = ha_lite_closure.analyze()
+
+    assert result["closure"] == {"alpha", "beta"}
+
+
+def test_package_level_import_in_a_function_stays_soft(
+    tree: Path, tmp_path: Path
+) -> None:
+    """Naming the domain in the import list does not change how it binds."""
+    write_component(
+        tree,
+        "alpha",
+        files={
+            "__init__.py": (
+                "def setup():\n    from homeassistant.components import beta\n"
+            )
+        },
+    )
+    write_component(tree, "beta")
+
+    write_config(tmp_path, roots=["alpha"])
+    result = ha_lite_closure.analyze()
+
+    assert result["closure"] == {"alpha"}
+    assert [(e.target, e.kind) for e in result["latent"]] == [
+        ("beta", "import_deferred")
+    ]
+
+
 @pytest.mark.parametrize(
     ("source", "kind"),
     [
