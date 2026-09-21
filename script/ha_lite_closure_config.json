@@ -6,6 +6,12 @@
     "job matrices in .github/workflows/ha-lite-ci.yml: what CI protects is what",
     "ha-lite promises to keep working.",
     "",
+    "'device_class_semantics' roots are the components that define the named",
+    "trigger and condition vocabulary over entity device classes (motion.detected,",
+    "door.opened, air_quality.smoke_detected). binary_sensor and sensor ship no",
+    "trigger.py or condition.py of their own, so these components are the only",
+    "semantic layer over them. See docs/adr/0012.",
+    "",
     "'accepted_transitive' records every domain the closure pulls in that is not",
     "itself a root, with a reviewed reason. A domain reaching the closure without",
     "an entry here fails the check, so new coupling from retained code into an",
@@ -88,6 +94,23 @@
       "webhook",
       "websocket_api",
       "zeroconf"
+    ],
+    "device_class_semantics": [
+      "air_quality",
+      "battery",
+      "door",
+      "doorbell",
+      "garage_door",
+      "gate",
+      "humidity",
+      "illuminance",
+      "moisture",
+      "motion",
+      "occupancy",
+      "power",
+      "temperature",
+      "vibration",
+      "window"
     ]
   },
   "cross_cutting_platforms": [
@@ -183,6 +206,11 @@
       "status": "retained",
       "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",
       "issue": null
+    },
+    "weather": {
+      "status": "patch_required",
+      "reason": "The temperature and humidity triggers declare a DomainSpec over weather entities. No retained integration provides the weather platform, so that spec can never match in ha-lite; dropping it frees the domain. Deferred because the upstream trigger and condition tests reference weather in 99 places.",
+      "issue": 27
     },
     "web_rtc": {
       "status": "retained",

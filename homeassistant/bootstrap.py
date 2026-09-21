@@ -235,6 +235,7 @@ DEFAULT_INTEGRATIONS = {
     "air_quality",
     "battery",
     "door",
+    "doorbell",
     "garage_door",
     "gate",
     "humidity",
