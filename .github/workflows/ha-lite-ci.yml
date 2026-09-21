@@ -188,18 +188,24 @@ jobs:
           - cover
           - date
           - datetime
+          - device_tracker
           - event
           - fan
+          - humidifier
           - image
+          - infrared
+          - lawn_mower
           - light
           - lock
           - media_player
           - notify
           - number
+          - scene
           - select
           - sensor
           - siren
           - switch
+          - tag
           - text
           - time
           - update
@@ -276,6 +282,42 @@ jobs:
           . venv/bin/activate
           python -m script.translations develop --all
       - name: Run device-class trigger and condition tests
+        run: |
+          . venv/bin/activate
+          python -b -X dev -m pytest -q \
+            -n auto \
+            --timeout=20 \
+            --durations=20 \
+            -p no:sugar \
+            "tests/components/${{ matrix.domain }}"
+
+  aggregation:
+    name: "Aggregation: ${{ matrix.domain }}"
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - group
+          - person
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Run aggregation tests
         run: |
           . venv/bin/activate
           python -b -X dev -m pytest -q \

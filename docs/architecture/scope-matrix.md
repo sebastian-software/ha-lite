@@ -36,12 +36,12 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | input_boolean / input_button | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the switch/button trigger and condition platforms. |
 | input_datetime / input_number | **REMOVED** | Virtual helpers; physically removed in Wave 3. The time trigger now accepts timestamp sensors only. |
 | input_select / input_text | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the select/text trigger and condition platforms. |
-| group | **REMOVED** | Physically removed in Wave 3; no hard edge from the closure reached it. Open question: logical grouping over retained substrate is substrate by the same argument that keeps `person`, so this may warrant revisiting. |
+| group | **KEEP (root)** | Folds several entities of one domain into one — several lamps, several blinds, the mean of several sensors. All twelve of its platforms target retained entity domains. Nothing imports it, so it is a root or Wave 4 deletes it. Its `config_flow` is backend setup, which this matrix already keeps. |
 | Device-class trigger/condition providers | **KEEP (roots)** | `air_quality`, `battery`, `door`, `doorbell`, `garage_door`, `gate`, `humidity`, `illuminance`, `moisture`, `motion`, `occupancy`, `power`, `temperature`, `vibration`, `window`. The named vocabulary over entity device classes; `binary_sensor` and `sensor` ship none of their own. ADR 0012. |
 | device_tracker | **KEEP** | Entity domain implemented by `mqtt/device_tracker.py`. DHCP discovery also watches it, but that is not what holds it. |
 | image_upload | **REMOVED** | Avatar storage for `person`; physically removed in Wave 3 after dropping the manifest dependency. |
 | weather | DELETE | Forecast product. No retained integration provides the platform. Reached only through a `DomainSpec` in the temperature/humidity triggers that can never match; decouple in #27. |
-| person | **KEEP** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
+| person | **KEEP (root)** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
 | zone | **KEEP** | Declared dependency in `device_tracker/manifest.json` and imported from its `entity.py` and `legacy.py`. Cannot leave while `device_tracker` stays. |
 | sun | **REMOVED** | Physically removed in Wave 3. Only `helpers/state.py` referenced it, for two state strings no retained entity can report. |
 | default_config | DELETE | Product bundle conflicts with explicit minimal composition. |

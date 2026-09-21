@@ -20,7 +20,9 @@ The core **will** retain event delivery and state transitions. These are observa
 
 The vocabulary an external engine uses to *describe* what it wants to observe is also not automation, and stays. ADR 0012 draws that line for the device-class trigger and condition providers.
 
-Aggregation is not automation either. Folding several inputs into one derived answer states what *is*; it does not decide what *should happen*. `person` is the worked example: it turns a human's several `device_tracker` entities into one presence answer, choosing the best source. Nothing else answers "is anyone home", and an external engine that had to reassemble it from raw trackers would be rebuilding core substrate outside the core. The same reasoning keeps `zone` as the geofence those answers are measured against.
+Aggregation is not automation either. Folding several inputs into one derived answer states what *is*; it does not decide what *should happen*. `person` is the worked example: it turns a human's several `device_tracker` entities into one presence answer, choosing the best source. Nothing else answers "is anyone home", and an external engine that had to reassemble it from raw trackers would be rebuilding core substrate outside the core. The same reasoning keeps `zone` as the geofence those answers are measured against, and `group`, which does the same folding over any retained entity domain: several lamps, several blinds, the mean of several sensors.
+
+Neither is reachable by import, so both are roots. `group`'s config flow is not a reason against it: this project already treats config entries and flows as backend lifecycle rather than presentation, which is what lets an API client or an agent drive setup with no browser anywhere.
 
 This overturns the first reading of the scope matrix, which called `person` a "derived product model". Derived is not the same as product: `sensor` values are derived too. What makes something product is that it encodes a decision or exists to be looked at, and `person` does neither.
 

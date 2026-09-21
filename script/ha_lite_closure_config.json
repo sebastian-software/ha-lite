@@ -12,6 +12,11 @@
     "trigger.py or condition.py of their own, so these components are the only",
     "semantic layer over them. See docs/adr/0012.",
     "",
+    "'aggregation' roots fold several retained entities into one derived answer:",
+    "person over device_tracker, group over any entity domain. Nothing imports",
+    "them, so they need root status or Wave 4 deletes them by reachability.",
+    "Aggregation states what is, not what should happen. See docs/adr/0002.",
+    "",
     "'accepted_transitive' records every domain the closure pulls in that is not",
     "itself a root, with a reviewed reason. A domain reaching the closure without",
     "an entry here fails the check, so new coupling from retained code into an",
@@ -44,18 +49,24 @@
       "cover",
       "date",
       "datetime",
+      "device_tracker",
       "event",
       "fan",
+      "humidifier",
       "image",
+      "infrared",
+      "lawn_mower",
       "light",
       "lock",
       "media_player",
       "notify",
       "number",
+      "scene",
       "select",
       "sensor",
       "siren",
       "switch",
+      "tag",
       "text",
       "time",
       "update",
@@ -111,7 +122,8 @@
       "temperature",
       "vibration",
       "window"
-    ]
+    ],
+    "aggregation": ["group", "person"]
   },
   "cross_cutting_platforms": [
     "backup",
@@ -132,11 +144,6 @@
       "reason": "Entity domains ship device_action.py/device_trigger.py adapters for Home Assistant device automation.",
       "issue": 19
     },
-    "device_tracker": {
-      "status": "retained",
-      "reason": "Entity domain (integration_type: entity) implemented by mqtt/device_tracker.py. DHCP discovery also watches it, but that is not what holds it: it is substrate a retained integration provides, like humidifier and lawn_mower.",
-      "issue": null
-    },
     "file_upload": {
       "status": "patch_required",
       "reason": "MQTT certificate configuration UX. The dependency findings call for accepting certificate material through the API instead.",
@@ -147,24 +154,9 @@
       "reason": "Matter imports Home Assistant OS add-on lifecycle directly. Needs the portability patch that configures an external Matter Server endpoint.",
       "issue": 25
     },
-    "humidifier": {
-      "status": "retained",
-      "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
-      "issue": null
-    },
-    "infrared": {
-      "status": "retained",
-      "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
-      "issue": null
-    },
     "intent": {
       "status": "retained",
       "reason": "Declared dependency of conversation. The overview keeps conversation/intent/LLM primitives because mcp_server requires them.",
-      "issue": null
-    },
-    "lawn_mower": {
-      "status": "retained",
-      "reason": "Entity domain (integration_type: entity) implemented by MQTT. Substrate, not a product.",
       "issue": null
     },
     "llm": {
@@ -182,29 +174,14 @@
       "reason": "The Matter config flow reads onboarding state. Needs the same portability patch as hassio.",
       "issue": 22
     },
-    "person": {
-      "status": "retained",
-      "reason": "The aggregation layer over device_tracker: it folds several trackers for one human into a single presence answer, picking the best source, and reports in_zones. Logical grouping over retained substrate is not a product surface, and nothing else answers 'is anyone home'. Its image_upload dependency was only the avatar and has been dropped.",
-      "issue": null
-    },
     "recorder": {
       "status": "retained",
       "reason": "Current persistence machinery, imported by sensor/recorder.py for statistics. Its replacement is Wave 5, not a Wave 4 deletion.",
       "issue": 28
     },
-    "scene": {
-      "status": "retained",
-      "reason": "Entity domain (integration_type: entity) implemented by hue/scene.py and mqtt/scene.py. A Hue scene lives on the bridge, so this is device state rather than automation semantics. The earlier 'adapter off config/scene.py' reading came from a single BFS path and was wrong: deleting that file would not have freed the domain.",
-      "issue": null
-    },
     "stream": {
       "status": "retained",
       "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",
-      "issue": null
-    },
-    "tag": {
-      "status": "retained",
-      "reason": "Entity domain (integration_type: entity) implemented by mqtt/tag.py, which turns NFC and RFID scans published over MQTT into tag events. Surfaced only after the closure learned to read 'from homeassistant.components import tag'.",
       "issue": null
     },
     "weather": {
