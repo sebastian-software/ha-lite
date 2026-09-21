@@ -130,10 +130,10 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,488 |
+| Component domains in tree | 1,485 |
 | Declared roots | 69 |
 | Retained closure | 89 |
-| Deletion candidates | 1,399 |
+| Deletion candidates | 1,396 |
 
 Of the 20 transitively required domains, 8 are `retained`, 6 are `adapter` and 6 are `patch_required`.
 

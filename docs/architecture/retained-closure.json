@@ -58,6 +58,7 @@
     "occupancy",
     "onboarding",
     "persistent_notification",
+    "person",
     "power",
     "recorder",
     "repairs",
@@ -173,6 +174,7 @@
     "llm",
     "media_source",
     "onboarding",
+    "person",
     "recorder",
     "scene",
     "stream",
@@ -1639,6 +1641,11 @@
       "source": "auth",
       "kind": "import_runtime",
       "via": "homeassistant/components/auth/login_flow.py"
+    },
+    "person": {
+      "source": "onboarding",
+      "kind": "import_runtime",
+      "via": "homeassistant/components/onboarding/views.py"
     },
     "recorder": {
       "source": "sensor",

@@ -182,6 +182,11 @@
       "reason": "The Matter config flow reads onboarding state. Needs the same portability patch as hassio.",
       "issue": 22
     },
+    "person": {
+      "status": "retained",
+      "reason": "The aggregation layer over device_tracker: it folds several trackers for one human into a single presence answer, picking the best source, and reports in_zones. Logical grouping over retained substrate is not a product surface, and nothing else answers 'is anyone home'. Its image_upload dependency was only the avatar and has been dropped.",
+      "issue": null
+    },
     "recorder": {
       "status": "retained",
       "reason": "Current persistence machinery, imported by sensor/recorder.py for statistics. Its replacement is Wave 5, not a Wave 4 deletion.",
