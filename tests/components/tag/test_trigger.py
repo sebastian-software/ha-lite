@@ -105,7 +105,7 @@ async def test_exception_bad_trigger(
         },
     )
     await hass.async_block_till_done()
-    assert "Unnamed automation could not be validated" in caplog.text
+    assert "could not be prepared and has been disabled" in caplog.text
 
 
 async def test_multiple_tags_and_devices_trigger(

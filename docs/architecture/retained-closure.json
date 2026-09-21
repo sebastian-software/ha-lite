@@ -29,6 +29,7 @@
     "fronius",
     "garage_door",
     "gate",
+    "group",
     "hassio",
     "homeassistant",
     "http",
@@ -107,6 +108,7 @@
     "cover",
     "date",
     "datetime",
+    "device_tracker",
     "dhcp",
     "diagnostics",
     "door",
@@ -116,12 +118,16 @@
     "fronius",
     "garage_door",
     "gate",
+    "group",
     "homeassistant",
     "http",
     "hue",
+    "humidifier",
     "humidity",
     "illuminance",
     "image",
+    "infrared",
+    "lawn_mower",
     "light",
     "lock",
     "logger",
@@ -137,8 +143,10 @@
     "number",
     "occupancy",
     "persistent_notification",
+    "person",
     "power",
     "repairs",
+    "scene",
     "select",
     "sensor",
     "shelly",
@@ -147,6 +155,7 @@
     "switch",
     "system_health",
     "system_log",
+    "tag",
     "temperature",
     "text",
     "time",
@@ -164,21 +173,14 @@
   "accepted_transitive": [
     "backup",
     "device_automation",
-    "device_tracker",
     "file_upload",
     "hassio",
-    "humidifier",
-    "infrared",
     "intent",
-    "lawn_mower",
     "llm",
     "media_source",
     "onboarding",
-    "person",
     "recorder",
-    "scene",
     "stream",
-    "tag",
     "weather",
     "web_rtc",
     "zone"
@@ -1592,11 +1594,6 @@
       "kind": "import_runtime",
       "via": "homeassistant/components/alarm_control_panel/device_action.py"
     },
-    "device_tracker": {
-      "source": "dhcp",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/dhcp/__init__.py"
-    },
     "file_upload": {
       "source": "mqtt",
       "kind": "import_runtime",
@@ -1607,25 +1604,10 @@
       "kind": "import_runtime",
       "via": "homeassistant/components/matter/__init__.py"
     },
-    "humidifier": {
-      "source": "humidity",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/humidity/condition.py"
-    },
-    "infrared": {
-      "source": "mqtt",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/mqtt/infrared.py"
-    },
     "intent": {
       "source": "conversation",
       "kind": "dependencies",
       "via": "homeassistant/components/conversation/manifest.json"
-    },
-    "lawn_mower": {
-      "source": "mqtt",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/mqtt/lawn_mower.py"
     },
     "llm": {
       "source": "climate",
@@ -1642,30 +1624,15 @@
       "kind": "import_runtime",
       "via": "homeassistant/components/auth/login_flow.py"
     },
-    "person": {
-      "source": "onboarding",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/onboarding/views.py"
-    },
     "recorder": {
       "source": "sensor",
       "kind": "import_runtime",
       "via": "homeassistant/components/sensor/recorder.py"
     },
-    "scene": {
-      "source": "config",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/config/scene.py"
-    },
     "stream": {
       "source": "camera",
       "kind": "import_runtime",
       "via": "homeassistant/components/camera/__init__.py"
-    },
-    "tag": {
-      "source": "mqtt",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/mqtt/tag.py"
     },
     "weather": {
       "source": "humidity",

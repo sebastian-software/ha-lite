@@ -106,10 +106,11 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 
 | Category | Count |
 |---|---|
-| Entity-domain substrate | 26 |
+| Entity-domain substrate | 32 |
 | Retained integrations | 6 |
 | Runtime infrastructure | 22 |
 | Device-class semantics | 15 |
+| Aggregation | 2 |
 
 ## The gate
 
@@ -130,9 +131,9 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,485 |
-| Declared roots | 69 |
-| Retained closure | 89 |
+| Component domains in tree | 1,486 |
+| Declared roots | 77 |
+| Retained closure | 90 |
 | Deletion candidates | 1,396 |
 
 Of the 20 transitively required domains, 8 are `retained`, 6 are `adapter` and 6 are `patch_required`.
@@ -175,9 +176,14 @@ also the one that cannot be solved by deleting an adapter file: `dhcp/__init__`
 imports it at module level to watch device_tracker registrations during
 discovery.
 
-### Entity domains missing from CI
+### Entity domains that were retained without CI
 
-The closure surfaced three domains MQTT implements that the CI entity-domain
-matrix does not cover: `humidifier`, `lawn_mower` and `infrared`. All three are
-`integration_type: entity` — substrate, not products. They are retained, but
-they are currently retained without test protection.
+The closure once surfaced three domains MQTT implements that the CI
+entity-domain matrix did not cover: `humidifier`, `lawn_mower` and `infrared`.
+Wave 3 added three more — `device_tracker`, `scene` and `tag` — and the same
+argument applies to all six: an `integration_type: entity` domain a retained
+integration implements is substrate, and recording it as transitive only
+reflected which importer the walk happened to reach first.
+
+All six are now roots with a job in the entity-domain matrix, alongside the two
+`aggregation` roots. Every declared root has CI coverage.
