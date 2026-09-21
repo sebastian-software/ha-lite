@@ -2,7 +2,6 @@ is_equal_to:
   target:
     entity:
       - domain: text
-      - domain: input_text
   fields:
     behavior:
       required: true

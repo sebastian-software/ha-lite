@@ -279,6 +279,7 @@ jobs:
         run: |
           . venv/bin/activate
           python -b -X dev -m pytest -q \
+            -n auto \
             --timeout=20 \
             --durations=20 \
             -p no:sugar \
@@ -353,6 +354,11 @@ jobs:
           else
             prek run --from-ref "${base}" --to-ref HEAD
           fi
+
+      - name: Check trigger and condition targets
+        run: |
+          . venv/bin/activate
+          python script/ha_lite_trigger_targets.py --check
 
       - name: Check the retained dependency closure
         run: |

@@ -2,7 +2,6 @@
   target:
     entity:
       - domain: switch
-      - domain: input_boolean
   fields:
     behavior:
       required: true

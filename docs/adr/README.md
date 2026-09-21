@@ -57,6 +57,7 @@ Records are written in English, like everything else in the repository
 | [0011](0011-platforms-are-capabilities-not-dependencies.md) | Treat runtime-resolved platforms as capabilities, not dependencies | Accepted |
 | [0012](0012-retain-device-class-semantics.md) | Retain the device-class trigger and condition vocabulary | Accepted |
 | [0013](0013-english-is-the-project-language.md) | English is the project language | Accepted |
+| [0014](0014-additive-checks-over-upstream-surgery.md) | Add checks in our own files rather than edit upstream ones | Accepted |
 
 ## How these relate to the rest of the documentation
 

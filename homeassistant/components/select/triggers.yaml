@@ -2,4 +2,3 @@ selection_changed:
   target:
     entity:
       - domain: select
-      - domain: input_select
