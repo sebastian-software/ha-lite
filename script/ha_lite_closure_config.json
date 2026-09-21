@@ -207,6 +207,11 @@
       "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",
       "issue": null
     },
+    "tag": {
+      "status": "retained",
+      "reason": "Entity domain (integration_type: entity) implemented by mqtt/tag.py, which turns NFC and RFID scans published over MQTT into tag events. Surfaced only after the closure learned to read 'from homeassistant.components import tag'.",
+      "issue": null
+    },
     "weather": {
       "status": "patch_required",
       "reason": "The temperature and humidity triggers declare a DomainSpec over weather entities. No retained integration provides the weather platform, so that spec can never match in ha-lite; dropping it frees the domain. Deferred because the upstream trigger and condition tests reference weather in 99 places.",

@@ -40,6 +40,7 @@ COMPONENTS = ROOT / "homeassistant" / "components"
 CONFIG = Path(__file__).resolve().parent / "ha_lite_closure_config.json"
 
 MODULE_PREFIX = "homeassistant.components."
+COMPONENTS_PACKAGE = MODULE_PREFIX.rstrip(".")
 
 # Only these grow the closure; every other kind is soft. See the module docstring.
 HARD_KINDS = ("dependencies", "import_runtime")
@@ -136,8 +137,14 @@ class ImportCollector(ast.NodeVisitor):
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         """Record an absolute `from ... import ...` edge."""
         # A relative import cannot leave its own component.
-        if not node.level:
-            self._record([node.module])
+        if node.level:
+            return
+        if node.module == COMPONENTS_PACKAGE:
+            # `from homeassistant.components import person` names the domain in
+            # the import list, not in the module path.
+            self._record([f"{MODULE_PREFIX}{alias.name}" for alias in node.names])
+            return
+        self._record([node.module])
 
     @override
     def visit_Import(self, node: ast.Import) -> None:

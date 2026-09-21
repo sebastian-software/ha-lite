@@ -73,6 +73,7 @@
     "switch",
     "system_health",
     "system_log",
+    "tag",
     "temperature",
     "text",
     "time",
@@ -179,6 +180,7 @@
     "recorder",
     "scene",
     "stream",
+    "tag",
     "weather",
     "web_rtc",
     "zone"
@@ -1361,7 +1363,6 @@
     "systemmonitor",
     "systemnexa2",
     "tado",
-    "tag",
     "tailscale",
     "tailwind",
     "tami4",
@@ -1646,14 +1647,14 @@
       "via": "homeassistant/components/camera/media_source.py"
     },
     "onboarding": {
-      "source": "matter",
+      "source": "auth",
       "kind": "import_runtime",
-      "via": "homeassistant/components/matter/config_flow.py"
+      "via": "homeassistant/components/auth/login_flow.py"
     },
     "person": {
-      "source": "zone",
+      "source": "onboarding",
       "kind": "import_runtime",
-      "via": "homeassistant/components/zone/condition.py"
+      "via": "homeassistant/components/onboarding/views.py"
     },
     "recorder": {
       "source": "sensor",
@@ -1669,6 +1670,11 @@
       "source": "camera",
       "kind": "import_runtime",
       "via": "homeassistant/components/camera/__init__.py"
+    },
+    "tag": {
+      "source": "mqtt",
+      "kind": "import_runtime",
+      "via": "homeassistant/components/mqtt/tag.py"
     },
     "weather": {
       "source": "humidity",
@@ -1848,12 +1854,6 @@
       "integration_type": "device",
       "platforms": [
         "backup"
-      ]
-    },
-    "tag": {
-      "integration_type": "entity",
-      "platforms": [
-        "trigger"
       ]
     },
     "todo": {
