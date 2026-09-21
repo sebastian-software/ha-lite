@@ -174,6 +174,7 @@ async def test_onboarding_user(
     # before onboarding is done.
     area_registry.async_create("Living Room")
 
+    assert await async_setup_component(hass, "person", {})
     assert await async_setup_component(hass, DOMAIN, {})
     await hass.async_block_till_done()
 
@@ -203,6 +204,7 @@ async def test_onboarding_user(
     assert user is not None
     assert len(user.credentials) == 1
     assert user.credentials[0].data["username"] == "test-user"
+    assert len(hass.data["person"][1].async_items()) == 1
 
     # Validate refresh token 1
     resp = await client.post(

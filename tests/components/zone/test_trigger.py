@@ -179,7 +179,7 @@ async def test_if_fires_on_zone_enter_via_in_zones(
 async def test_zone_enter_ignores_in_zones_for_other_domains(
     hass: HomeAssistant, service_calls: list[ServiceCall]
 ) -> None:
-    """Test the zone trigger uses coordinates for non device_tracker entities.
+    """Test the zone trigger uses coordinates for non device_tracker/person.
 
     A sensor entity reports in_zones that always lists the zone, yet only its
     coordinates crossing into the zone drives the enter event. If in_zones were
@@ -606,7 +606,7 @@ def _parametrize_zone_target_entities() -> list[tuple[dict[str, Any], str, int, 
     """Parametrize target entities for all supported zone trigger domains."""
     return [
         (*params, domain)
-        for domain in ("device_tracker",)
+        for domain in ("person", "device_tracker")
         for params in parametrize_target_entities(domain)
     ]
 

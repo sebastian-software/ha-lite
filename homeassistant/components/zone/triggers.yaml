@@ -2,6 +2,7 @@
   target:
     entity:
       domain:
+        - person
         - device_tracker
   fields:
     behavior:

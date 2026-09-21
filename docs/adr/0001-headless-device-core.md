@@ -14,6 +14,8 @@ It owns device/service discovery, configuration lifecycle, identity, capabilitie
 
 It does not own dashboards or other browser UI. Code whose only purpose is presentation should be removed rather than merely hidden when dependencies allow it.
 
+"Device core" bounds what ha-lite is *for*, not what its state may be about. A derived answer assembled from retained substrate stays in the core even when it is about a person rather than a device; ADR 0002 works that out for `person` and `zone`. The test is whether the answer describes the physical world, not whether its subject is a piece of hardware.
+
 ## Consequences
 
 Home Assistant assumptions that frontend is start-critical must be removed. Backend configuration functionality currently coupled to panel/frontend registration must be separated.

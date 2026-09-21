@@ -59,7 +59,7 @@ _EVENT_DESCRIPTION = {EVENT_ENTER: "entering", EVENT_LEAVE: "leaving"}
 def _state_has_zone_info(state: State) -> bool:
     """Return True if the state can be matched against a zone.
 
-    For device_tracker entities an ``in_zones`` attribute is
+    For device_tracker and person entities an ``in_zones`` attribute is
     sufficient even when the state has no coordinates (e.g. a scanner-based
     tracker); other entities are matched by their coordinates.
     """
@@ -91,6 +91,7 @@ _ZONE_TRIGGER_SCHEMA = ENTITY_STATE_TRIGGER_SCHEMA_WITH_BEHAVIOR.extend(
 )
 
 _DOMAIN_SPECS: dict[str, DomainSpec] = {
+    "person": DomainSpec(),
     "device_tracker": DomainSpec(),
 }
 
@@ -186,7 +187,7 @@ class LegacyZoneTrigger(Trigger):
 
 
 class ZoneTriggerBase(EntityTriggerBase):
-    """Base for zone-based triggers targeting device_tracker entities."""
+    """Base for zone-based triggers targeting person and device_tracker entities."""
 
     _domain_specs = _DOMAIN_SPECS
     _schema = _ZONE_TRIGGER_SCHEMA

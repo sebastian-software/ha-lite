@@ -44,6 +44,7 @@ from .components import (
     file_upload as file_upload_pre_import,  # noqa: F401
     http as http_import,  # noqa: F401 - not named pre_import since it has requirements
     onboarding as onboarding_pre_import,  # noqa: F401
+    person as person_pre_import,  # noqa: F401
     recorder as recorder_import,  # noqa: F401 - not named pre_import since it has requirements
     repairs as repairs_pre_import,  # noqa: F401
     sensor as sensor_pre_import,  # noqa: F401
@@ -219,6 +220,7 @@ DEFAULT_INTEGRATIONS = {
     # Key-feature:
     # Automation and script are intentionally opt-in in ha-lite. The generic
     # trigger/condition/action, event and service runtimes remain available.
+    "person",
     "scene",
     "tag",
     "zone",

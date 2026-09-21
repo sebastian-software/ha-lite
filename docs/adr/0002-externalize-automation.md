@@ -20,7 +20,11 @@ The core **will** retain event delivery and state transitions. These are observa
 
 The vocabulary an external engine uses to *describe* what it wants to observe is also not automation, and stays. ADR 0012 draws that line for the device-class trigger and condition providers.
 
-`scene` is still reached from `config/scene.py` and has not been resolved. If a generic batch-command primitive is useful it should be designed explicitly, rather than inherited accidentally as automation semantics.
+Aggregation is not automation either. Folding several inputs into one derived answer states what *is*; it does not decide what *should happen*. `person` is the worked example: it turns a human's several `device_tracker` entities into one presence answer, choosing the best source. Nothing else answers "is anyone home", and an external engine that had to reassemble it from raw trackers would be rebuilding core substrate outside the core. The same reasoning keeps `zone` as the geofence those answers are measured against.
+
+This overturns the first reading of the scope matrix, which called `person` a "derived product model". Derived is not the same as product: `sensor` values are derived too. What makes something product is that it encodes a decision or exists to be looked at, and `person` does neither.
+
+`scene` is retained for a different reason again: it is an entity domain that `hue/scene.py` and `mqtt/scene.py` implement, and a Hue scene lives on the bridge. Recalling device-stored state is device control, not batch-command automation semantics.
 
 ## Consequences
 

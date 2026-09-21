@@ -225,7 +225,7 @@ async def test_multiple_zones(hass: HomeAssistant) -> None:
     assert not test.async_check()
 
 
-@pytest.mark.parametrize("entity_id", ["device_tracker.cat"])
+@pytest.mark.parametrize("entity_id", ["device_tracker.cat", "person.bob"])
 async def test_zone_condition_prefers_in_zones_over_coordinates(
     hass: HomeAssistant, entity_id: str
 ) -> None:
@@ -373,17 +373,11 @@ async def test_zone_condition_options_validation(
     [
         (
             "zone.in_zone",
-            {
-                "target": {"entity_id": "device_tracker.alice"},
-                "options": {"zone": "light.x"},
-            },
+            {"target": {"entity_id": "person.alice"}, "options": {"zone": "light.x"}},
         ),
         (
             "zone.not_in_zone",
-            {
-                "target": {"entity_id": "device_tracker.alice"},
-                "options": {"zone": "light.x"},
-            },
+            {"target": {"entity_id": "person.alice"}, "options": {"zone": "light.x"}},
         ),
         (
             "zone.occupancy_is_detected",
@@ -476,7 +470,7 @@ def _parametrize_zone_target_entities() -> list[tuple[dict[str, Any], str, int, 
     """Parametrize target entities for all supported zone condition domains."""
     return [
         (*params, domain)
-        for domain in ("device_tracker",)
+        for domain in ("person", "device_tracker")
         for params in parametrize_target_entities(domain)
     ]
 
@@ -548,16 +542,16 @@ async def test_in_zone_condition_for_attribute_only_change(
 ) -> None:
     """Test `for:` anchors to in_zones updates, not state.state changes.
 
-    A tracker already "home" that enters an overlapping zone (e.g. zone.coffee)
+    A person already "home" who enters an overlapping zone (e.g. zone.coffee)
     keeps state.state == "home" while in_zones grows. `for: 5m` on
     in_zone(zone.coffee) must start counting from when in_zones changed, not
     from the (older) last state.state transition.
     """
     coffee_zone = "zone.coffee"
 
-    # Tracker at home but not yet in the coffee zone.
+    # Person at home but not yet in the coffee zone.
     hass.states.async_set(
-        "device_tracker.alice",
+        "person.alice",
         "home",
         {"in_zones": [ZONE_HOME]},
     )
@@ -570,7 +564,7 @@ async def test_in_zone_condition_for_attribute_only_change(
         hass,
         {
             "condition": "zone.in_zone",
-            "target": {"entity_id": "device_tracker.alice"},
+            "target": {"entity_id": "person.alice"},
             "options": {"zone": coffee_zone, "for": {"minutes": 5}},
         },
     )
@@ -579,7 +573,7 @@ async def test_in_zone_condition_for_attribute_only_change(
     # in_zones gains the coffee zone; state.state stays "home", so last_changed
     # is untouched and only last_updated advances.
     hass.states.async_set(
-        "device_tracker.alice",
+        "person.alice",
         "home",
         {"in_zones": [ZONE_HOME, coffee_zone]},
     )
