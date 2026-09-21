@@ -1,7 +1,6 @@
 # ADR 0012: Retain the device-class trigger and condition vocabulary
 
 - Status: Accepted
-- Date: 2026-09-21
 
 ## Context
 
@@ -49,7 +48,8 @@ agent-driven control.
 ## Decision
 
 Retain all fifteen as roots, in a `device_class_semantics` category in
-`script/ha_lite_closure_config.json`. Wave 4 may not delete them by reachability.
+`script/ha_lite_closure_config.json`, with a matching `device-class-semantics`
+job matrix in CI. Wave 4 may not delete them by reachability.
 
 Add `doorbell` to `DEFAULT_INTEGRATIONS` in `homeassistant/bootstrap.py`. It is
 the only one of the fifteen that upstream never registered, and platforms are
@@ -60,7 +60,9 @@ registering it would retain dead code.
 ## Consequences
 
 The closure grows from 73 to 89 domains and deletion candidates fall from 1,415
-to 1,399. The retained cost is 7,797 lines across 134 files, of which only 1,825
+to 1,399, and CI grows by fifteen jobs. The first version of this decision added
+the roots without the jobs, which left the capability protected from deletion
+but not from breakage; ADR 0010 now names that as the failure mode to watch. The retained cost is 7,797 lines across 134 files, of which only 1,825
 are Python; the remainder is YAML specs, `strings.json`, `icons.json` and one
 `en.json` each. No external requirements, no config flow, no setup cost beyond
 bootstrap registration.

@@ -1,7 +1,6 @@
 # ADR 0008: Use tests to define the retained runtime contract
 
 - Status: Accepted
-- Date: 2026-09-19
 
 ## Context
 

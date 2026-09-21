@@ -1,11 +1,46 @@
 # Architecture decision records
 
 Each record states one decision, the context that forced it and what it costs.
-Records are append-only: a decision that turns out wrong gets a new record that
-supersedes it, so the reasoning stays readable after the fact.
 
-Format follows ADR 0001: title, `Status`, `Date`, then `Context`, `Decision`,
-`Consequences`. Status is `Proposed`, `Accepted` or `Superseded by NNNN`.
+## These are living documents
+
+ADRs here are **not immutable**. They carry no date and no version, and they are
+not an append-only log. When reality moves, the record is edited to match.
+
+That is a deliberate departure from the common ADR convention. The usual
+argument for immutability is that a record should show what was known at the
+time. This project does not need that: the commit history already shows it, and
+the value of an ADR here is that it answers *why is the code like this* for
+whoever reads it next. A record that describes a plan the tree no longer follows
+does not preserve history, it just misleads.
+
+So:
+
+- **Edit a record when the decision it describes has been carried out.** Replace
+  "X is a deletion candidate" with what happened to X. ADR 0002 does this.
+- **Edit a record when it makes a claim the tree no longer supports.** A check
+  that was true when written and is not true now is a bug in the document.
+- **Write a new record when the decision itself changes**, and set the old one's
+  status to `Superseded by NNNN` with a line pointing at it. Reversing a
+  decision is not the same as keeping a record current.
+- **Never rewrite a record to hide that the project changed its mind.** The
+  point is accuracy, not tidiness.
+
+Numbers are stable identifiers, not an ordering of importance, and are never
+reused.
+
+## Format
+
+`# ADR NNNN: Title`, then `- Status:`, then `## Context`, `## Decision`,
+`## Consequences`. Status is `Accepted`, `Proposed` or `Superseded by NNNN`.
+
+No date field: these records are maintained, so a date would only ever be the
+date someone last touched the file, which `git log` already answers better.
+
+Records are written in English, like everything else in the repository
+(ADR 0013).
+
+## Index
 
 | # | Decision | Status |
 |---|---|---|
@@ -21,10 +56,11 @@ Format follows ADR 0001: title, `Status`, `Date`, then `Context`, `Decision`,
 | [0010](0010-closure-is-the-deletion-authority.md) | Let the computed closure decide what may be deleted | Accepted |
 | [0011](0011-platforms-are-capabilities-not-dependencies.md) | Treat runtime-resolved platforms as capabilities, not dependencies | Accepted |
 | [0012](0012-retain-device-class-semantics.md) | Retain the device-class trigger and condition vocabulary | Accepted |
+| [0013](0013-english-is-the-project-language.md) | English is the project language | Accepted |
 
 ## How these relate to the rest of the documentation
 
-- ADRs say **why**, once, and do not change when the tree does.
+- ADRs say **why**, and are kept current.
 - [`docs/architecture/scope-matrix.md`](../architecture/scope-matrix.md) says
   **what** is kept or removed, per component.
 - [`docs/architecture/retained-closure.md`](../architecture/retained-closure.md)
@@ -32,4 +68,14 @@ Format follows ADR 0001: title, `Status`, `Date`, then `Context`, `Decision`,
   proves**, and are regenerated on every change.
 
 When the three disagree, the closure is the evidence, the matrix is the intent,
-and the ADR is the reasoning that has to be revisited.
+and the ADR is what has to be brought back in line.
+
+## What these records cannot tell you
+
+ADRs 0001 through 0009 were all written into the repository's root commit, a
+squashed import of 27,460 files. The frontend, Lovelace, automation and script
+removals happened before that commit, so there is no per-change history for
+them: those nine records are the only account of that reasoning, and they were
+written after the fact rather than alongside it.
+
+Everything from the second commit onward is reconstructable from the history.

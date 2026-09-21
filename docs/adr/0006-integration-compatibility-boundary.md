@@ -1,7 +1,6 @@
 # ADR 0006: Preserve Home Assistant integration contracts before replacing them
 
 - Status: Accepted
-- Date: 2026-09-19
 
 ## Context
 

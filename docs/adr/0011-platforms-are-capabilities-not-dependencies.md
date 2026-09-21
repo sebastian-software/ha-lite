@@ -1,7 +1,6 @@
 # ADR 0011: Treat runtime-resolved platforms as capabilities, not dependencies
 
 - Status: Accepted
-- Date: 2026-09-21
 
 ## Context
 

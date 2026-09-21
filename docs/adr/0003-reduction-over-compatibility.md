@@ -1,7 +1,6 @@
 # ADR 0003: Prefer explicit reduction over maximum upstream compatibility
 
 - Status: Accepted
-- Date: 2026-09-18
 
 ## Context
 
@@ -19,4 +18,4 @@ Upstream updates are expected to be curated rather than blindly merged.
 
 The project needs a documented scope matrix and generated dependency maps. Deletion commits should be thematic and small enough that their rationale remains understandable.
 
-An upstream update experiment should be performed after the first useful reduction to measure the actual maintenance cost.
+An upstream update experiment should be performed after the first useful reduction to measure the actual maintenance cost. **Still open.** Five reduction waves have landed and the cost of a curated upstream update has not been measured once, so the central assumption of this record is untested.

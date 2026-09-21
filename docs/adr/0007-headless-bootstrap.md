@@ -1,7 +1,6 @@
 # ADR 0007: Make bootstrap headless rather than merely disabling frontend
 
 - Status: Accepted
-- Date: 2026-09-19
 
 ## Context
 
@@ -25,7 +24,7 @@ Decouple backend configuration APIs from frontend panel registration.
 
 Frontend and Lovelace can be physically deleted without making startup invalid.
 
-Recovery mode must be redefined as an operational/API recovery path.
+Recovery mode must be redefined as an operational/API recovery path. **Still open.** `DEFAULT_INTEGRATIONS_RECOVERY_MODE` in `homeassistant/bootstrap.py` is still Home Assistant's recovery mode with the product entries removed, not a headless recovery path of its own.
 
 Components previously retained only because frontend depended on them must be individually reclassified.
 

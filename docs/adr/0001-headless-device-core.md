@@ -1,7 +1,6 @@
 # ADR 0001: Define ha-lite as a headless device core
 
 - Status: Accepted
-- Date: 2026-09-18
 
 ## Context
 
