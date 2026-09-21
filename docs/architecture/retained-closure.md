@@ -111,6 +111,7 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 | Runtime infrastructure | 22 |
 | Device-class semantics | 15 |
 | Aggregation | 2 |
+| Environment | 1 |
 
 ## The gate
 
@@ -131,9 +132,9 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,486 |
-| Declared roots | 77 |
-| Retained closure | 90 |
+| Component domains in tree | 1,487 |
+| Declared roots | 78 |
+| Retained closure | 91 |
 | Deletion candidates | 1,396 |
 
 Of the 20 transitively required domains, 8 are `retained`, 6 are `adapter` and 6 are `patch_required`.

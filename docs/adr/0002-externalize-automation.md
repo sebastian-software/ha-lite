@@ -24,6 +24,8 @@ Aggregation is not automation either. Folding several inputs into one derived an
 
 Neither is reachable by import, so both are roots. `group`'s config flow is not a reason against it: this project already treats config entries and flows as backend lifecycle rather than presentation, which is what lets an API client or an agent drive setup with no browser anywhere.
 
+`sun` is kept for the neighbouring reason. It aggregates nothing — solar position is a pure function of the configured coordinates and the clock — but it observes the physical surroundings, and `astral` and `helpers/sun.py` are core already, so the component only exposes what the core computes regardless. With Fronius in scope it is directly device-relevant: a PV site's yield follows solar elevation.
+
 This overturns the first reading of the scope matrix, which called `person` a "derived product model". Derived is not the same as product: `sensor` values are derived too. What makes something product is that it encodes a decision or exists to be looked at, and `person` does neither.
 
 `scene` is retained for a different reason again: it is an entity domain that `hue/scene.py` and `mqtt/scene.py` implement, and a Hue scene lives on the bridge. Recalling device-stored state is device control, not batch-command automation semantics.

@@ -17,6 +17,12 @@
     "them, so they need root status or Wave 4 deletes them by reachability.",
     "Aggregation states what is, not what should happen. See docs/adr/0002.",
     "",
+    "'environment' roots observe the physical surroundings rather than a device.",
+    "sun computes solar position from the configured coordinates and the clock.",
+    "astral and helpers/sun.py are core already, so the component only exposes",
+    "what the core computes anyway. Fronius makes it device-relevant: solar",
+    "elevation is what a PV site's yield follows. See docs/adr/0002.",
+    "",
     "'accepted_transitive' records every domain the closure pulls in that is not",
     "itself a root, with a reviewed reason. A domain reaching the closure without",
     "an entry here fails the check, so new coupling from retained code into an",
@@ -123,7 +129,8 @@
       "vibration",
       "window"
     ],
-    "aggregation": ["group", "person"]
+    "aggregation": ["group", "person"],
+    "environment": ["sun"]
   },
   "cross_cutting_platforms": [
     "backup",

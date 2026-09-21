@@ -12,7 +12,7 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config as conf_util
-from homeassistant.const import SERVICE_RELOAD, SERVICE_TURN_OFF
+from homeassistant.const import SERVICE_RELOAD, SERVICE_TURN_OFF, SERVICE_TURN_ON
 from homeassistant.core import Context, HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import (
@@ -69,7 +69,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         platform_config
         for _, platform_config in conf_util.config_per_platform(config, DOMAIN)
     ]
-    data = hass.data.setdefault(_DATA, {"removes": [], "scripts": []})
+    data = hass.data.setdefault(_DATA, {"removes": [], "scripts": [], "config": None})
+    # turn_on re-arms from the config the test passed in, which reload cannot
+    # do: these tests never write a YAML file for it to re-read.
+    data["config"] = config
 
     if not hass.services.has_service(DOMAIN, SERVICE_TURN_OFF):
 
@@ -77,6 +80,15 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             await _async_detach(hass)
 
         async_mock_service(hass, SERVICE_TURN_OFF, async_turn_off)
+
+    if not hass.services.has_service(DOMAIN, SERVICE_TURN_ON):
+
+        async def async_turn_on(_call: ServiceCall) -> None:
+            await _async_detach(hass)
+            if (stored := hass.data[_DATA]["config"]) is not None:
+                await async_setup(hass, stored)
+
+        async_mock_service(hass, SERVICE_TURN_ON, async_turn_on)
 
     if not hass.services.has_service(DOMAIN, SERVICE_RELOAD):
 

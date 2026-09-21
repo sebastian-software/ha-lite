@@ -291,8 +291,8 @@ jobs:
             -p no:sugar \
             "tests/components/${{ matrix.domain }}"
 
-  aggregation:
-    name: "Aggregation: ${{ matrix.domain }}"
+  derived-state:
+    name: "Derived state: ${{ matrix.domain }}"
     needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -302,6 +302,7 @@ jobs:
         domain:
           - group
           - person
+          - sun
     steps:
       - uses: actions/checkout@v7
         with:
@@ -317,7 +318,7 @@ jobs:
         run: |
           . venv/bin/activate
           python -m script.translations develop --all
-      - name: Run aggregation tests
+      - name: Run derived-state tests
         run: |
           . venv/bin/activate
           python -b -X dev -m pytest -q \

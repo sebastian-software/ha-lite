@@ -8,6 +8,7 @@ from types import ModuleType
 from typing import Any
 
 from homeassistant.components.lock import LockState
+from homeassistant.components.sun import STATE_ABOVE_HORIZON, STATE_BELOW_HORIZON
 from homeassistant.const import (
     STATE_CLOSED,
     STATE_HOME,
@@ -75,6 +76,7 @@ def state_as_number(state: State) -> float:
     if state.state in (
         STATE_ON,
         LockState.LOCKED,
+        STATE_ABOVE_HORIZON,
         STATE_OPEN,
         STATE_HOME,
     ):
@@ -83,6 +85,7 @@ def state_as_number(state: State) -> float:
         STATE_OFF,
         LockState.UNLOCKED,
         STATE_UNKNOWN,
+        STATE_BELOW_HORIZON,
         STATE_CLOSED,
         STATE_NOT_HOME,
     ):
