@@ -43,7 +43,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | weather | DELETE | Forecast product. No retained integration provides the platform. Reached only through a `DomainSpec` in the temperature/humidity triggers that can never match; decouple in #27. |
 | person | **KEEP (root)** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
 | zone | **KEEP** | Declared dependency in `device_tracker/manifest.json` and imported from its `entity.py` and `legacy.py`. Cannot leave while `device_tracker` stays. |
-| sun | **REMOVED** | Physically removed in Wave 3. Only `helpers/state.py` referenced it, for two state strings no retained entity can report. |
+| sun | **KEEP (root)** | Solar position from the configured coordinates and the clock: elevation, azimuth, and the next dawn/dusk/noon/midnight/rising/setting. `astral` and `helpers/sun.py` are core already, so this only exposes what the core computes anyway. Fronius makes it device-relevant — a PV site's yield follows solar elevation. Nothing imports it, so it is a root. |
 | default_config | DELETE | Product bundle conflicts with explicit minimal composition. |
 | config | KEEP / REDUCE | Backend configuration useful; remove frontend/panel coupling. |
 | system_health | KEEP / REDUCE | Headless operations need health data. |

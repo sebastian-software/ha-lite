@@ -82,3 +82,19 @@ as its own correctness.
 
 Reachability is necessary but not sufficient. It says nothing about capabilities
 resolved by name at runtime; see ADR 0011.
+
+It says nothing about scope either, and the closure must not be read as if it
+did. Wave 3 tested each domain with "does a retained integration implement it?",
+which is a fine question about *substrate* and the wrong one about everything
+else. It kept `scene`, `device_tracker` and `zone` correctly, and it removed
+`person`, `group` and `sun` — all three wrongly, because none of them is
+implemented by a device integration and none of them needed to be. They were
+restored after the fact.
+
+The question that separates them is not who implements a domain but what the
+domain answers: does it describe the physical world, and does the answer need
+runtime state only this core holds? `person` and `group` fold live entity state,
+so an external engine cannot reproduce them. `sun` needs no runtime state at
+all, and is kept on the narrower ground that the core computes solar position
+anyway. A domain reachable from nothing is a candidate for that question, not
+an answer to it.
