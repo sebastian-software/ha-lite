@@ -3,6 +3,7 @@
   "extends": ["config:recommended"],
 
   "enabledManagers": [
+    "github-actions",
     "pep621",
     "pip_requirements",
     "pre-commit",
