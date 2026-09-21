@@ -57,10 +57,16 @@ small as the reduction needs, as ADR 0006 already requires for integrations.
 ## Consequences
 
 Redundant upstream tests stay. `air_quality` keeps all 14,527 cases, and the
-device-class CI matrix runs with `-n auto` instead, which takes that job from
-roughly nine minutes to two and a half on a four-core runner. The measurement
-that showed the redundancy is recorded here rather than acted on, so a future
-reader does not have to rediscover it before deciding again.
+device-class CI matrix runs with `-n auto` instead. Measured on CI, that job
+goes from 7:53 to 4:59 and the whole run from 8:56 to 6:12. Locally the same
+change was worth 3.5x rather than 1.6x, so these tests do not scale with cores
+the way a CPU-bound suite would -- they are event-loop bound, and each xdist
+worker pays to import Home Assistant again. Parallelism buys back less than it
+looks like it should, which weakens the argument above without changing it:
+divergence still costs more, every update, forever.
+
+The measurement that showed the redundancy is recorded here rather than acted
+on, so a future reader does not have to rediscover it before deciding again.
 
 ha-lite accumulates its own checks alongside the upstream suite instead of
 reshaping it. Each one is a file that did not exist upstream, which is the
