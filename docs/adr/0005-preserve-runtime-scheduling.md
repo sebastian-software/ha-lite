@@ -1,7 +1,6 @@
 # ADR 0005: Distinguish runtime scheduling from user automation
 
 - Status: Accepted
-- Date: 2026-09-19
 
 ## Context
 

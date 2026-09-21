@@ -1,8 +1,6 @@
-# ADR 0009 — MCP is a core headless control surface
+# ADR 0009: MCP is a core headless control surface
 
-## Status
-
-Accepted.
+- Status: Accepted
 
 ## Context
 

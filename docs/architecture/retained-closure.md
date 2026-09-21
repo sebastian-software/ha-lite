@@ -100,9 +100,9 @@ ADR 0012 records the decision and what it costs.
 
 ## Roots
 
-Roots are declared in `script/ha_lite_closure_config.json` and mirror the job
-matrices in `.github/workflows/ha-lite-ci.yml`. What CI protects is what
-ha-lite promises to keep working, so the two should not drift apart.
+Roots are declared in `script/ha_lite_closure_config.json`. Every root has a CI
+job in `.github/workflows/ha-lite-ci.yml`: what CI protects is what ha-lite
+promises to keep working, so a root without a job is a gap, not a shortcut.
 
 | Category | Count |
 |---|---|

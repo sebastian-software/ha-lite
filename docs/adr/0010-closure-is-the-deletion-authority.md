@@ -1,7 +1,6 @@
 # ADR 0010: Let the computed closure decide what may be deleted
 
 - Status: Accepted
-- Date: 2026-09-21
 
 ## Context
 
@@ -48,9 +47,15 @@ Classify edges by strength. Only hard edges grow the closure:
 Soft edges are reported as **latent coupling** rather than discarded: they are
 what would widen the closure if they hardened.
 
-Roots are declared in `script/ha_lite_closure_config.json` and mirror the job
-matrices in `.github/workflows/ha-lite-ci.yml`. What CI protects is what ha-lite
-promises to keep working, so the two must not drift apart.
+Roots are declared in `script/ha_lite_closure_config.json` and every root has a
+CI job in `.github/workflows/ha-lite-ci.yml`. What CI protects is what ha-lite
+promises to keep working, so declaring a root and giving it test coverage are
+one decision, not two.
+
+This has been violated once already: ADR 0012 added fifteen roots without CI
+jobs, leaving them protected from deletion but not from breakage. Adding a root
+without a job is the failure mode to watch for, because nothing fails when it
+happens.
 
 Every domain that enters the closure without being a root needs a reviewed entry
 in `accepted_transitive` carrying a status (`retained`, `adapter`,

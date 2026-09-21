@@ -2,6 +2,14 @@
 
 This repository contains the core of Home Assistant, a Python 3 based home automation application.
 
+## Project Language
+
+- Everything written into the repository is in English: code, identifiers, comments, docstrings, tests, documentation, ADRs, commit messages, pull request titles and descriptions, and issues. Conversation may happen in any language; what lands in the repo is English. See `docs/adr/0013-english-is-the-project-language.md`.
+
+## Architecture Decision Records
+
+- `docs/adr/` records why the architecture is the way it is. The records are **living documents**: no date, no version, not append-only. When a decision has been carried out, or a record makes a claim the tree no longer supports, edit the record. Write a new record only when the decision itself changes, and mark the old one `Superseded by NNNN`. See `docs/adr/README.md`.
+
 ## Git Commit Guidelines
 
 - **Do NOT amend, squash, or rebase commits that have already been pushed to the PR branch after the PR is opened** - Reviewers need to follow the commit history, as well as see what changed since their last review
