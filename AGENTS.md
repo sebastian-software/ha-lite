@@ -1,6 +1,8 @@
-# GitHub Copilot & Claude Code Instructions
+# Agent instructions
 
-This repository contains the core of Home Assistant, a Python 3 based home automation application.
+ha-lite is a headless device runtime reduced from Home Assistant Core, a Python 3
+application. `CLAUDE.md` is a symlink to this file, so this is the one place
+agent guidance lives — put new guidance here rather than in a tool-specific file.
 
 ## Project Language
 
@@ -10,14 +12,19 @@ This repository contains the core of Home Assistant, a Python 3 based home autom
 
 - `docs/adr/` records why the architecture is the way it is. The records are **living documents**: no date, no version, not append-only. When a decision has been carried out, or a record makes a claim the tree no longer supports, edit the record. Write a new record only when the decision itself changes, and mark the old one `Superseded by NNNN`. See `docs/adr/README.md`.
 
+## Reduction gates
+
+- `script/ha_lite_closure.py` is the authority for what may be deleted, and `script/ha_lite_trigger_targets.py` checks that advertised trigger and condition targets match what the code filters on. Both run in CI with `--check`; run them before pushing a change that removes or rewires a component. See ADR 0010 and ADR 0011.
+- Protect ha-lite by adding checks in files ha-lite owns rather than by editing upstream ones — every edited upstream line is a conflict on every future import. See ADR 0014.
+- Declaring a root in `script/ha_lite_closure_config.json` and giving it a CI job in `.github/workflows/ha-lite-ci.yml` are one decision, not two.
+
 ## Git Commit Guidelines
 
 - **Do NOT amend, squash, or rebase commits that have already been pushed to the PR branch after the PR is opened** - Reviewers need to follow the commit history, as well as see what changed since their last review
 
 ## Pull Requests
 
-- When opening a pull request, use the repository's PR template (`.github/PULL_REQUEST_TEMPLATE.md`). NEVER REMOVE ANYTHING from the template.
-- Do not remove checkboxes that are not checked — leave all unchecked checkboxes in place so reviewers can see which options were not selected.
+- Use `.github/PULL_REQUEST_TEMPLATE.md`: Summary, Changes, Validation, Issue. Fill Validation with the commands you actually ran and their result.
 
 ## Development Commands
 
@@ -28,7 +35,7 @@ This repository contains the core of Home Assistant, a Python 3 based home autom
 
 ## Python Syntax Notes
 
-- Home Assistant officially supports Python 3.14 as its minimum version. Do not flag syntax or features that require Python 3.14 as issues, and do not suggest workarounds for older Python versions.
+- ha-lite targets Python 3.14 as its minimum version. Do not flag syntax or features that require Python 3.14 as issues, and do not suggest workarounds for older Python versions.
 - Python 3.14 explicitly allows `except TypeA, TypeB:` without parentheses. Never flag this as an issue.
 - Python 3.14 evaluates annotations lazily (PEP 649). Forward references in annotations do not need to be quoted — annotations can reference names defined later in the module without quoting them or using `from __future__ import annotations`. Do not flag unquoted forward references in annotations as issues.
 
@@ -54,11 +61,3 @@ This repository contains the core of Home Assistant, a Python 3 based home autom
 - Do not add section or divider comments (e.g. `# --- XYZ Triggers ---`) inside or outside of functions, since those can easily become stale and be misleading.
 - When catching exceptions, try-clauses should be as small as possible, i.e. avoid wrapping large blocks of code in a try-clause, and avoid catching exceptions from functions that are not expected to raise them.
 - Sensitive service actions, i.e. those that can change configuration or have security implications, should require an admin user. Register them with the `async_register_admin_service` service helper, which checks this for you.
-
-## AI policy
-
-This project follows the [Open Home Foundation AI Policy](AI_POLICY.md).
-Autonomous contributions are not accepted: a human must review, understand,
-and be able to explain every change before it is submitted. Do not open
-issues or pull requests autonomously, and do not post comments on behalf of
-a user without their review.

@@ -1,17 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Report a bug with the UI, Frontend or Dashboards
-    url: https://github.com/home-assistant/frontend/issues
-    about: This is the issue tracker for our backend. Please report issues with the UI in the frontend repository.
-  - name: Report incorrect or missing information on our website
-    url: https://github.com/home-assistant/home-assistant.io/issues
-    about: Our documentation has its own issue tracker. Please report issues with the website there.
-  - name: I have a question or need support
-    url: https://www.home-assistant.io/help
-    about: We use GitHub for tracking bugs, check our website for resources on getting help.
-  - name: Feature Request
-    url: https://github.com/orgs/home-assistant/discussions
-    about: Please use this link to request new features or enhancements to existing features.
-  - name: I'm unsure where to go
-    url: https://www.home-assistant.io/join-chat
-    about: If you are unsure where to go, then joining our chat is recommended; Just ask!
+  - name: Report a security vulnerability as a private advisory
+    url: https://github.com/sebastian-software/ha-lite/security/advisories/new
+    about: Do not open a public issue. This is the preferred route for anything with a security impact.
+  - name: Report a security vulnerability by email
+    url: https://docs.github.com/code-security/getting-started/adding-a-security-policy-to-your-repository
+    about: Do not open a public issue. Email security@sebastian-software.de — this route always works, whatever the repository's settings are.
+  - name: Report a Home Assistant bug that ha-lite inherited
+    url: https://github.com/home-assistant/core/issues
+    about: ha-lite is a reduction of Home Assistant Core. A defect that reproduces on upstream Home Assistant belongs in its issue tracker.
