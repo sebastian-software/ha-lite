@@ -167,6 +167,11 @@
       "reason": "LLM API substrate behind mcp_server; entity domains expose themselves to it through llm.py.",
       "issue": null
     },
+    "media_source": {
+      "status": "retained",
+      "reason": "Media browsing and resolution for camera, image and media player entities; camera/media_source.py and image/media_source.py import it at module level.",
+      "issue": null
+    },
     "stream": {
       "status": "retained",
       "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",

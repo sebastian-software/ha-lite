@@ -48,6 +48,7 @@
     "matter",
     "mcp_server",
     "media_player",
+    "media_source",
     "miele",
     "modbus",
     "moisture",
@@ -181,6 +182,7 @@
     "device_automation",
     "intent",
     "llm",
+    "media_source",
     "stream",
     "web_rtc",
     "zone"
@@ -201,6 +203,11 @@
       "source": "climate",
       "kind": "import_runtime",
       "via": "homeassistant/components/climate/llm.py"
+    },
+    "media_source": {
+      "source": "camera",
+      "kind": "import_runtime",
+      "via": "homeassistant/components/camera/media_source.py"
     },
     "stream": {
       "source": "camera",

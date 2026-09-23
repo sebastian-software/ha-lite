@@ -33,7 +33,7 @@ Treat `homeassistant-ai/ha-mcp` as an external compatibility canary. A future CI
 
 The earlier broad plan to delete Assist/Conversation as product intelligence is narrowed: voice-oriented presentation features may still be removed, but the Conversation/LLM substrate required by MCP remains until a replacement machine-control API exists.
 
-That split has been made. The runtime closure of `mcp_server` and `conversation` contains no voice component: `assist_pipeline`, `assist_satellite`, `stt`, `tts`, `wake_word` and `media_source` were all outside it and have been removed (#23). `ai_task` went with them. It is an LLM product surface that no retained integration provides, and bootstrap set it up by default only because every entity platform is a default. Agents reach ha-lite through MCP, not through an AI entity inside it.
+That split has been made. The runtime closure of `mcp_server` and `conversation` contains no voice component: `assist_pipeline`, `assist_satellite`, `stt`, `tts` and `wake_word` were all outside it and have been removed (#23). `ai_task` went with them. `media_source` went too and has come back: it is not voice but the layer that browses and resolves media for camera, image and media player entities. It is an LLM product surface that no retained integration provides, and bootstrap set it up by default only because every entity platform is a default. Agents reach ha-lite through MCP, not through an AI entity inside it.
 
 Future deletion waves must distinguish between:
 
