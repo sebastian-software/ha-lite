@@ -167,11 +167,6 @@
       "reason": "LLM API substrate behind mcp_server; entity domains expose themselves to it through llm.py.",
       "issue": null
     },
-    "recorder": {
-      "status": "retained",
-      "reason": "Current persistence machinery, imported by sensor/recorder.py for statistics. Its replacement is Wave 5, not a Wave 4 deletion.",
-      "issue": 28
-    },
     "stream": {
       "status": "retained",
       "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",

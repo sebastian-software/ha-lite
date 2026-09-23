@@ -66,7 +66,7 @@ Representative integrations drive the transitive closure: Shelly, MQTT, Matter, 
 - Events/state changes are core infrastructure; automations consuming them are not.
 - Device communication success and observed device state are distinct concepts.
 - Stable identities must survive restart and rediscovery.
-- Persistence should converge toward a simple SQLite-backed model, but storage replacement is not a prerequisite for the first reduction.
+- Persistence is the configuration directory: user YAML and versioned JSON stores. The core publishes states and events but keeps no history (ADR 0018).
 - Protocol servers such as Matter may remain separate processes when appropriate.
 
 ## Agent and MCP boundary

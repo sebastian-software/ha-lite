@@ -39,7 +39,7 @@ from homeassistant.setup import async_setup_component
 
 from .conftest import DEVICE_TRACKER, DEVICE_TRACKER_2
 
-from tests.common import MockUser, mock_component, mock_restore_cache
+from tests.common import MockUser, mock_restore_cache
 from tests.typing import WebSocketGenerator
 
 
@@ -969,7 +969,6 @@ async def test_restore_home_state(
     state = State("person.tracked_person", "home", attrs)
     mock_restore_cache(hass, (state,))
     hass.set_state(CoreState.not_running)
-    mock_component(hass, "recorder")
     config = {
         DOMAIN: {
             "id": "1234",

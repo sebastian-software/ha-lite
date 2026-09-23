@@ -427,51 +427,6 @@ async def test_reload_config_entry_by_entry_id(hass: HomeAssistant) -> None:
     assert mock_reload.mock_calls[0][1][0] == "8955375327824e14ba89e4b29cc3ec9a"
 
 
-@pytest.mark.parametrize(
-    "service", [SERVICE_HOMEASSISTANT_RESTART, SERVICE_HOMEASSISTANT_STOP]
-)
-async def test_raises_when_db_upgrade_in_progress(
-    hass: HomeAssistant, service, caplog: pytest.LogCaptureFixture
-) -> None:
-    """Test an exception is raised when the database migration is in progress."""
-    await async_setup_component(hass, DOMAIN, {})
-
-    with (
-        pytest.raises(HomeAssistantError),
-        patch(
-            "homeassistant.helpers.recorder.async_migration_in_progress",
-            return_value=True,
-        ) as mock_async_migration_in_progress,
-    ):
-        await hass.services.async_call(
-            DOMAIN,
-            service,
-            blocking=True,
-        )
-    assert "The system cannot" in caplog.text
-    assert "while a database upgrade is in progress" in caplog.text
-
-    assert mock_async_migration_in_progress.called
-    caplog.clear()
-
-    with (
-        patch(
-            "homeassistant.helpers.recorder.async_migration_in_progress",
-            return_value=False,
-        ) as mock_async_migration_in_progress,
-        patch("homeassistant.config.async_check_ha_config_file", return_value=None),
-    ):
-        await hass.services.async_call(
-            DOMAIN,
-            service,
-            blocking=True,
-        )
-        assert "The system cannot" not in caplog.text
-        assert "while a database upgrade in progress" not in caplog.text
-
-    assert mock_async_migration_in_progress.called
-
-
 async def test_raises_when_config_is_invalid(
     hass: HomeAssistant, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -480,10 +435,6 @@ async def test_raises_when_config_is_invalid(
 
     with (
         pytest.raises(HomeAssistantError),
-        patch(
-            "homeassistant.helpers.recorder.async_migration_in_progress",
-            return_value=False,
-        ),
         patch(
             "homeassistant.config.async_check_ha_config_file", return_value=["Error 1"]
         ) as mock_async_check_ha_config_file,
@@ -500,15 +451,9 @@ async def test_raises_when_config_is_invalid(
     assert mock_async_check_ha_config_file.called
     caplog.clear()
 
-    with (
-        patch(
-            "homeassistant.helpers.recorder.async_migration_in_progress",
-            return_value=False,
-        ),
-        patch(
-            "homeassistant.config.async_check_ha_config_file", return_value=None
-        ) as mock_async_check_ha_config_file,
-    ):
+    with patch(
+        "homeassistant.config.async_check_ha_config_file", return_value=None
+    ) as mock_async_check_ha_config_file:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_HOMEASSISTANT_RESTART,

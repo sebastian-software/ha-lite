@@ -54,14 +54,14 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | brands, hardware | **REMOVED** | Brand-image proxy and hardware-status panel for the frontend (#22). |
 | logger | KEEP | Operational infrastructure. |
 | logbook | **REMOVED** | Human-facing historical narrative; physically removed in Wave 3 together with its per-integration describe platforms. |
-| history | **REMOVED** | Human-facing history product; physically removed in Wave 3. Raw state history stays a Recorder concern (#28). |
-| recorder | INVESTIGATE | Current persistence/history machinery; candidate for replacement (#28). Reached from `sensor/recorder.py` and pre-imported by bootstrap. |
-| long-term statistics | DELETE initially | Product analytics/history concern (#28). |
+| history | **REMOVED** | Human-facing history product; physically removed in Wave 3. Raw state history left with Recorder in Wave 5 (ADR 0018). |
+| recorder | **REMOVED** | States, events and statistics in SQLite. Never a default, and nothing retained required it; removed in Wave 5 with `sensor`'s statistics platform and SQLAlchemy. Clients that want history subscribe and keep it (#28, ADR 0018). |
+| long-term statistics | **REMOVED** | Left with Recorder (#28, ADR 0018). |
 | energy | **REMOVED** | Product/domain aggregation; physically removed in Wave 3 after decoupling Analytics reporting. |
 | map | **ABSENT** | Not present in the imported 2026.9.3 tree; the map view is a frontend dashboard. |
 | map_tiles, my, search | **REMOVED** | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). Without `my`, the OAuth2 flow helper redirects to the instance's own callback URL, which is what OAuth applications register (#26). |
 | file_upload | **REMOVED** | MQTT takes certificate material as PEM text since #25 (#22). |
-| backup | **REMOVED** / REPLACE | Need backup semantics, not necessarily HA implementation. Deleted with its storage agents in Wave 4 (#27); what a backup of ha-lite is belongs to the persistence contract (#28). |
+| backup | **REMOVED** | Deleted with its storage agents in Wave 4 (#27). A backup of ha-lite is a copy of the configuration directory taken while it is stopped (ADR 0018). |
 | cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |

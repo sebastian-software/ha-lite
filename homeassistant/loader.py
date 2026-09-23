@@ -83,7 +83,6 @@ BASE_PRELOAD_PLATFORMS = [
     "intent",
     "logbook",
     "media_source",
-    "recorder",
     "repairs",
     "system_health",
     "trigger",

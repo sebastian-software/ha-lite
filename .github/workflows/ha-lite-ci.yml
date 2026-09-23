@@ -101,6 +101,7 @@ jobs:
             tests/test_loader.py \
             tests/test_setup.py \
             tests/helpers/test_aiohttp_client.py \
+            tests/helpers/test_condition.py \
             tests/helpers/test_config_entry_flow.py \
             tests/helpers/test_config_entry_oauth2_flow.py \
             tests/helpers/test_device_registry.py \

@@ -2,23 +2,22 @@
 
 import asyncio
 from collections.abc import AsyncGenerator, Callable, Coroutine, Generator
-from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
+from contextlib import asynccontextmanager, contextmanager
 import datetime
 import functools
 import gc
 import ipaddress
-import itertools
 import logging
 import os
 import pathlib
 import reprlib
-from shutil import copytree, rmtree
+from shutil import copytree
 import socket
 import sqlite3
 import ssl
 import sys
 import threading
-from typing import TYPE_CHECKING, Any, Self, cast
+from typing import Any, Self, cast
 from unittest.mock import AsyncMock, MagicMock, Mock, _patch, patch
 
 from aiohttp import client
@@ -48,9 +47,6 @@ from . import patch_json  # isort:skip
 from homeassistant import block_async_io
 from homeassistant.exceptions import ServiceNotFound
 
-# Setup patching of recorder functions before any other Home Assistant imports
-from . import patch_recorder  # isort:skip
-
 # Setup patching of dt_util time functions before any other Home Assistant imports
 from . import patch_time  # isort:skip
 
@@ -79,7 +75,6 @@ from homeassistant.config_entries import (
 from homeassistant.const import BASE_PLATFORMS, HASSIO_USER_NAME
 from homeassistant.core import (
     Context,
-    CoreState,
     HassJob,
     HomeAssistant,
     ServiceCall,
@@ -95,7 +90,6 @@ from homeassistant.helpers import (
     frame,
     issue_registry as ir,
     label_registry as lr,
-    recorder as recorder_helper,
     translation as translation_helper,
 )
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -115,16 +109,8 @@ from .typing import (
     MqttMockHAClient,
     MqttMockHAClientGenerator,
     MqttMockPahoClient,
-    RecorderInstanceContextManager,
-    RecorderInstanceGenerator,
     WebSocketGenerator,
 )
-
-if TYPE_CHECKING:
-    # Local import to avoid processing recorder and SQLite modules when running a
-    # testcase which does not use the recorder.
-    from homeassistant.components import recorder
-
 
 pytest.register_assert_rewrite("tests.common")
 
@@ -149,7 +135,6 @@ from .test_util.aiohttp import (  # noqa: E402, isort:skip
 _LOGGER = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.INFO)
-logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 
 # Capture the real socket functions before any test patches them
@@ -683,7 +668,6 @@ async def hass(
     hass_config_dir: str | None,
     hass_storage: dict[str, Any],
     request: pytest.FixtureRequest,
-    mock_recorder_before_hass: None,
 ) -> AsyncGenerator[HomeAssistant]:
     """Create a test instance of Home Assistant."""
 
@@ -1532,457 +1516,6 @@ def mock_async_zeroconf(mock_zeroconf: MagicMock) -> Generator[MagicMock]:
 def enable_custom_integrations(hass: HomeAssistant) -> None:
     """Enable custom integrations defined in the test dir."""
     hass.data.pop(loader.DATA_CUSTOM_COMPONENTS)
-
-
-@pytest.fixture
-def enable_statistics() -> bool:
-    """Fixture to control enabling of recorder's statistics compilation.
-
-    To enable statistics, tests can be marked with:
-    @pytest.mark.parametrize("enable_statistics", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_missing_statistics() -> bool:
-    """Fixture to control enabling of recorder's statistics compilation.
-
-    To enable statistics, tests can be marked with:
-    @pytest.mark.parametrize("enable_missing_statistics", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_schema_validation() -> bool:
-    """Fixture to control enabling of recorder's statistics table validation.
-
-    To enable statistics table validation, tests can be marked with:
-    @pytest.mark.parametrize("enable_schema_validation", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_nightly_purge() -> bool:
-    """Fixture to control enabling of recorder's nightly purge job.
-
-    To enable nightly purging, tests can be marked with:
-    @pytest.mark.parametrize("enable_nightly_purge", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_migrate_event_context_ids() -> bool:
-    """Fixture to control enabling of recorder's context id migration.
-
-    To enable context id migration, tests can be marked with:
-    @pytest.mark.parametrize("enable_migrate_event_context_ids", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_migrate_state_context_ids() -> bool:
-    """Fixture to control enabling of recorder's context id migration.
-
-    To enable context id migration, tests can be marked with:
-    @pytest.mark.parametrize("enable_migrate_state_context_ids", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_migrate_event_type_ids() -> bool:
-    """Fixture to control enabling of recorder's event type id migration.
-
-    To enable context id migration, tests can be marked with:
-    @pytest.mark.parametrize("enable_migrate_event_type_ids", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_migrate_entity_ids() -> bool:
-    """Fixture to control enabling of recorder's entity_id migration.
-
-    To enable context id migration, tests can be marked with:
-    @pytest.mark.parametrize("enable_migrate_entity_ids", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def enable_migrate_event_ids() -> bool:
-    """Fixture to control enabling of recorder's event id migration.
-
-    To enable context id migration, tests can be marked with:
-    @pytest.mark.parametrize("enable_migrate_event_ids", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def recorder_config() -> dict[str, Any] | None:
-    """Fixture to override recorder config.
-
-    To override the config, tests can be marked with:
-    @pytest.mark.parametrize("recorder_config", [{...}])
-    """
-    return None
-
-
-@pytest.fixture
-def persistent_database() -> bool:
-    """Fixture to control if database should persist when recorder is shut down in test.
-
-    When using sqlite, this uses on disk database instead of in memory database.
-    This does nothing when using mysql or postgresql.
-
-    Note that the database is always destroyed in between tests.
-
-    To use a persistent database, tests can be marked with:
-    @pytest.mark.parametrize("persistent_database", [True])
-    """
-    return False
-
-
-@pytest.fixture
-def recorder_db_url(
-    pytestconfig: pytest.Config,
-    hass_fixture_setup: list[bool],
-    persistent_database: str,
-    tmp_path_factory: pytest.TempPathFactory,
-) -> Generator[str]:
-    """Prepare a default database for tests and return a connection URL."""
-    assert not hass_fixture_setup
-
-    db_url = cast(str, pytestconfig.getoption("dburl"))
-    drop_existing_db = pytestconfig.getoption("drop_existing_db")
-
-    def drop_db() -> None:
-        import sqlalchemy as sa  # noqa: PLC0415
-        import sqlalchemy_utils  # noqa: PLC0415
-
-        if db_url.startswith("mysql://"):
-            made_url = sa.make_url(db_url)
-            db = made_url.database
-            engine = sa.create_engine(db_url)
-            # Check for any open connections to the database before dropping it
-            # to ensure that InnoDB does not deadlock.
-            with engine.begin() as connection:
-                query = sa.text(
-                    "select id FROM information_schema.processlist"
-                    " WHERE db=:db and id != CONNECTION_ID()"
-                )
-                rows = connection.execute(query, parameters={"db": db}).fetchall()
-                if rows:
-                    raise RuntimeError(
-                        f"Unable to drop database {db} because it is in use by {rows}"
-                    )
-            engine.dispose()
-            sqlalchemy_utils.drop_database(db_url)
-        elif db_url.startswith("postgresql://"):
-            sqlalchemy_utils.drop_database(db_url)
-
-    if db_url == "sqlite://" and persistent_database:
-        tmp_path = tmp_path_factory.mktemp("recorder")
-        db_url = "sqlite:///" + str(tmp_path / "pytest.db")
-    elif db_url.startswith(("mysql://", "postgresql://")):
-        import sqlalchemy_utils  # noqa: PLC0415
-
-        if drop_existing_db and sqlalchemy_utils.database_exists(db_url):
-            drop_db()
-
-        if sqlalchemy_utils.database_exists(db_url):
-            raise RuntimeError(
-                f"Database {db_url} already exists. Use --drop-existing-db "
-                "to automatically drop existing database before start of test."
-            )
-
-        sqlalchemy_utils.create_database(
-            db_url,
-            encoding="utf8mb4' COLLATE = 'utf8mb4_unicode_ci"
-            if db_url.startswith("mysql://")
-            else "utf8",
-        )
-    yield db_url
-    if db_url == "sqlite://" and persistent_database:
-        rmtree(tmp_path, ignore_errors=True)
-    elif db_url.startswith(("mysql://", "postgresql://")):
-        drop_db()
-
-
-async def _async_init_recorder_component(
-    hass: HomeAssistant,
-    add_config: dict[str, Any] | None = None,
-    db_url: str | None = None,
-    *,
-    expected_setup_result: bool,
-    wait_setup: bool,
-) -> None:
-    """Initialize the recorder asynchronously."""
-    from homeassistant.components import recorder  # noqa: PLC0415
-
-    config = dict(add_config) if add_config else {}
-    if recorder.CONF_DB_URL not in config:
-        config[recorder.CONF_DB_URL] = db_url
-        if recorder.CONF_COMMIT_INTERVAL not in config:
-            config[recorder.CONF_COMMIT_INTERVAL] = 0
-
-    with patch("homeassistant.components.recorder.ALLOW_IN_MEMORY_DB", True):
-        if recorder.DOMAIN not in hass.data:
-            recorder_helper.async_initialize_recorder(hass)
-        setup_task = asyncio.ensure_future(
-            async_setup_component(hass, recorder.DOMAIN, {recorder.DOMAIN: config})
-        )
-        if wait_setup:
-            # Wait for recorder integration to setup
-            setup_result = await setup_task
-            assert setup_result == expected_setup_result
-            assert (recorder.DOMAIN in hass.config.components) == expected_setup_result
-        else:
-            # Wait for recorder to connect to the database
-            await hass.data[recorder_helper.DATA_RECORDER].db_connected
-    _LOGGER.info(
-        "Test recorder successfully started, database location: %s",
-        config[recorder.CONF_DB_URL],
-    )
-
-
-class ThreadSession(threading.local):
-    """Keep track of session per thread."""
-
-    has_session = False
-
-
-thread_session = ThreadSession()
-
-
-@pytest.fixture
-async def async_test_recorder(
-    recorder_db_url: str,
-    enable_nightly_purge: bool,
-    enable_statistics: bool,
-    enable_missing_statistics: bool,
-    enable_schema_validation: bool,
-    enable_migrate_event_context_ids: bool,
-    enable_migrate_state_context_ids: bool,
-    enable_migrate_event_type_ids: bool,
-    enable_migrate_entity_ids: bool,
-    enable_migrate_event_ids: bool,
-) -> AsyncGenerator[RecorderInstanceContextManager]:
-    """Yield context manager to setup recorder instance."""
-    from homeassistant.components import recorder  # noqa: PLC0415
-    from homeassistant.components.recorder import migration  # noqa: PLC0415
-
-    from .components.recorder.common import (  # noqa: PLC0415
-        async_recorder_block_till_done,
-    )
-    from .patch_recorder import real_session_scope  # noqa: PLC0415
-
-    if TYPE_CHECKING:
-        from sqlalchemy.orm.session import Session  # noqa: PLC0415
-
-    @contextmanager
-    def debug_session_scope(
-        *,
-        hass: HomeAssistant | None = None,
-        session: Session | None = None,
-        exception_filter: Callable[[Exception], bool] | None = None,
-        read_only: bool = False,
-    ) -> Generator[Session]:
-        """Wrap session_scope to bark if we create nested sessions."""
-        if thread_session.has_session:
-            raise RuntimeError(
-                f"Thread '{threading.current_thread().name}' already has an "
-                "active session"
-            )
-        thread_session.has_session = True
-        try:
-            with real_session_scope(
-                hass=hass,
-                session=session,
-                exception_filter=exception_filter,
-                read_only=read_only,
-            ) as ses:
-                yield ses
-        finally:
-            thread_session.has_session = False
-
-    nightly = recorder.Recorder.async_nightly_tasks if enable_nightly_purge else None
-    stats = recorder.Recorder.async_periodic_statistics if enable_statistics else None
-    schema_validate = (
-        migration._find_schema_errors
-        if enable_schema_validation
-        else itertools.repeat(set())
-    )
-    compile_missing = (
-        recorder.Recorder._schedule_compile_missing_statistics
-        if enable_missing_statistics
-        else None
-    )
-    migrate_states_context_ids = (
-        migration.StatesContextIDMigration.migrate_data
-        if enable_migrate_state_context_ids
-        else None
-    )
-    migrate_events_context_ids = (
-        migration.EventsContextIDMigration.migrate_data
-        if enable_migrate_event_context_ids
-        else None
-    )
-    migrate_event_type_ids = (
-        migration.EventTypeIDMigration.migrate_data
-        if enable_migrate_event_type_ids
-        else None
-    )
-    migrate_entity_ids = (
-        migration.EntityIDMigration.migrate_data if enable_migrate_entity_ids else None
-    )
-    post_migrate_event_ids = (
-        migration.EventIDPostMigration.needs_migrate_impl
-        if enable_migrate_event_ids
-        else lambda _1, _2, _3: migration.DataMigrationStatus(
-            needs_migrate=False, migration_done=True
-        )
-    )
-    with (
-        patch(
-            "homeassistant.components.recorder.Recorder.async_nightly_tasks",
-            side_effect=nightly,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.Recorder.async_periodic_statistics",
-            side_effect=stats,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.migration._find_schema_errors",
-            side_effect=schema_validate,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.migration.EventsContextIDMigration.migrate_data",
-            side_effect=migrate_events_context_ids,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.migration.StatesContextIDMigration.migrate_data",
-            side_effect=migrate_states_context_ids,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.migration.EventTypeIDMigration.migrate_data",
-            side_effect=migrate_event_type_ids,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.migration.EntityIDMigration.migrate_data",
-            side_effect=migrate_entity_ids,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.migration.EventIDPostMigration.needs_migrate_impl",
-            side_effect=post_migrate_event_ids,
-            autospec=True,
-        ),
-        patch(
-            "homeassistant.components.recorder.Recorder._schedule_compile_missing_statistics",
-            side_effect=compile_missing,
-            autospec=True,
-        ),
-        patch.object(
-            patch_recorder,
-            "real_session_scope",
-            side_effect=debug_session_scope,
-            autospec=True,
-        ),
-    ):
-
-        @asynccontextmanager
-        async def async_test_recorder(
-            hass: HomeAssistant,
-            config: ConfigType | None = None,
-            *,
-            expected_setup_result: bool = True,
-            wait_recorder: bool = True,
-            wait_recorder_setup: bool = True,
-        ) -> AsyncGenerator[recorder.Recorder]:
-            """Setup and return recorder instance."""
-            await _async_init_recorder_component(
-                hass,
-                config,
-                recorder_db_url,
-                expected_setup_result=expected_setup_result,
-                wait_setup=wait_recorder_setup,
-            )
-            await hass.async_block_till_done()
-            instance = hass.data[recorder.DATA_INSTANCE]
-            # The recorder's worker is not started until Home Assistant is running
-            if hass.state is CoreState.running and wait_recorder:
-                await async_recorder_block_till_done(hass)
-            try:
-                yield instance
-            finally:
-                if instance.is_alive():
-                    await instance._async_shutdown(None)
-
-        yield async_test_recorder
-
-
-@pytest.fixture
-async def async_setup_recorder_instance(
-    async_test_recorder: RecorderInstanceContextManager,
-) -> AsyncGenerator[RecorderInstanceGenerator]:
-    """Yield callable to setup recorder instance."""
-
-    async with AsyncExitStack() as stack:
-
-        async def async_setup_recorder(
-            hass: HomeAssistant,
-            config: ConfigType | None = None,
-            *,
-            expected_setup_result: bool = True,
-            wait_recorder: bool = True,
-            wait_recorder_setup: bool = True,
-        ) -> recorder.Recorder:
-            """Set up and return recorder instance."""
-
-            return await stack.enter_async_context(
-                async_test_recorder(
-                    hass,
-                    config,
-                    expected_setup_result=expected_setup_result,
-                    wait_recorder=wait_recorder,
-                    wait_recorder_setup=wait_recorder_setup,
-                )
-            )
-
-        yield async_setup_recorder
-
-
-@pytest.fixture
-async def recorder_mock(
-    recorder_config: dict[str, Any] | None,
-    async_test_recorder: RecorderInstanceContextManager,
-    hass: HomeAssistant,
-) -> AsyncGenerator[recorder.Recorder]:
-    """Fixture with in-memory recorder."""
-    async with async_test_recorder(hass, recorder_config) as instance:
-        yield instance
-
-
-@pytest.fixture
-def mock_recorder_before_hass() -> None:
-    """Mock the recorder.
-
-    Override or parametrize this fixture with a fixture that mocks the recorder,
-    in the tests that need to test the recorder.
-    """
 
 
 @pytest.fixture(name="enable_bluetooth")

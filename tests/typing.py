@@ -1,17 +1,11 @@
 """Typing helpers for Home Assistant tests."""
 
 from collections.abc import Callable, Coroutine
-from contextlib import AbstractAsyncContextManager
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from unittest.mock import MagicMock
 
 from aiohttp import ClientWebSocketResponse
 from aiohttp.test_utils import TestClient
-
-if TYPE_CHECKING:
-    # Local import to avoid processing recorder module when running a
-    # testcase which does not use the recorder.
-    from homeassistant.components.recorder import Recorder
 
 
 class MockHAClientWebSocket(ClientWebSocketResponse):
@@ -29,10 +23,4 @@ type MqttMockHAClient = MagicMock
 """MagicMock for `homeassistant.components.mqtt.MQTT`."""
 type MqttMockHAClientGenerator = Callable[..., Coroutine[Any, Any, MqttMockHAClient]]
 """MagicMock generator for `homeassistant.components.mqtt.MQTT`."""
-type RecorderInstanceContextManager = Callable[
-    ..., AbstractAsyncContextManager[Recorder]
-]
-"""ContextManager for `homeassistant.components.recorder.Recorder`."""
-type RecorderInstanceGenerator = Callable[..., Coroutine[Any, Any, Recorder]]
-"""Instance generator for `homeassistant.components.recorder.Recorder`."""
 type WebSocketGenerator = Callable[..., Coroutine[Any, Any, MockHAClientWebSocket]]

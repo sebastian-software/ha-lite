@@ -184,12 +184,13 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 91 |
+| Component domains in tree | 90 |
 | Declared roots | 84 |
-| Retained closure | 91 |
+| Retained closure | 90 |
 | Deletion candidates | 0 |
 
-Of the 7 transitively required domains, 6 are `retained` and 1 is an `adapter`.
+Of the 6 transitively required domains, 5 are `retained` and 1 is an `adapter`.
+`recorder` was the seventh until #28 removed it (ADR 0018).
 
 ### Wave 4
 
@@ -247,7 +248,7 @@ lost its `backup` platform; the other 28 were deleted, for these reasons:
 
 | Platform | Providers | Why the capability goes |
 |---|---|---|
-| `backup` | `backup` and its 12 storage agents; `hassio`, `zha` | What a backup of ha-lite contains belongs to the persistence contract (#28), not to Home Assistant's backup product. `hassio` and `zha` leave with their integration. |
+| `backup` | `backup` and its 12 storage agents; `hassio`, `zha` | A backup of ha-lite is a copy of its configuration directory (ADR 0018), not Home Assistant's backup product. `hassio` and `zha` leave with their integration. |
 | `trigger`, `condition`, `intent`, `reproduce_state`, `significant_change` | `calendar`, `geo_location`, `remote`, `todo` | Entity domains no retained integration implements, so their vocabulary could never match an entity. |
 | `trigger`, `condition` | `moon` | Computed like `sun`, but not device-relevant; ADR 0002 keeps `sun` for what solar elevation means to a PV site. |
 | `intent`, `reproduce_state` | `shopping_list`, `alert` | Product features. |

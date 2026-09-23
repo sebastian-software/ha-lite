@@ -1,28 +1,16 @@
 """The tests for the Everything but the Kitchen Sink integration."""
 
-import datetime
 from http import HTTPStatus
 from unittest.mock import ANY
 
 import pytest
-from syrupy.assertion import SnapshotAssertion
 import voluptuous as vol
 
 from homeassistant.components.kitchen_sink import DOMAIN
-from homeassistant.components.recorder import get_instance
-from homeassistant.components.recorder.statistics import (
-    StatisticMeanType,
-    async_add_external_statistics,
-    get_last_statistics,
-    list_statistic_ids,
-)
 from homeassistant.components.repairs import DOMAIN as REPAIRS_DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
-from homeassistant.util import dt as dt_util
-from homeassistant.util.unit_system import US_CUSTOMARY_SYSTEM
 
-from tests.components.recorder.common import async_wait_recording_done
 from tests.typing import ClientSessionGenerator, WebSocketGenerator
 
 
@@ -30,100 +18,6 @@ from tests.typing import ClientSessionGenerator, WebSocketGenerator
 def mock_history(hass: HomeAssistant) -> None:
     """Mock history component loaded."""
     hass.config.components.add("history")
-
-
-@pytest.mark.usefixtures("recorder_mock", "mock_history")
-async def test_demo_statistics(hass: HomeAssistant) -> None:
-    """Test that the kitchen sink component makes some statistics available."""
-    assert await async_setup_component(hass, DOMAIN, {DOMAIN: {}})
-    await hass.async_block_till_done()
-    await hass.async_start()
-    await async_wait_recording_done(hass)
-
-    statistic_ids = await get_instance(hass).async_add_executor_job(
-        list_statistic_ids, hass
-    )
-    assert {
-        "display_unit_of_measurement": "°C",
-        "has_mean": True,
-        "mean_type": StatisticMeanType.ARITHMETIC,
-        "has_sum": False,
-        "name": "Outdoor temperature",
-        "source": DOMAIN,
-        "statistic_id": f"{DOMAIN}:temperature_outdoor",
-        "statistics_unit_of_measurement": "°C",
-        "unit_class": "temperature",
-    } in statistic_ids
-    assert {
-        "display_unit_of_measurement": "kWh",
-        "has_mean": False,
-        "mean_type": StatisticMeanType.NONE,
-        "has_sum": True,
-        "name": "Energy consumption 1",
-        "source": DOMAIN,
-        "statistic_id": f"{DOMAIN}:energy_consumption_kwh",
-        "statistics_unit_of_measurement": "kWh",
-        "unit_class": "energy",
-    } in statistic_ids
-
-
-@pytest.mark.usefixtures("recorder_mock", "mock_history")
-async def test_demo_statistics_growth(hass: HomeAssistant) -> None:
-    """Test that the kitchen sink sum statistics adds to the previous state."""
-    hass.config.units = US_CUSTOMARY_SYSTEM
-
-    now = dt_util.now()
-    last_week = now - datetime.timedelta(days=7)
-    last_week_midnight = last_week.replace(hour=0, minute=0, second=0, microsecond=0)
-
-    statistic_id = f"{DOMAIN}:energy_consumption_kwh"
-    metadata = {
-        "source": DOMAIN,
-        "name": "Energy consumption 1",
-        "statistic_id": statistic_id,
-        "unit_class": "volume",
-        "unit_of_measurement": "m³",
-        "mean_type": StatisticMeanType.NONE,
-        "has_sum": True,
-    }
-    statistics = [
-        {
-            "start": last_week_midnight,
-            "sum": 2**20,
-        }
-    ]
-    async_add_external_statistics(hass, metadata, statistics)
-    await async_wait_recording_done(hass)
-
-    assert await async_setup_component(hass, DOMAIN, {DOMAIN: {}})
-    await hass.async_block_till_done()
-    await hass.async_start()
-    await async_wait_recording_done(hass)
-
-    statistics = await get_instance(hass).async_add_executor_job(
-        get_last_statistics, hass, 1, statistic_id, False, {"sum"}
-    )
-    assert statistics[statistic_id][0]["sum"] > 2**20
-    assert statistics[statistic_id][0]["sum"] <= (2**20 + 24)
-
-
-@pytest.mark.usefixtures("recorder_mock", "mock_history")
-async def test_statistics_issues(
-    hass: HomeAssistant,
-    hass_ws_client: WebSocketGenerator,
-    snapshot: SnapshotAssertion,
-) -> None:
-    """Test that the kitchen sink sum statistics causes statistics issues."""
-    assert await async_setup_component(hass, DOMAIN, {DOMAIN: {}})
-    await hass.async_block_till_done()
-    await hass.async_start()
-    await async_wait_recording_done(hass)
-
-    ws_client = await hass_ws_client(hass)
-    await ws_client.send_json_auto_id({"type": "recorder/validate_statistics"})
-    response = await ws_client.receive_json()
-    assert response["success"]
-    assert response["result"] == snapshot
 
 
 @pytest.mark.freeze_time("2023-10-21")

@@ -45,7 +45,7 @@ from homeassistant.exceptions import (
     TemplateError,
     Unauthorized,
 )
-from homeassistant.helpers import config_validation as cv, recorder, template
+from homeassistant.helpers import config_validation as cv, template
 from homeassistant.helpers.http import MIN_COMPRESSED_RESPONSE_SIZE
 from homeassistant.helpers.json import json_dumps, json_fragment
 from homeassistant.helpers.service import async_get_all_descriptions
@@ -118,10 +118,7 @@ class APICoreStateView(HomeAssistantView):
         to check if Home Assistant is running.
         """
         hass = request.app[KEY_HASS]
-        migration = recorder.async_migration_in_progress(hass)
-        live = recorder.async_migration_is_live(hass)
-        recorder_state = {"migration_in_progress": migration, "migration_is_live": live}
-        return self.json({"state": hass.state.value, "recorder_state": recorder_state})
+        return self.json({"state": hass.state.value})
 
 
 class APIEventStream(HomeAssistantView):

@@ -30,7 +30,6 @@ ciso8601==2.3.3
 cronsim==2.7
 cryptography==48.0.1
 dbus-fast==5.0.22
-fnv-hash-fast==2.0.3
 gazetteer-matcher==1.1.0
 habluetooth==6.26.11
 hass-nabucasa==2.7.0
@@ -48,7 +47,6 @@ paho-mqtt==2.1.0
 Pillow==12.3.0
 probatio==0.11.4
 propcache==0.5.2
-psutil-home-assistant==0.0.1
 PyJWT==2.13.0
 pyOpenSSL==26.2.0
 python-slugify==8.0.4
@@ -57,7 +55,6 @@ PyYAML==6.0.3
 requests==2.34.2
 securetar==2026.4.1
 serialx==1.10.0
-SQLAlchemy==2.0.52
 standard-aifc==3.13.0
 standard-telnetlib==3.13.0
 typing-extensions>=4.16.0,<5.0

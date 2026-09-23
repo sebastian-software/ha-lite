@@ -56,7 +56,7 @@ This table describes the architectural target. **Removed** means physically abse
 | Onboarding, default bundle, browser upload and link helpers | **Removed — Wave 3** | Replaced by a first-run command and explicit defaults (#22, #30, ADR 0016) |
 | Assist / voice presentation, media browser, AI tasks | **Removed — Wave 3** | Outside the MCP closure; a headless MCP test guards the gap (#23) |
 | Unselected integrations | **Removed — Wave 4** | The tree is the computed retained closure; a component outside it fails CI (#27) |
-| Recorder, persistence implementation | **Decide — Wave 5** | Define the persistence contract first (#28) |
+| Recorder, long-term statistics | **Removed — Wave 5** | Persistence is the versioned JSON stores; history is the client's concern, and backup is a copy of the configuration directory (#28, ADR 0018) |
 
 The detailed classification lives in [the scope matrix](docs/architecture/scope-matrix.md). The [roadmap](docs/architecture/roadmap.md) lists every open block with its GitHub issue.
 
