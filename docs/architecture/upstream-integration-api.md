@@ -171,7 +171,7 @@ separate artefacts, central maintenance.
 ## What this means for ha-lite
 
 ha-lite's catalog is Home Assistant's, so it depends on the same interface:
-about 1,400 names of the core, measured in
+about 1,450 names of the core, measured in
 [split-distribution.md](split-distribution.md). Upstream changes that
 interface every month and migrates its integrations in the same change.
 ha-lite takes those changes with every upstream import (ADR 0003).

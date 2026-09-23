@@ -5,15 +5,15 @@
 ## Context
 
 ADR 0020 keeps Home Assistant's integration catalog in the tree, and the
-distribution follows the tree. One package carries 1,140 catalog integrations
-with code, 33.6 MB of Python, next to a core of 8.4 MB. A deployment uses a
+distribution follows the tree. One package carries 1,157 catalog integrations
+with code, 34.9 MB of Python, next to a core of 8.4 MB. A deployment uses a
 few of them. The rest costs little at runtime, since integrations load only
 when set up, but it is shipped, installed and, in principle, audited by
 everyone.
 
 Home Assistant bundles its integrations for reasons that hold for ha-lite
 too. Integrations use the core's internals directly, which amount to about
-1,400 names. The core changes those internals every month, and it fixes all
+1,450 names. The core changes those internals every month, and it fixes all
 integrations in the same change.
 [upstream-integration-api.md](../architecture/upstream-integration-api.md)
 collects the sources. The monorepo is what makes that lockstep possible.

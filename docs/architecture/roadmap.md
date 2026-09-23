@@ -18,7 +18,7 @@ what is still to do.
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
 | 4 | Explicit retained integration closure | [#17] | Done, integration deletion reversed |
 | 5 | Persistence, configuration and runtime composition | [#18] | Done |
-| — | Integration catalog restored | — | Done; 34 integrations wait for decoupling, 56 are out by design |
+| — | Integration catalog restored | — | Done; 17 integrations wait for decoupling, 56 are out by design |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -139,24 +139,25 @@ closure gate now rejects an excluded product layer in the tree and an import,
 from anywhere, of a component that is gone. The `catalog` CI job runs every
 catalog suite in ten shards.
 
-Three compat modules — `automation.py`, `script.py` and `onboarding.py` —
-answer what integrations asked the removed Automation, Script and Onboarding
-layers, without being integrations. They brought back 35 more components,
-among them Sonos, Google Cast, TP-Link, UniFi Protect, Ring and SmartThings.
+Compat modules answer what integrations ask a removed layer, without being
+integrations:
+- `automation.py`, `script.py` and `onboarding.py` brought back 35 components,
+  among them Sonos, Google Cast, TP-Link, UniFi Protect, Ring and SmartThings;
+- `cloud.py`, `default_config.py`, `counter.py` and the `input_*` modules
+  brought back 22 more, among them HomeKit Bridge, go2rtc, Netatmo, Withings
+  and the `derivative`, `integration` and `min_max` helpers.
 
-**Still open:** 90 integrations and 33 virtual integrations pointing at them.
+**Still open:** 73 integrations and 28 virtual integrations pointing at them.
 [retained-closure.md](retained-closure.md#what-is-still-out) lists them in two
 groups:
 
 - 56 are out by design: speech and AI, Recorder statistics, backup agents,
   Home Assistant's own hardware and `intent_script`.
-- 34 wait for a decoupling. The largest groups are:
-  - `cloud` (14), whose integrations fall back to a local webhook URL
-    without it;
-  - `hassio` and Home Assistant's own hardware (ESPHome, ZHA, Z-Wave JS,
-    OTBR);
-  - `file_upload` and `frontend` (KNX, Insteon, Velbus and others);
-  - the `input_*` domain names (HomeKit Bridge and five helpers).
+- 17 wait for a decoupling:
+  - `hassio` and Home Assistant's own hardware: ESPHome, ZHA, Z-Wave JS and
+    OTBR;
+  - `file_upload` and `frontend`: KNX, Insteon, Velbus and others;
+  - Nabu Casa's account linking: August, Yale and Watts.
 
 No issue carries this yet.
 
@@ -187,6 +188,7 @@ checkpoint. The README carries the current numbers.
 | After Wave 5 (#28, #29) | 3,069 | 925 files / 8.06 MB | 1,019 files / 15.60 MB | 90 |
 | After the catalog restore (#49, #50) | 22,729 | 8,395 files / 38.92 MB | 6,779 files / 46.89 MB | 1,289 |
 | After the compat modules (#51) | 24,216 | 8,799 files / 41.97 MB | 7,138 files / 50.84 MB | 1,324 |
+| After the cloud and helper compat modules | 24,689 | 8,981 files / 43.27 MB | 7,283 files / 52.81 MB | 1,342 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot
