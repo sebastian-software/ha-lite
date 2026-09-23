@@ -51,15 +51,17 @@ INTEGRATION_LOAD_EXCEPTIONS = (IntegrationNotFound, RequirementsNotFound)
 SAFE_MODE_FILENAME = "safe-mode"
 
 DEFAULT_CONFIG = f"""
-# Loads default set of integrations. Do not remove.
-default_config:
+# ha-lite has no default bundle. The HTTP, WebSocket and REST APIs, auth and
+# the entity domains are always set up; what else runs is listed here, so it
+# can be removed. Add integrations through config flows.
 
-# Load frontend themes from the themes folder
-frontend:
-  themes: !include_dir_merge_named themes
+# Discovery
+bluetooth:
+dhcp:
+ssdp:
+usb:
+zeroconf:
 
-automation: !include {AUTOMATION_CONFIG_PATH}
-script: !include {SCRIPT_CONFIG_PATH}
 scene: !include {SCENE_CONFIG_PATH}
 """
 DEFAULT_SECRETS = """
@@ -166,8 +168,6 @@ def _write_default_config(config_dir: str) -> bool:
     config_path = os.path.join(config_dir, YAML_CONFIG_FILE)
     secret_path = os.path.join(config_dir, SECRET_YAML)
     version_path = os.path.join(config_dir, VERSION_FILE)
-    automation_yaml_path = os.path.join(config_dir, AUTOMATION_CONFIG_PATH)
-    script_yaml_path = os.path.join(config_dir, SCRIPT_CONFIG_PATH)
     scene_yaml_path = os.path.join(config_dir, SCENE_CONFIG_PATH)
 
     # Writing files with YAML does not create the most human readable results
@@ -182,14 +182,6 @@ def _write_default_config(config_dir: str) -> bool:
 
         with open(version_path, "w", encoding="utf8") as version_file:
             version_file.write(__version__)
-
-        if not os.path.isfile(automation_yaml_path):
-            with open(automation_yaml_path, "w", encoding="utf8") as automation_file:
-                automation_file.write("[]")
-
-        if not os.path.isfile(script_yaml_path):
-            with open(script_yaml_path, "w", encoding="utf8"):
-                pass
 
         if not os.path.isfile(scene_yaml_path):
             with open(scene_yaml_path, "w", encoding="utf8"):

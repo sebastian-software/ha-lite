@@ -103,6 +103,7 @@
       "mcp_server",
       "network",
       "persistent_notification",
+      "recovery_mode",
       "repairs",
       "ssdp",
       "system_health",
@@ -146,11 +147,6 @@
       "reason": "Entity domains ship device_action.py/device_trigger.py adapters for Home Assistant device automation.",
       "issue": 19
     },
-    "file_upload": {
-      "status": "patch_required",
-      "reason": "Pre-imported by bootstrap.py. MQTT, which used it for certificate upload, takes PEM text since #25; the pre-import leaves with the default bundle.",
-      "issue": 22
-    },
     "intent": {
       "status": "retained",
       "reason": "Declared dependency of conversation. The overview keeps conversation/intent/LLM primitives because mcp_server requires them.",
@@ -160,11 +156,6 @@
       "status": "retained",
       "reason": "LLM API substrate behind mcp_server; entity domains expose themselves to it through llm.py.",
       "issue": null
-    },
-    "onboarding": {
-      "status": "patch_required",
-      "reason": "Imported at module level by auth/login_flow.py, bluetooth/config_flow.py and helpers/config_entry_flow.py, and pre-imported by bootstrap.py. Matter stopped reading it in #25. Replaced by the headless first-run path.",
-      "issue": 22
     },
     "recorder": {
       "status": "retained",

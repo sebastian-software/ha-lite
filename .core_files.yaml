@@ -58,7 +58,6 @@ base_platforms: &base_platforms
 # Extra components that trigger the full suite
 components: &components
   - homeassistant/components/alexa/**
-  - homeassistant/components/analytics/**
   - homeassistant/components/application_credentials/**
   - homeassistant/components/auth/**
   - homeassistant/components/backup/**
@@ -86,7 +85,6 @@ components: &components
   - homeassistant/components/input_number/**
   - homeassistant/components/input_select/**
   - homeassistant/components/input_text/**
-  - homeassistant/components/labs/**
   - homeassistant/components/llm/**
   - homeassistant/components/logbook/**
   - homeassistant/components/logger/**
@@ -94,7 +92,6 @@ components: &components
   - homeassistant/components/modbus/**
   - homeassistant/components/mqtt/**
   - homeassistant/components/network/**
-  - homeassistant/components/onboarding/**
   - homeassistant/components/otp/**
   - homeassistant/components/persistent_notification/**
   - homeassistant/components/person/**

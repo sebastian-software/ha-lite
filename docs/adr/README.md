@@ -59,6 +59,7 @@ Records are written in English, like everything else in the repository
 | [0013](0013-english-is-the-project-language.md) | English is the project language | Accepted |
 | [0014](0014-additive-checks-over-upstream-surgery.md) | Add checks in our own files rather than edit upstream ones | Accepted |
 | [0015](0015-repository-conventions.md) | Follow the Sebastian Software repository conventions | Accepted |
+| [0016](0016-headless-first-run-and-recovery.md) | Initialize, recover and administer ha-lite without a browser | Accepted |
 
 ## How these relate to the rest of the documentation
 

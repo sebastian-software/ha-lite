@@ -74,7 +74,6 @@ homeassistant.components.amberelectric.*
 homeassistant.components.ambient_network.*
 homeassistant.components.ambient_station.*
 homeassistant.components.amcrest.*
-homeassistant.components.analytics.*
 homeassistant.components.analytics_insights.*
 homeassistant.components.android_ip_webcam.*
 homeassistant.components.androidtv.*
@@ -154,7 +153,6 @@ homeassistant.components.date.*
 homeassistant.components.datetime.*
 homeassistant.components.deako.*
 homeassistant.components.deconz.*
-homeassistant.components.default_config.*
 homeassistant.components.demo.*
 homeassistant.components.derivative.*
 homeassistant.components.device_automation.*
@@ -202,7 +200,6 @@ homeassistant.components.faa_delays.*
 homeassistant.components.fan.*
 homeassistant.components.fastdotcom.*
 homeassistant.components.feedreader.*
-homeassistant.components.file_upload.*
 homeassistant.components.filesize.*
 homeassistant.components.filter.*
 homeassistant.components.firefly_iii.*
@@ -249,7 +246,6 @@ homeassistant.components.guardian.*
 homeassistant.components.guntamatic.*
 homeassistant.components.habitica.*
 homeassistant.components.hardkernel.*
-homeassistant.components.hardware.*
 homeassistant.components.harman_luxury.*
 homeassistant.components.hdfury.*
 homeassistant.components.heos.*
@@ -320,7 +316,6 @@ homeassistant.components.knocki.*
 homeassistant.components.knx.*
 homeassistant.components.kraken.*
 homeassistant.components.kulersky.*
-homeassistant.components.labs.*
 homeassistant.components.lacrosse.*
 homeassistant.components.lacrosse_view.*
 homeassistant.components.lamarzocco.*
@@ -383,7 +378,6 @@ homeassistant.components.mopeka.*
 homeassistant.components.motionmount.*
 homeassistant.components.mqtt.*
 homeassistant.components.music_assistant.*
-homeassistant.components.my.*
 homeassistant.components.mysensors.*
 homeassistant.components.myuplink.*
 homeassistant.components.nam.*
@@ -408,7 +402,6 @@ homeassistant.components.ntfy.*
 homeassistant.components.number.*
 homeassistant.components.nut.*
 homeassistant.components.ohme.*
-homeassistant.components.onboarding.*
 homeassistant.components.oncue.*
 homeassistant.components.onedrive.*
 homeassistant.components.onedrive_for_business.*
@@ -501,7 +494,6 @@ homeassistant.components.saunum.*
 homeassistant.components.scene.*
 homeassistant.components.schlage.*
 homeassistant.components.scrape.*
-homeassistant.components.search.*
 homeassistant.components.season.*
 homeassistant.components.select.*
 homeassistant.components.sensibo.*

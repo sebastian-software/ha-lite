@@ -15,9 +15,9 @@ what is still to do.
 |---|---|---|---|
 | 1 | Frontend, Lovelace and browser-product bootstrap | — | Done |
 | 2 | Automation and Script | — | Done |
-| 3 | Remaining Home Assistant product layers | [#16] | 4 of 5 blocks done |
+| 3 | Remaining Home Assistant product layers | [#16] | Done |
 | 4 | Explicit retained integration closure | [#17] | 2 of 4 blocks done |
-| 5 | Persistence, configuration and runtime composition | [#18] | Not started |
+| 5 | Persistence, configuration and runtime composition | [#18] | 1 of 3 blocks done |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -33,9 +33,8 @@ ADR 0007.
 Deferred rather than done:
 
 - Recovery mode had its product entries removed but was never redefined as a
-  headless recovery path. That is [#30].
-- `map_tiles` and `my`, listed as likely Wave 1 deletions, are still present.
-  They moved to [#22].
+  headless recovery path. [#30] did that later; ADR 0016.
+- `map_tiles` and `my`, listed as likely Wave 1 deletions, went in [#22].
 
 ## Wave 2 — automation and script
 
@@ -63,7 +62,7 @@ closed.
 | Automation-adjacent helpers (`input_*`, `counter`, `timer`, `schedule`), `template`, `blueprint`, `cloud`, Alexa, Google Assistant | [#19] | Done |
 | Scenes, groups and the derived location domains (`person`, `zone`, `device_tracker`, `sun`) | [#20] | Done — all kept; ADR 0002, ADR 0010 |
 | History, logbook and energy | [#21] | Done |
-| `onboarding`, `default_config`, `file_upload`, `my`, `map_tiles`, `search` | [#22] | Open. `cloud` and `image_upload` are already gone |
+| `onboarding`, `default_config`, `file_upload`, `my`, `map_tiles`, `search`, and the bootstrap defaults `analytics`, `labs`, `brands`, `hardware` | [#22] | Done — ADR 0016 |
 | Assist and voice presentation, `media_source`, `ai_task` | [#23] | Done — MCP guarded by `tests/ha_lite/test_mcp_headless.py` |
 
 ## Wave 4 — explicit integration closure ([#17])
@@ -102,7 +101,8 @@ uses are rewritten; deleting it by reachability would break retained CI.
 ## Wave 5 — persistence, configuration, runtime composition ([#18])
 
 **Entry:** Wave 4 done, so the runtime being simplified is the one ha-lite
-actually ships. Wave 5 does not block Waves 3 and 4.
+actually ships. Wave 5 does not block Waves 3 and 4, and #30 landed early
+because removing onboarding in #22 needed its replacement.
 
 **Exit:**
 
@@ -117,7 +117,7 @@ actually ships. Wave 5 does not block Waves 3 and 4.
 |---|---|---|
 | Minimal persistence contract; retire Recorder product semantics | [#28] | Open. ADR 0004 is still `Proposed` |
 | Configuration, YAML loading and dependency installation | [#29] | Open |
-| Headless bootstrap, recovery and administrative control | [#30] | Open |
+| Headless bootstrap, recovery and administrative control | [#30] | Done — `hass --script owner`, recovery as an API path; ADR 0016 |
 
 ## Open questions without an issue
 
@@ -137,6 +137,7 @@ checkpoint. The README carries the current numbers.
 | After Waves 1–2 (root commit `b9b89717`) | 27,437 | 10,004 files / 51.14 MB | 8,247 files / 67.07 MB | 1,482 |
 | During Wave 3 (after #19, #20, #21, #24) | 27,023 | 9,844 files / 49.63 MB | 8,094 files / 64.12 MB | 1,465 |
 | After #23 (voice, media browser, AI tasks) | 26,894 | 9,792 files / 49.26 MB | 8,047 files / 63.58 MB | 1,458 |
+| After Wave 3 (#22, #25, #30) | 26,824 | 9,764 files / 49.09 MB | 8,021 files / 63.20 MB | 1,448 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot

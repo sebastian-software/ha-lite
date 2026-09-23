@@ -200,33 +200,6 @@ async def test_discovery_confirmation(
     assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
 
 
-@pytest.mark.parametrize(
-    "source",
-    [
-        config_entries.SOURCE_BLUETOOTH,
-        config_entries.SOURCE_DISCOVERY,
-        config_entries.SOURCE_MQTT,
-        config_entries.SOURCE_SSDP,
-        config_entries.SOURCE_ZEROCONF,
-        config_entries.SOURCE_DHCP,
-    ],
-)
-async def test_discovery_during_onboarding(
-    hass: HomeAssistant, discovery_flow_conf: dict[str, bool], source: str
-) -> None:
-    """Test we create config entry via discovery during onboarding."""
-    flow = config_entries.HANDLERS["test"]()
-    flow.hass = hass
-    flow.context = {"source": source}
-
-    with patch(
-        "homeassistant.components.onboarding.async_is_onboarded", return_value=False
-    ):
-        result = await getattr(flow, f"async_step_{source}")({})
-
-    assert result["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-
-
 async def test_multiple_discoveries(
     hass: HomeAssistant, discovery_flow_conf: dict[str, bool]
 ) -> None:

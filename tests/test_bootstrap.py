@@ -256,15 +256,6 @@ async def test_async_enable_logging_log_file_disable_control(
     cleanup_log_files()
 
 
-async def test_load_hassio(hass: HomeAssistant) -> None:
-    """Test that we load the hassio integration when using Supervisor."""
-    with patch.dict(os.environ, {}, clear=True):
-        assert "hassio" not in bootstrap._get_domains(hass, {})
-
-    with patch.dict(os.environ, {"SUPERVISOR": "1"}):
-        assert "hassio" in bootstrap._get_domains(hass, {})
-
-
 @pytest.mark.parametrize("load_registries", [False])
 async def test_empty_setup(hass: HomeAssistant) -> None:
     """Test an empty set up loads the core."""
@@ -993,7 +984,7 @@ async def test_setup_hass_recovery_mode(
     assert len(browser_setup.mock_calls) == 0
 
 
-@pytest.mark.parametrize("domain", ["backup"])
+@pytest.mark.parametrize("domain", ["diagnostics"])
 async def test_setup_hass_recovery_mode_with_failing_integration(
     mock_enable_logging: AsyncMock,
     mock_is_virtual_env: Mock,
@@ -1002,7 +993,7 @@ async def test_setup_hass_recovery_mode_with_failing_integration(
     mock_process_ha_config_upgrade: Mock,
     domain: str,
 ) -> None:
-    """Test recovery mode still starts if backup fails to set up."""
+    """Test recovery mode still starts if one of its integrations fails."""
     with patch(
         f"homeassistant.components.{domain}.async_setup",
         side_effect=Exception(f"{domain} setup failed"),

@@ -15,8 +15,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     persistent_notification.async_create(
         hass,
         (
-            "Home Assistant is running in recovery mode. Check [the error"
-            " log](/config/logs) to see what went wrong."
+            "Running in recovery mode. The error log is available over the"
+            " WebSocket API (system_log/list) and in home-assistant.log."
         ),
         "Recovery Mode",
     )

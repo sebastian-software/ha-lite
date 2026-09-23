@@ -13,12 +13,11 @@ import ssl
 from typing import Any
 from unittest.mock import ANY, AsyncMock, Mock, patch
 
-import aiohttp
 from freezegun.api import FrozenDateTimeFactory
 import pytest
 
 from homeassistant.auth.providers.homeassistant import HassAuthProvider
-from homeassistant.components import http, onboarding
+from homeassistant.components import http
 from homeassistant.components.http import DOMAIN
 from homeassistant.components.http.config import (
     _DEFAULT_CONFIG,
@@ -101,14 +100,6 @@ def mock_create_server() -> Generator[Mock]:
         server.close()
 
 
-async def _bind_redirect_ephemeral(self: http.HomeAssistantHTTP) -> asyncio.Server:
-    """Bind the legacy redirect on an ephemeral localhost port instead of 8123."""
-    assert self._legacy_redirect_runner is not None
-    return await self.hass.loop.create_server(
-        self._legacy_redirect_runner.server, "127.0.0.1", 0, start_serving=False
-    )
-
-
 # A port-80 default config, standing in for _DEFAULT_CONFIG under Supervisor
 # (which is frozen at import to port 8123 in the test process).
 DEFAULT_80_CONFIG = HTTP_STORAGE_SCHEMA({"server_port": 80})
@@ -121,7 +112,7 @@ def _supervisor_default_config() -> Iterator[None]:
     _DEFAULT_CONFIG is frozen at import (port 8123 without Supervisor in the
     test process), so both references are patched to a port-80 default to
     reproduce production, where SUPERVISOR is set before the module is
-    imported. The redirect binds an ephemeral localhost port instead of 8123.
+    imported.
     """
     with (
         # clear=True so a developer/CI SETUP_PORT can't skew the simulation.
@@ -129,41 +120,8 @@ def _supervisor_default_config() -> Iterator[None]:
         patch(
             "homeassistant.components.http.config._DEFAULT_CONFIG", DEFAULT_80_CONFIG
         ),
-        patch(
-            "homeassistant.components.http.server._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server.HomeAssistantHTTP._async_create_redirect_server",
-            autospec=True,
-            side_effect=_bind_redirect_ephemeral,
-        ),
     ):
         yield
-
-
-async def _setup_http_with_onboarding(
-    hass: HomeAssistant, *, onboarded: bool = False
-) -> None:
-    """Set up http and onboarding, then start Home Assistant.
-
-    The legacy-port transition is bound to onboarding, so onboarding must be
-    set up (as it always is via frontend in production) for the redirect to
-    start.
-    """
-    assert await async_setup_component(hass, "http", {})
-    assert await async_setup_component(hass, "onboarding", {})
-    if onboarded:
-        hass.data[onboarding.DOMAIN].onboarded = True
-    await hass.async_start()
-    await hass.async_block_till_done()
-
-
-def _complete_onboarding(hass: HomeAssistant) -> None:
-    """Mark onboarding complete and fire its listeners, as the views do."""
-    data = hass.data[onboarding.DOMAIN]
-    data.onboarded = True
-    for listener in list(data.listeners):
-        listener()
 
 
 def _setup_broken_ssl_pem_files(tmp_path: Path) -> tuple[Path, Path]:
@@ -1525,7 +1483,9 @@ async def test_upgrade_with_stored_old_default_config_keeps_port(
     restart_calls = async_mock_service(hass, "homeassistant", "restart")
 
     with _supervisor_default_config():
-        await _setup_http_with_onboarding(hass)
+        assert await async_setup_component(hass, DOMAIN, {})
+        await hass.async_start()
+        await hass.async_block_till_done()
 
         assert hass.config.api.port == 8123
         store = await async_get_and_load_store(hass)
@@ -1535,9 +1495,6 @@ async def test_upgrade_with_stored_old_default_config_keeps_port(
         assert data["pending"] is None
         assert data["stable"]["server_port"] == 8123
         assert data["yaml_migration_done"] is True
-        # The stored config differs from the new default config, so the
-        # legacy-port transition does not apply.
-        assert hass.http._legacy_redirect_server is None
 
         # Nothing was staged for trial: no auto-revert restart fires.
         freezer.tick(AUTO_REVERT_DELAY)
@@ -1649,279 +1606,6 @@ async def test_setup_port_env_var_used_as_default(
     assert hass.config.api.port == 80
     assert hass_storage["http"]["data"]["pending"] is None
     assert hass_storage["http"]["data"]["stable"]["server_port"] == 80
-
-
-async def test_default_config_under_supervisor_starts_redirect(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test the default config under Supervisor uses port 80 and redirects 8123."""
-    with _supervisor_default_config():
-        await _setup_http_with_onboarding(hass)
-
-    assert hass.config.api.port == 80
-    assert hass.http._legacy_redirect_server is not None
-
-
-async def test_persisted_default_config_starts_redirect(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test the redirect still starts for a default config loaded from disk.
-
-    A persisted default config carries created_at/error metadata, so the
-    transition gate must compare without it (not by identity or raw equality).
-    """
-    hass_storage[DOMAIN] = _stable_http_storage({"server_port": 80})
-
-    with _supervisor_default_config():
-        await _setup_http_with_onboarding(hass)
-
-    assert hass.config.api.port == 80
-    assert hass.http._legacy_redirect_server is not None
-
-
-async def test_no_redirect_when_already_onboarded(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test the redirect is not started when onboarding is already complete."""
-    with _supervisor_default_config():
-        await _setup_http_with_onboarding(hass, onboarded=True)
-
-    assert hass.http._legacy_redirect_server is None
-
-
-async def test_redirect_stops_on_onboarding_complete(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test the redirect is torn down once onboarding completes."""
-    with _supervisor_default_config():
-        await _setup_http_with_onboarding(hass)
-
-        server = hass.http
-        assert server._legacy_redirect_server is not None
-
-        _complete_onboarding(hass)
-        await hass.async_block_till_done()
-
-        assert server._legacy_redirect_server is None
-        assert server._legacy_redirect_runner is None
-
-
-async def test_no_redirect_without_supervisor(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test no redirect is started for the default config outside Supervisor."""
-    assert await async_setup_component(hass, "http", {})
-    await hass.async_start()
-    await hass.async_block_till_done()
-
-    assert hass.config.api.port == 8123
-    assert hass.http._legacy_redirect_runner is None
-    assert hass.http._legacy_redirect_server is None
-
-
-async def test_no_redirect_with_setup_port_outside_supervisor(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test SETUP_PORT alone (no Supervisor) does not start the redirect.
-
-    SETUP_PORT changes the default port for plain container installs too, but
-    the transition is Supervisor-only.
-    """
-    with (
-        patch(
-            "homeassistant.components.http.config._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-    ):
-        assert await async_setup_component(hass, "http", {})
-        await hass.async_start()
-        await hass.async_block_till_done()
-
-    assert hass.http._legacy_redirect_server is None
-
-
-async def test_no_redirect_when_http_configured(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test no redirect is started once HTTP is configured (onboarding is over).
-
-    A user-configured config differs from the default, so even under Supervisor
-    the transition must not apply.
-    """
-    hass_storage[DOMAIN] = _stable_http_storage({"server_port": 9000})
-
-    with _supervisor_default_config():
-        assert await async_setup_component(hass, "http", {})
-        await hass.async_start()
-        await hass.async_block_till_done()
-
-    assert hass.config.api.port == 9000
-    assert hass.http._legacy_redirect_server is None
-
-
-async def test_redirect_bind_failure_is_handled(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test setup continues when the legacy redirect server cannot bind."""
-    with (
-        patch.dict(os.environ, {ENV_SUPERVISOR: "core"}, clear=True),
-        patch(
-            "homeassistant.components.http.config._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server.HomeAssistantHTTP._async_create_redirect_server",
-            autospec=True,
-            side_effect=OSError(errno.EADDRINUSE, "Address already in use"),
-        ),
-    ):
-        assert await async_setup_component(hass, "http", {})
-        assert await async_setup_component(hass, "onboarding", {})
-        await hass.async_start()
-        await hass.async_block_till_done()
-
-    server = hass.http
-    assert server._legacy_redirect_server is None
-    assert server._legacy_redirect_runner is None
-
-
-async def test_legacy_redirect_serves_method_preserving_307(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test the legacy redirect serves a 307 to the active port for any method."""
-    captured: dict[str, int] = {}
-
-    async def _bind_serving(self: http.HomeAssistantHTTP) -> asyncio.Server:
-        assert self._legacy_redirect_runner is not None
-        server = await self.hass.loop.create_server(
-            self._legacy_redirect_runner.server, "127.0.0.1", 0
-        )
-        captured["port"] = server.sockets[0].getsockname()[1]
-        return server
-
-    with (
-        patch.dict(os.environ, {ENV_SUPERVISOR: "core"}, clear=True),
-        patch(
-            "homeassistant.components.http.config._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server.HomeAssistantHTTP._async_create_redirect_server",
-            autospec=True,
-            side_effect=_bind_serving,
-        ),
-    ):
-        await _setup_http_with_onboarding(hass)
-        assert hass.http._legacy_redirect_server is not None
-
-        async with (
-            aiohttp.ClientSession() as session,
-            session.post(
-                f"http://127.0.0.1:{captured['port']}/api/foo?bar=1",
-                allow_redirects=False,
-            ) as resp,
-        ):
-            # 307 preserves the POST method; only the port changes (80 is
-            # the default HTTP port, so it is omitted from the URL).
-            assert resp.status == 307
-            assert resp.headers["Location"] == "http://127.0.0.1/api/foo?bar=1"
-
-
-async def test_legacy_redirect_stops_with_connection_open(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test the redirect tears down while a client holds a connection open.
-
-    A client keeps its connection alive after the redirect response, so
-    awaiting the server's wait_closed() before the runner has closed the open
-    connections never returned, hanging every shutdown stage in turn.
-    """
-    captured: dict[str, int] = {}
-
-    async def _bind_serving(self: http.HomeAssistantHTTP) -> asyncio.Server:
-        assert self._legacy_redirect_runner is not None
-        server = await self.hass.loop.create_server(
-            self._legacy_redirect_runner.server, "127.0.0.1", 0
-        )
-        captured["port"] = server.sockets[0].getsockname()[1]
-        return server
-
-    with (
-        patch.dict(os.environ, {ENV_SUPERVISOR: "core"}, clear=True),
-        patch(
-            "homeassistant.components.http.config._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server._DEFAULT_CONFIG", DEFAULT_80_CONFIG
-        ),
-        patch(
-            "homeassistant.components.http.server.HomeAssistantHTTP._async_create_redirect_server",
-            autospec=True,
-            side_effect=_bind_serving,
-        ),
-    ):
-        await _setup_http_with_onboarding(hass)
-        server = hass.http
-        assert server._legacy_redirect_server is not None
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"http://127.0.0.1:{captured['port']}/", allow_redirects=False
-            ) as resp:
-                assert resp.status == 307
-
-            # The connection is returned to the pool, not closed, so the
-            # redirect still has an open connection at teardown.
-            _complete_onboarding(hass)
-            async with asyncio.timeout(10):
-                await hass.async_block_till_done()
-
-        assert server._legacy_redirect_server is None
-        assert server._legacy_redirect_runner is None
-
-
-async def test_legacy_redirect_stop_is_reentrant(
-    hass: HomeAssistant,
-    hass_storage: dict[str, Any],
-) -> None:
-    """Test overlapping redirect teardowns do not wait on each other.
-
-    Onboarding completing and the stop event both tear the redirect down, so
-    the second call must not await the first call's server again.
-    """
-    with _supervisor_default_config():
-        await _setup_http_with_onboarding(hass)
-        server = hass.http
-        assert server._legacy_redirect_server is not None
-
-        async with asyncio.timeout(10):
-            await asyncio.gather(
-                server._async_stop_legacy_redirect(),
-                server._async_stop_legacy_redirect(),
-            )
-
-        assert server._legacy_redirect_server is None
-        assert server._legacy_redirect_runner is None
-
-        # The stop event fires the same teardown once more.
-        async with asyncio.timeout(10):
-            await server._async_stop_legacy_redirect()
 
 
 @pytest.mark.usefixtures("freezer")

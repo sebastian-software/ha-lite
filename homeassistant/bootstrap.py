@@ -40,9 +40,7 @@ from .components import (
     config as config_pre_import,  # noqa: F401
     device_automation as device_automation_pre_import,  # noqa: F401
     diagnostics as diagnostics_pre_import,  # noqa: F401
-    file_upload as file_upload_pre_import,  # noqa: F401
     http as http_import,  # noqa: F401 - not named pre_import since it has requirements
-    onboarding as onboarding_pre_import,  # noqa: F401
     person as person_pre_import,  # noqa: F401
     recorder as recorder_import,  # noqa: F401 - not named pre_import since it has requirements
     repairs as repairs_pre_import,  # noqa: F401
@@ -167,8 +165,6 @@ LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
 STAGE_0_INTEGRATIONS = (
     # Load logging and http deps as soon as possible
     ("logging, http deps", LOGGING_AND_HTTP_DEPS_INTEGRATIONS, None),
-    # Setup labs for preview features
-    ("labs", {"labs"}, STAGE_0_SUBSTAGE_TIMEOUT),
     # Setup recorder
     ("recorder", {"recorder"}, None),
     # Start up debuggers. Start these first in case they want to wait.
@@ -188,8 +184,6 @@ STAGE_1_INTEGRATIONS = {
     *DISCOVERY_INTEGRATIONS,
     # To make sure we forward data to other instances
     "mqtt_eventstream",
-    # Ensure supervisor is available
-    "hassio",
 }
 
 DEFAULT_INTEGRATIONS = {
@@ -206,15 +200,11 @@ DEFAULT_INTEGRATIONS = {
     "repairs",
     "system_log",
     "websocket_api",
-    "analytics",  # Needed for onboarding
     "application_credentials",
-    "backup",
-    "brands",
-    "hardware",
-    "labs",
     "logger",
     "network",
     "system_health",
+    "webhook",
     #
     # Key-feature:
     # Automation and script are intentionally opt-in in ha-lite. The generic
@@ -247,12 +237,17 @@ DEFAULT_INTEGRATIONS = {
     "window",
 }
 DEFAULT_INTEGRATIONS_RECOVERY_MODE = {
-    # These integrations are set up if recovery mode is activated.
-    "backup",
-}
-DEFAULT_INTEGRATIONS_SUPERVISOR = {
-    # These integrations are set up if using the Supervisor
-    "hassio",
+    # ha-lite: recovery is an API path. These are what a client needs to
+    # authenticate, read the error log and repairs, and fix config entries.
+    "api",
+    "auth",
+    "config",
+    "diagnostics",
+    "http",
+    "logger",
+    "repairs",
+    "system_log",
+    "websocket_api",
 }
 
 # ha-lite: no presentation component is critical to runtime startup.
@@ -272,9 +267,7 @@ PRELOAD_STORAGE = [
     "core.uuid",
     "bluetooth.passive_update_processor",
     "bluetooth.remote_scanners",
-    "core.analytics",
     "auth_module.totp",
-    "backup",
 ]
 
 
@@ -320,6 +313,7 @@ async def async_setup_hass(
 
     block_async_io.enable()
 
+    recovery_reason: str | None = None
     if not (recovery_mode := runtime_config.recovery_mode):
         config_dict = None
         basic_setup_success = False
@@ -329,6 +323,7 @@ async def async_setup_hass(
         try:
             config_dict = await conf_util.async_hass_config_yaml(hass)
         except HomeAssistantError as err:
+            recovery_reason = f"Failed to parse configuration.yaml: {err}"
             _LOGGER.error(
                 "Failed to parse configuration.yaml: %s. Activating recovery mode",
                 err,
@@ -350,6 +345,7 @@ async def async_setup_hass(
             hass = await create_hass()
 
         elif not basic_setup_success:
+            recovery_reason = "Unable to set up core integrations"
             _LOGGER.warning(
                 "Unable to set up core integrations. Activating recovery mode"
             )
@@ -360,6 +356,7 @@ async def async_setup_hass(
         elif any(
             domain not in hass.config.components for domain in CRITICAL_INTEGRATIONS
         ):
+            recovery_reason = f"{','.join(CRITICAL_INTEGRATIONS)} did not load"
             _LOGGER.warning(
                 "Detected that %s did not load. Activating recovery mode",
                 ",".join(CRITICAL_INTEGRATIONS),
@@ -387,6 +384,10 @@ async def async_setup_hass(
         hass.config.recovery_mode = True
 
         await async_from_config_dict({"recovery_mode": {}}, hass)
+        if recovery_reason:
+            # The failed instance logged this before its log file was rotated
+            # away; logging it here puts it where an API client can read it.
+            _LOGGER.error("Running in recovery mode: %s", recovery_reason)
 
     return hass
 
@@ -709,10 +710,6 @@ def _get_domains(hass: core.HomeAssistant, config: dict[str, Any]) -> set[str]:
         domains.update(hass.config_entries.async_domains())
     else:
         domains.update(DEFAULT_INTEGRATIONS_RECOVERY_MODE)
-
-    # Add domains depending on if the Supervisor is used or not
-    if ENV_SUPERVISOR in os.environ:
-        domains.update(DEFAULT_INTEGRATIONS_SUPERVISOR)
 
     return domains
 

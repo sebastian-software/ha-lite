@@ -129,7 +129,7 @@ The audit does **not** promote these to retained scope merely because tests exis
 - user schedule/timer/input helpers (removed)
 - history/logbook/energy (removed)
 - cloud/Nabu Casa (removed)
-- onboarding and the default bundle (#22)
+- onboarding and the default bundle (removed)
 - Assist/voice pipelines and the media browser (removed)
 - Home Assistant OS/Supervisor behavior (removed from the retained integrations)
 - every unrelated device integration (#27)
