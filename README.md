@@ -1,6 +1,6 @@
 # ha-lite
 
-**Home Assistant's device layer as a small, headless server.**
+**Home Assistant's device layer as a headless server.**
 
 ha-lite connects to your devices the way Home Assistant does: the same
 integrations, the same discovery and the same device and entity model. It then
@@ -17,15 +17,15 @@ of your choice.
 ## Is it for you?
 
 **Use Home Assistant** if you want a smart-home application: dashboards, the
-mobile apps, an automation editor, a voice assistant, history graphs, add-ons,
-cloud access and thousands of integrations. That is what Home Assistant is
-built for, and ha-lite removes all of it.
+mobile apps, an automation editor, a voice assistant, history graphs, add-ons
+and cloud access. That is what Home Assistant is built for, and ha-lite
+removes all of it.
 
 **Consider ha-lite** if you already have the brain and need the hands: a
 dependable way to discover, configure, observe and control real devices, with
-a small codebase you can read and a dependency list you can audit. It is
+Home Assistant's integrations and none of the product around them. It is
 built for AI agents over MCP, custom control services, and anyone who wants
-Home Assistant's device knowledge without the product around it.
+Home Assistant's device knowledge without the application.
 
 ## How it differs from Home Assistant
 
@@ -34,14 +34,13 @@ Home Assistant's device knowledge without the product around it.
 | **Interface** | Web app, dashboards, mobile apps | None — REST, WebSocket and MCP |
 | **Automations and scripts** | Built in, with an editor, blueprints and templates | Not included. Your client subscribes to events and calls services |
 | **AI agents** | Assist and conversation agents; MCP server as an option | MCP server as a primary interface |
-| **Integrations** | About 1,500 | 90: seven device integrations and what they build on |
+| **Integrations** | About 1,500 | About 1,300: every one that works without the removed product layers |
 | **History and statistics** | Recorder database, history graphs, energy dashboard | None. State changes are streamed, and clients keep what they need |
 | **First run** | Onboarding wizard in the browser | Two commands create the owner and an access token |
 | **Broken configuration** | Recovery mode in the browser | Recovery mode serves the API and reports the cause |
 | **Cloud, add-ons, OS** | Nabu Casa, Supervisor, add-ons, Home Assistant OS | None |
 | **Backup** | Backup integration with cloud storage agents | Copy the configuration directory |
-| **Python source** | 51 MB in 10,000 files | 8 MB in 925 files |
-| **Integration dependencies** | Over 1,100 pinned packages | 40 pinned packages |
+| **Python source** | 51 MB in 10,000 files | 39 MB in 8,400 files |
 
 ## What stays the same
 
@@ -56,8 +55,8 @@ integration behaves the way it does upstream:
   machine, the event bus and service calls are unchanged. So are areas,
   floors and labels.
 - **Entity domains.** Lights, switches, covers, climate, fans, locks, sensors,
-  binary sensors, media players, vacuums, valves, water heaters, cameras,
-  weather and the other domains the retained integrations provide.
+  binary sensors, media players, remotes, calendars, vacuums, valves, water
+  heaters, cameras, weather and the rest of Home Assistant's entity domains.
 - **Triggers and conditions.** Named vocabulary such as `motion.detected`,
   `door.opened` or `temperature.crossed_threshold`, subscribable over the
   WebSocket API.
@@ -65,7 +64,15 @@ integration behaves the way it does upstream:
 - **APIs.** The REST and WebSocket APIs, webhooks, OAuth2 application
   credentials, and the MCP server.
 
-### Included integrations
+### Integrations
+
+ha-lite ships Home Assistant's integration catalog: Philips Hue, Shelly and
+MQTT, Tasmota, deCONZ, Tuya, AVM FRITZ!, tado°, UniFi Network, Home Connect,
+Nest, Reolink and about 1,200 more. It is Home Assistant's own code, as
+upstream ships it, and each integration runs its upstream test suite in CI.
+
+Seven integrations are anchors. CI tests each on its own, as the reference for
+one kind of integration:
 
 | Integration | Kind |
 | --- | --- |
@@ -77,9 +84,14 @@ integration behaves the way it does upstream:
 | [Modbus](https://www.home-assistant.io/integrations/modbus) | Modbus TCP/RTU devices, configured in YAML |
 | [Miele](https://www.home-assistant.io/integrations/miele) | Miele appliances through Miele's cloud (OAuth) |
 
-Each one runs its full upstream test suite in CI. Custom integrations in the
-configuration directory's `custom_components/` folder load as they do in Home
-Assistant.
+Not included yet are 158 integrations that still depend on a removed product
+layer, among them ESPHome, ZHA, Z-Wave JS, Sonos, Google Cast, UniFi Protect,
+Ring and SmartThings. Each needs a small decoupling change first;
+[retained-closure.md](docs/architecture/retained-closure.md#the-catalog-restored)
+lists what each one needs.
+
+Custom integrations in the configuration directory's `custom_components/`
+folder load as they do in Home Assistant.
 
 ## What is gone, and why
 
@@ -87,8 +99,8 @@ Everything that makes Home Assistant a product for people is removed from the
 code base, not just switched off: the frontend and dashboards, automations and
 scripts, blueprints and templates, history, logbook and energy, the Recorder
 database, the voice pipeline, onboarding, Home Assistant Cloud, Alexa and
-Google Assistant, the Supervisor and add-ons, and backups. In all, roughly
-1,400 of Home Assistant's 1,500 integrations are gone.
+Google Assistant, the Supervisor and add-ons, and backups. The integrations
+stay; only the ones that cannot work without a removed layer wait for a fix.
 
 The principle behind the cut: ha-lite describes and controls the physical
 world, and deciding what should happen belongs to its clients. Whatever is not
@@ -104,11 +116,13 @@ git clone https://github.com/sebastian-software/ha-lite.git
 cd ha-lite
 uv venv --python 3.14
 source .venv/bin/activate
-uv pip install -e . -r requirements_all.txt
+uv pip install -e .
 ```
 
-`requirements_all.txt` holds every dependency of the included integrations,
-so ha-lite installs nothing at runtime unless you add custom integrations.
+This installs the core. When you first set up an integration, ha-lite installs
+the Python packages it needs, as Home Assistant does. To install everything up
+front and run without a package index, add `-r requirements_all.txt`: over
+1,000 packages, every integration's dependencies.
 
 ### First run
 
@@ -175,12 +189,15 @@ The design decisions are written down as architecture decision records in
 - [ADR 0018](docs/adr/0018-persistence-contract.md): what ha-lite persists,
   and why it keeps no history;
 - [ADR 0019](docs/adr/0019-configuration-and-dependencies.md): configuration
-  and dependencies.
+  and dependencies;
+- [ADR 0020](docs/adr/0020-keep-the-integration-catalog.md): why the
+  integrations stay and only product layers go.
 
 What is kept, and why, is listed per component in the
 [scope matrix](docs/architecture/scope-matrix.md). The
 [retained closure](docs/architecture/retained-closure.md) explains how the
-kept set is computed from the import graph and enforced in CI. The
+protected core is computed from the import graph, and how CI keeps removed
+layers out. The
 [roadmap](docs/architecture/roadmap.md) records how the reduction was carried
 out, with size measurements at each step.
 
@@ -192,10 +209,10 @@ uv run --no-sync pytest tests/...   # tests
 uv run --no-sync prek run --all-files
 ```
 
-An integration becomes part of ha-lite by being declared in
-`script/ha_lite_closure_config.json` and given a job in
-`.github/workflows/ha-lite-ci.yml`. CI rejects any component that is in the
-tree but not part of the declared set. [`CLAUDE.md`](CLAUDE.md) has the
+An integration from upstream joins the catalog as it is; CI runs its tests and
+rejects it only if it imports a removed product layer. The anchors and the
+runtime they need are declared as roots in `script/ha_lite_closure_config.json`,
+each with its own job in `.github/workflows/ha-lite-ci.yml`. [`CLAUDE.md`](CLAUDE.md) has the
 project conventions.
 
 ## License

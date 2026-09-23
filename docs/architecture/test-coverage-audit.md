@@ -63,11 +63,12 @@ Some of these components may later be reduced or replaced. Until that decision i
 
 ## Entity-domain substrate
 
-The following generic domains are tested independently because at least one retained representative integration uses their contracts or MQTT exposes them as a supported entity type. They are exactly the `entity_domain_substrate` roots of the closure:
+The following generic domains are tested independently because a representative integration uses their contracts, MQTT exposes them as a supported entity type, or catalog integrations implement them. They are exactly the `entity_domain_substrate` roots of the closure:
 
 - alarm_control_panel
 - binary_sensor
 - button
+- calendar
 - camera
 - climate
 - cover
@@ -76,8 +77,10 @@ The following generic domains are tested independently because at least one reta
 - device_tracker
 - event
 - fan
+- geo_location
 - humidifier
 - image
+- image_processing
 - infrared
 - lawn_mower
 - light
@@ -85,6 +88,8 @@ The following generic domains are tested independently because at least one reta
 - media_player
 - notify
 - number
+- radio_frequency
+- remote
 - scene
 - select
 - sensor
@@ -93,10 +98,12 @@ The following generic domains are tested independently because at least one reta
 - tag
 - text
 - time
+- todo
 - update
 - vacuum
 - valve
 - water_heater
+- weather
 
 This is deliberately broader than the devices currently installed. The purpose of the first phase is to preserve Home Assistant's learned integration semantics while product layers are removed.
 

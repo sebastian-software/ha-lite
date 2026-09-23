@@ -14,7 +14,7 @@ agent guidance lives — put new guidance here rather than in a tool-specific fi
 
 ## Reduction gates
 
-- `script/ha_lite_closure.py` is the authority for what may be deleted, and `script/ha_lite_trigger_targets.py` checks that advertised trigger and condition targets match what the code filters on. Both run in CI with `--check`; run them before pushing a change that removes or rewires a component. See ADR 0010 and ADR 0011.
+- ha-lite keeps Home Assistant's integration catalog and removes only product layers (ADR 0020). `script/ha_lite_closure.py` computes the protected core, keeps the excluded product layers out of the tree and rejects imports of anything that is gone; `script/ha_lite_trigger_targets.py` checks that advertised trigger and condition targets match what the code filters on. Both run in CI with `--check`; run them before pushing a change that adds, removes or rewires a component. See ADR 0020 and ADR 0011.
 - Protect ha-lite by adding checks in files ha-lite owns rather than by editing upstream ones — every edited upstream line is a conflict on every future import. See ADR 0014.
 - Declaring a root in `script/ha_lite_closure_config.json` and giving it a CI job in `.github/workflows/ha-lite-ci.yml` are one decision, not two.
 
