@@ -68,6 +68,8 @@ Records are written in English, like everything else in the repository
 - [`docs/architecture/retained-closure.md`](../architecture/retained-closure.md)
   and its generated `retained-closure.json` say **what the tree currently
   proves**, and are regenerated on every change.
+- [`docs/architecture/roadmap.md`](../architecture/roadmap.md) says **what is
+  still to do**, and which GitHub issue carries each open block.
 
 When the three disagree, the closure is the evidence, the matrix is the intent,
 and the ADR is what has to be brought back in line.
@@ -75,7 +77,7 @@ and the ADR is what has to be brought back in line.
 ## What these records cannot tell you
 
 ADRs 0001 through 0009 were all written into the repository's root commit, a
-squashed import of 27,460 files. The frontend, Lovelace, automation and script
+squashed import of 27,439 files. The frontend, Lovelace, automation and script
 removals happened before that commit, so there is no per-change history for
 them: those nine records are the only account of that reasoning, and they were
 written after the fact rather than alongside it.

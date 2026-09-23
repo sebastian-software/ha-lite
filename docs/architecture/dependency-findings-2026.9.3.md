@@ -1,5 +1,24 @@
 # Home Assistant dependency findings — 2026.9.3
 
+## Status
+
+A point-in-time analysis, superseded as the source of dependency facts by
+`script/ha_lite_closure.py` and [retained-closure.md](retained-closure.md). It
+is kept because it records how the first reduction decisions were reached.
+What has become of each finding:
+
+| Finding | Outcome |
+|---|---|
+| `shelly/logbook.py` depends on `logbook` | Removed with `logbook` (#21) |
+| `shelly/device_trigger.py` depends on `device_automation` | Still present; `device_automation` is an `adapter` entry in the closure |
+| MQTT → `file_upload` for certificate upload | Open (#25, then #22) |
+| MQTT → `hassio` add-on convenience | Open (#25) |
+| Matter → `hassio` add-on lifecycle and `onboarding` | Open (#25) |
+| `frontend`, `lovelace`, `automation`, `script`, `blueprint`, `logbook`, `energy`, `cloud` deletion candidates | All removed |
+| `map` deletion candidate | Not present in the imported tree |
+| Fronius periodic rescan shows runtime scheduling must stay | Recorded in ADR 0005; `schedule` and `timer` removed, `async_track_time_interval` kept |
+| Generate a repository-wide import graph | Done: `script/ha_lite_closure.py` (#24) |
+
 ## Scope
 
 First source-level pass over Home Assistant Core **2026.9.3**, centered on the representative integrations Shelly, MQTT, Matter, Hue and Fronius.

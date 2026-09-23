@@ -1,5 +1,16 @@
 # Deletion Wave 1 — frontend and dashboard product surface
 
+## Status
+
+**Done.** This is the plan the wave followed, kept because it records why each
+bootstrap change was made. Every checkpoint below has landed. Two items were
+deferred rather than done: the headless recovery-mode composition is [#30], and
+the `map_tiles` and `my` deletions listed under "Likely deletions" moved to
+[#22]. [roadmap.md](roadmap.md) tracks both.
+
+[#22]: https://github.com/sebastian-software/ha-lite/issues/22
+[#30]: https://github.com/sebastian-software/ha-lite/issues/30
+
 ## Goal
 
 Make Home Assistant Core boot without the browser product surface while preserving device/integration runtime capabilities.
@@ -24,8 +35,6 @@ This means "do not configure frontend" is not equivalent to a headless runtime. 
 
 ## High-confidence deletes
 
-Current Wave 1 progress: the `frontend` component has now been physically removed after its bootstrap/recovery/config coupling was eliminated. `lovelace` remains for the next deletion block so dependency failures stay attributable.
-
 After the patches below are in place:
 
 ```text
@@ -33,7 +42,7 @@ homeassistant/components/frontend/  # REMOVED
 homeassistant/components/lovelace/  # REMOVED
 ```
 
-Likely deletions in the same or immediately following commit, after import checks:
+Likely deletions in the same or immediately following commit, after import checks (deferred to #22):
 
 ```text
 homeassistant/components/map_tiles/
