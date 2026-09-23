@@ -40,7 +40,9 @@ trust, as it already is for `secrets.yaml`.
 "already onboarded" whenever onboarding was not set up, which was always, so
 removing them changes nothing at runtime: discovered single-instance
 integrations and Bluetooth adapters wait for a client to confirm their config
-flow, and `/auth/providers` answers regardless.
+flow, and `/auth/providers` answers regardless. Catalog integrations ask the
+same question in their config flows; `onboarding.py`, a compat module, gives
+them the same answer (ADR 0020).
 
 **Defaults are explicit and minimal.** `DEFAULT_INTEGRATIONS` is the runtime
 that is always on: the HTTP, REST and WebSocket APIs, auth, config, repairs,

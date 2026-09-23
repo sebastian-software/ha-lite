@@ -40,7 +40,7 @@ Home Assistant's device knowledge without the application.
 | **Broken configuration** | Recovery mode in the browser | Recovery mode serves the API and reports the cause |
 | **Cloud, add-ons, OS** | Nabu Casa, Supervisor, add-ons, Home Assistant OS | None |
 | **Backup** | Backup integration with cloud storage agents | Copy the configuration directory |
-| **Python source** | 51 MB in 10,000 files | 39 MB in 8,400 files |
+| **Python source** | 51 MB in 10,000 files | 42 MB in 8,800 files |
 
 ## What stays the same
 
@@ -67,8 +67,9 @@ integration behaves the way it does upstream:
 ### Integrations
 
 ha-lite ships Home Assistant's integration catalog: Philips Hue, Shelly and
-MQTT, Tasmota, deCONZ, Tuya, AVM FRITZ!, tado°, UniFi Network, Home Connect,
-Nest, Reolink and about 1,200 more. It is Home Assistant's own code, as
+MQTT, Sonos, Google Cast, TP-Link, Tasmota, deCONZ, Tuya, AVM FRITZ!, tado°,
+UniFi Network and Protect, Home Connect, Nest, Reolink and about 1,200
+more. It is Home Assistant's own code, as
 upstream ships it, and each integration runs its upstream test suite in CI.
 
 Seven integrations are anchors. CI tests each on its own, as the reference for
@@ -84,11 +85,19 @@ one kind of integration:
 | [Modbus](https://www.home-assistant.io/integrations/modbus) | Modbus TCP/RTU devices, configured in YAML |
 | [Miele](https://www.home-assistant.io/integrations/miele) | Miele appliances through Miele's cloud (OAuth) |
 
-Not included yet are 158 integrations that still depend on a removed product
-layer, among them ESPHome, ZHA, Z-Wave JS, Sonos, Google Cast, UniFi Protect,
-Ring and SmartThings. Each needs a small decoupling change first;
-[retained-closure.md](docs/architecture/retained-closure.md#the-catalog-restored)
-lists what each one needs.
+Some integrations are not included:
+
+- **Out by design (56).** Their purpose is a removed product layer:
+  - text-to-speech, speech-to-text and AI agents;
+  - integrations that write to or read from the Recorder's statistics;
+  - backup agents;
+  - Home Assistant's own hardware.
+- **Not included yet (34).** They still depend on a removed layer, among them
+  ESPHome, ZHA, Z-Wave JS, KNX, Netatmo and HomeKit Bridge. Each needs a small
+  decoupling change first.
+
+[retained-closure.md](docs/architecture/retained-closure.md#what-is-still-out)
+lists each one and what it needs.
 
 Custom integrations in the configuration directory's `custom_components/`
 folder load as they do in Home Assistant.
@@ -100,7 +109,10 @@ code base, not just switched off: the frontend and dashboards, automations and
 scripts, blueprints and templates, history, logbook and energy, the Recorder
 database, the voice pipeline, onboarding, Home Assistant Cloud, Alexa and
 Google Assistant, the Supervisor and add-ons, and backups. The integrations
-stay; only the ones that cannot work without a removed layer wait for a fix.
+stay, except those whose purpose is one of these layers. Where an integration
+only asks a removed layer a question, such as whether an automation uses one of
+its entities, a small compat module answers it the way Home Assistant does
+without that layer.
 
 The principle behind the cut: ha-lite describes and controls the physical
 world, and deciding what should happen belongs to its clients. Whatever is not

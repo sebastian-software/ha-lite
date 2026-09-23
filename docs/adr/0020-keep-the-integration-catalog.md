@@ -60,6 +60,25 @@ on:
   cannot load, so it stays out of the tree until it is decoupled, the way
   #25 decoupled MQTT and Matter from the Supervisor (ADR 0006).
 
+**A removed layer can leave a compat module behind.** Many integrations
+import a removed layer only to ask it one question: which automations and
+scripts use this entity, before they deprecate it; has the browser wizard
+finished, before a config flow adds a discovered device without asking.
+ha-lite answers such a question with a compat module: a single file directly
+under `homeassistant/components/`, with no manifest, so it is not an
+integration and cannot be set up. It gives the answer upstream gives when the
+product integration is not loaded. `automation.py` and `script.py` find no
+automations or scripts, and `onboarding.py` reports the instance as onboarded.
+An import of a compat module is not dangling. Each module must be listed
+under `compat_modules` in the closure config, with what it provides. A module
+that is not listed there, or a listed module that is gone, is a finding.
+That makes each compat module a reviewed decision rather than a way around
+the dangling check. A compat module never grows into the product it stands
+in for; an integration that needs more than an answer stays out.
+
+A platform file that only a removed layer loads, such as WLED's
+`analytics.py`, leaves with that layer, as logbook's describe platforms did.
+
 **CI runs the catalog.** The `catalog` job runs every catalog suite, split
 into ten shards by `script/ha_lite_catalog_shard.py`. Roots keep their own
 jobs.
@@ -69,9 +88,11 @@ removed layer they lean on is replaced in ha-lite's own test support rather
 than in each test (ADR 0014):
 
 - `tests/helpers/automation_harness.py` answers setups of `automation` and
-  `script` with the retained trigger, condition and action primitives, and
-  shows each automation as an entity the way the removed integration did, so
-  device-trigger tests keep working without the product;
+  `script` with the retained trigger, condition and action primitives. It
+  shows each automation and script as an entity, the way the removed
+  integrations did, so device-trigger tests keep working without the
+  product. The compat modules' lookups answer from it, so a deprecation test
+  finds the automations it set up;
 - `tests/helpers/helper_harness.py` stands in for `input_boolean` (a toggle
   that restores its state), `intent_script` (speech and an action per intent)
   and the domain names of `input_number`, `input_select` and `counter`.
@@ -88,23 +109,32 @@ The restore brought back 1,219 components: the 1,218 that Wave 4 deleted and
 whose code imports nothing that is gone, plus `media_source`, which Wave 3 had
 removed with the voice stack although it serves camera, image and media
 player entities. `trace` loaded too, but it records and debugs automations and
-scripts, so it joined the excluded layers instead. The tree holds 1,309
-components: 98 in the closure and 1,211 in the catalog.
+scripts, so it joined the excluded layers instead.
 
-158 integrations are still out, and `retained-closure.md` lists them
-with what holds each back:
+The compat modules brought back 35 more. Among them are Sonos, Google Cast,
+TP-Link, UniFi Protect, Ring, SmartThings, Roborock, Yeelight, WiZ, WLED,
+Elgato, BTHome and HomeKit Device. The tree holds 1,344 components: 98 in the
+closure and 1,246 in the catalog.
 
-- 119 import a removed layer — `onboarding`, `automation`, `script`,
-  `recorder`, `cloud`, `hassio`, the voice stack and others. They include
-  ESPHome, ZHA, Z-Wave JS, Sonos, Cast and UniFi Protect. Each needs a
-  decoupling change of the #25 kind before it can come back.
-- `utility_meter` imports `sensor`'s statistics module, which left with
-  Recorder.
-- 38 virtual integrations point at one of the above.
+90 integrations and 33 virtual integrations pointing at them are still out.
+`retained-closure.md` lists them in two groups:
+
+- **Out by design** (56). Their purpose is a layer ha-lite removed:
+  - speech and AI providers;
+  - integrations that write to or read from Recorder's statistics;
+  - backup agents;
+  - Home Assistant's own hardware;
+  - `intent_script`, which runs actions the way automations do.
+
+  They leave with that layer.
+- **Waiting for a decoupling** (34). They serve devices, and a coupling holds
+  them back, not their purpose. Among them are ESPHome, ZHA, Z-Wave JS, KNX,
+  Netatmo and HomeKit Bridge. Each needs a change of the #25 kind, or a compat
+  module where the coupling is only a question.
 
 The reduction is now in the product layers, not in the catalog. Product
-Python goes from 8 MB back to 39 MB, and `requirements_all.txt` from 40
-packages to 1,035; upstream's full catalog is 51 MB and 1,146. ADR 0019 records what that means for installation.
+Python goes from 8 MB back to 42 MB, and `requirements_all.txt` from 40
+packages to 1,067; upstream's full catalog is 51 MB and 1,146. ADR 0019 records what that means for installation.
 
 Upstream updates get cheaper. A curated update (ADR 0003) no longer has to
 skip 1,379 deleted directories; it has to carry the excluded layers and the
