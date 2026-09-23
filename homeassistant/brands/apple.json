@@ -4,6 +4,7 @@
   "integrations": [
     "apple_tv",
     "homekit_controller",
+    "homekit",
     "ibeacon",
     "icloud",
     "itunes",

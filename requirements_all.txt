@@ -15,6 +15,9 @@ Adax-local==0.3.0
 # homeassistant.components.doorbird
 DoorBirdPy==3.0.12
 
+# homeassistant.components.homekit
+HAP-python==5.0.0
+
 # homeassistant.components.tasmota
 HATasmota==0.10.1
 
@@ -67,7 +70,11 @@ PyMetno==0.13.0
 # homeassistant.components.keymitt_ble
 PyMicroBot==0.0.23
 
+# homeassistant.components.owntracks
+PyNaCl==1.6.2
+
 # homeassistant.auth.mfa_modules.totp
+# homeassistant.components.homekit
 PyQRCode==1.2.1
 
 # homeassistant.components.rmvtransport
@@ -97,6 +104,9 @@ PyViCare==2.62.1
 
 # homeassistant.components.xiaomi_aqara
 PyXiaomiGateway==0.14.3
+
+# homeassistant.components.rachio
+RachioPy==1.1.0
 
 # homeassistant.components.python_script
 RestrictedPython==8.5
@@ -451,6 +461,9 @@ aiowatttime==0.1.1
 # homeassistant.components.webostv
 aiowebostv==0.10.0
 
+# homeassistant.components.withings
+aiowithings==3.1.6
+
 # homeassistant.components.yandex_transport
 aioymaps==1.2.5
 
@@ -601,6 +614,9 @@ azure-servicebus==7.10.0
 
 # homeassistant.components.holiday
 babel==2.18.0
+
+# homeassistant.components.homekit
+base36==0.1.1
 
 # homeassistant.components.linux_battery
 batinfo==0.4.2
@@ -973,6 +989,9 @@ fluss-api==0.2.5
 # homeassistant.components.flux_led
 flux-led==1.2.0
 
+# homeassistant.components.homekit
+fnv-hash-fast==2.0.3
+
 # homeassistant.components.foobot
 foobot_async==1.0.1
 
@@ -1053,6 +1072,9 @@ gios==7.1.1
 
 # homeassistant.components.glances
 glances-api==0.10.0
+
+# homeassistant.components.go2rtc
+go2rtc-client==0.4.0
 
 # homeassistant.components.goalzero
 goalzero==0.2.2
@@ -1200,6 +1222,9 @@ holidays==0.104
 
 # homeassistant.components.conversation
 home-assistant-intents==2026.8.28
+
+# homeassistant.components.homekit
+homekit-audio-proxy==1.2.1
 
 # homeassistant.components.gentex_homelink
 homelink-integration-api==0.0.5
@@ -1405,6 +1430,9 @@ lojack-api==0.7.2
 # homeassistant.components.london_underground
 london-tube-status==0.7
 
+# homeassistant.components.loqed
+loqedAPI==2.1.11
+
 # homeassistant.components.luftdaten
 luftdaten==0.7.4
 
@@ -1498,6 +1526,9 @@ momonga==0.3.0
 
 # homeassistant.components.monarch_money
 monarchmoneycommunity==1.5.2
+
+# homeassistant.components.monzo
+monzopy==1.8.0
 
 # homeassistant.components.mopeka
 mopeka-iot-ble==0.8.0
@@ -1607,6 +1638,7 @@ numato-gpio==0.13.0
 # homeassistant.components.compensation
 # homeassistant.components.iqvia
 # homeassistant.components.stream
+# homeassistant.components.trend
 numpy==2.3.2
 
 # homeassistant.components.nyt_games
@@ -1904,6 +1936,9 @@ pyaqvify==0.0.12
 
 # homeassistant.components.atag
 pyatag==0.3.7.1
+
+# homeassistant.components.netatmo
+pyatmo==9.9.0
 
 # homeassistant.components.apple_tv
 pyatv==0.18.0
@@ -2322,6 +2357,9 @@ pypglab==0.0.5
 # homeassistant.components.pjlink
 pypjlink2==1.2.1
 
+# homeassistant.components.plaato
+pyplaato==0.0.19
+
 # homeassistant.components.point
 pypoint==3.0.0
 
@@ -2564,6 +2602,9 @@ python-opensky==1.0.1
 
 # homeassistant.components.thread
 python-otbr-api==2.10.0
+
+# homeassistant.components.overseerr
+python-overseerr==0.9.0
 
 # homeassistant.components.picnic
 python-picnic-api2==2.0.1
@@ -2946,6 +2987,9 @@ surepy==0.9.0
 # homeassistant.components.swiss_hydrological_data
 swisshydrodata==0.1.0
 
+# homeassistant.components.switchbot_cloud
+switchbot-api==2.13.0
+
 # homeassistant.components.synology_srm
 synology-srm==0.2.0
 
@@ -3031,6 +3075,9 @@ tololib==1.2.2
 
 # homeassistant.components.tonewinner
 tonewinner-rs232==1.1.0
+
+# homeassistant.components.toon
+toonapi==0.3.0
 
 # homeassistant.components.totalconnect
 total-connect-client==2026.7

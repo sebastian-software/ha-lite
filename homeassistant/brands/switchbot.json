@@ -1,6 +1,6 @@
 {
   "domain": "switchbot",
   "name": "SwitchBot",
-  "integrations": ["switchbot"],
+  "integrations": ["switchbot", "switchbot_cloud"],
   "iot_standards": ["matter"]
 }

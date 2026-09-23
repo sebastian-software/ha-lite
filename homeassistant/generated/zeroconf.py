@@ -52,6 +52,10 @@ HOMEKIT = {
         "always_discover": True,
         "domain": "hive",
     },
+    "Healthy Home Coach": {
+        "always_discover": True,
+        "domain": "netatmo",
+    },
     "Iota": {
         "always_discover": True,
         "domain": "abode",
@@ -216,9 +220,21 @@ HOMEKIT = {
         "always_discover": False,
         "domain": "nanoleaf",
     },
+    "Netatmo Relay": {
+        "always_discover": True,
+        "domain": "netatmo",
+    },
     "PowerView": {
         "always_discover": True,
         "domain": "hunterdouglas_powerview",
+    },
+    "Presence": {
+        "always_discover": True,
+        "domain": "netatmo",
+    },
+    "Rachio": {
+        "always_discover": True,
+        "domain": "rachio",
     },
     "SPK5": {
         "always_discover": True,
@@ -243,6 +259,10 @@ HOMEKIT = {
     "Touch HD": {
         "always_discover": True,
         "domain": "rainmachine",
+    },
+    "Welcome": {
+        "always_discover": True,
+        "domain": "netatmo",
     },
     "Wemo": {
         "always_discover": False,
@@ -524,6 +544,11 @@ ZEROCONF = {
             "domain": "home_connect",
         },
     ],
+    "_homekit._tcp.local.": [
+        {
+            "domain": "homekit",
+        },
+    ],
     "_homewizard._tcp.local.": [
         {
             "domain": "homewizard",
@@ -590,6 +615,10 @@ ZEROCONF = {
             "name": "liebherr*",
         },
         {
+            "domain": "loqed",
+            "name": "loqed*",
+        },
+        {
             "domain": "lunatone",
             "properties": {
                 "manufacturer": "lunatone industrielle elektronik gmbh",
@@ -622,6 +651,10 @@ ZEROCONF = {
         {
             "domain": "pure_energie",
             "name": "smartbridge*",
+        },
+        {
+            "domain": "rachio",
+            "name": "rachio*",
         },
         {
             "domain": "rainmachine",
