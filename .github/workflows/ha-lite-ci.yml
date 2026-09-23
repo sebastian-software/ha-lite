@@ -152,6 +152,7 @@ jobs:
             tests/components/api \
             tests/components/auth \
             tests/components/http \
+            tests/components/isal \
             tests/components/websocket_api \
             tests/components/config \
             tests/components/logger \

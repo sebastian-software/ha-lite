@@ -151,7 +151,7 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 |---|---|
 | Entity-domain substrate | 33 |
 | Retained integrations | 7 |
-| Runtime infrastructure | 23 |
+| Runtime infrastructure | 24 |
 | Device-class semantics | 15 |
 | Aggregation | 2 |
 | Environment | 1 |
@@ -184,20 +184,21 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 90 |
-| Declared roots | 83 |
-| Retained closure | 90 |
+| Component domains in tree | 91 |
+| Declared roots | 84 |
+| Retained closure | 91 |
 | Deletion candidates | 0 |
 
 Of the 7 transitively required domains, 6 are `retained` and 1 is an `adapter`.
 
 ### Wave 4
 
-Before Wave 4 the closure held 88 of 1,470 domains. #27 deleted the other
-1,380 in one change, with their tests, brand entries, generated matchers and
-requirements, and the tree has held only the closure since: the report lists
-no deletion candidates. `requirements_all.txt` went from 1,146 pinned packages
-to 42.
+Before Wave 4 the closure held 88 of 1,470 domains. #27 made three of the
+other 1,382 roots — `demo` and `kitchen_sink` as test fixtures, `isal` for
+HTTP (below) — and deleted the remaining 1,379 with their tests, brand
+entries, generated matchers and requirements. The tree has held only the
+closure since: the report lists no deletion candidates. `requirements_all.txt`
+went from 1,146 pinned packages to 43.
 
 From then on the relationship runs the other way. A component in the tree that
 the closure does not reach was added without being declared, and the gate
@@ -210,12 +211,16 @@ targets turned them into dangling findings, and the code behind them went.
 What the report could not list were three kinds of coupling by name, in
 strings:
 
-- **Bootstrap.** Stage 0 set up `isal`, `sentry` and `debugpy` by name, stage 1
+- **Bootstrap.** Stage 0 names `isal`, `sentry` and `debugpy`, stage 1
   `mqtt_eventstream`, and the defaults every member of the generated `Platform`
-  enum. Entity domains that left the tree also left the enum, and the rest
-  were removed from bootstrap. `tests/ha_lite/test_bootstrap_domains.py` now
-  checks every set bootstrap and the generated `configuration.yaml` name
-  against this closure.
+  enum. Entity domains that left the tree also left the enum, and `sentry`,
+  `debugpy` and `mqtt_eventstream` left bootstrap. `isal` was deleted at
+  first and CI caught it: the integration does nothing but carry the `isal`
+  package, which `http` loads for fast zlib compression, and without it HTTP
+  logs a fallback warning on every start — which is what the `system_log`
+  tests saw. It is a runtime-infrastructure root now.
+  `tests/ha_lite/test_bootstrap_domains.py` checks every set bootstrap and the
+  generated `configuration.yaml` name against this closure.
 - **Test fixtures.** `demo`, `kitchen_sink` and the `testing_config` custom
   platforms named deleted domains; see the roots above.
 - **Test doubles.** Some retained tests used a deleted integration as a

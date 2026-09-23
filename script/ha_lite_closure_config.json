@@ -107,6 +107,7 @@
       "diagnostics",
       "homeassistant",
       "http",
+      "isal",
       "logger",
       "mcp_server",
       "network",

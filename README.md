@@ -66,16 +66,16 @@ A useful measurement needs to distinguish **Home Assistant Core source** from th
 
 | Metric | Before Wave 1 | Current |
 | --- | ---: | ---: |
-| Tracked files in repository | 27,507 | 3,198 |
-| Tracked Python files | 18,497 | 2,267 |
-| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 978 files / 8.75 MB |
-| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 765 files / 6.03 MB |
-| Top-level component domains | 1,509 | 90 |
-| Python tests under `tests/` | 8,269 files / 67.45 MB | 1,092 files / 17.31 MB |
+| Tracked files in repository | 27,507 | 3,202 |
+| Tracked Python files | 18,497 | 2,270 |
+| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 979 files / 8.75 MB |
+| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 766 files / 6.03 MB |
+| Top-level component domains | 1,509 | 91 |
+| Python tests under `tests/` | 8,269 files / 67.45 MB | 1,094 files / 17.31 MB |
 
 "Before Wave 1" is the upstream 2026.9.3 tree immediately before the frontend and Lovelace deletion. "Current" is this checkout; the [roadmap](docs/architecture/roadmap.md#size-checkpoints) keeps the intermediate checkpoints.
 
-Waves 1–3 barely moved these numbers: roughly 94% of the Python bytes under `homeassistant/` were component code, and the product layers are a small part of it. Wave 4 is where the size went. The [retained closure](docs/architecture/retained-closure.md) reached 88 of 1,470 component domains, and deleting everything outside it leaves ha-lite with **17% of the upstream product Python** (8.75 of 51.36 MB), 6% of the component domains, a quarter of the test code, and 42 pinned packages in `requirements_all.txt` where there were 1,146.
+Waves 1–3 barely moved these numbers: roughly 94% of the Python bytes under `homeassistant/` were component code, and the product layers are a small part of it. Wave 4 is where the size went. The [retained closure](docs/architecture/retained-closure.md) reached 88 of 1,470 component domains, and deleting everything outside it leaves ha-lite with **17% of the upstream product Python** (8.75 of 51.36 MB), 6% of the component domains, a quarter of the test code, and 43 pinned packages in `requirements_all.txt` where there were 1,146.
 
 Wave 5 changes persistence and configuration rather than deleting components, so these numbers should move little from here. Each wave still records its checkpoint.
 
