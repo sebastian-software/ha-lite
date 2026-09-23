@@ -20,7 +20,9 @@ next to this script. A domain that enters the closure without being either is a
 finding: someone added coupling from retained code into an unreviewed
 component. So is an import from retained code of a component that is no longer
 in the tree, whatever its strength: a deferred import of a deleted component
-fails when it runs, not when it is loaded.
+fails when it runs, not when it is loaded. And so is a component in the tree
+that the closure does not reach: Wave 4 deleted everything outside it, so one
+that appears again was added without being declared.
 
     python3 script/ha_lite_closure.py            # human-readable report
     python3 script/ha_lite_closure.py --check    # CI gate, non-zero on findings
@@ -305,6 +307,7 @@ def analyze() -> dict:
     closure, reason = build_closure(roots, domains, edges)
 
     missing_roots = sorted(roots - domains)
+    outside = sorted(domains - closure)
     unreviewed = sorted(closure - roots - set(accepted))
     stale_accepted = sorted(set(accepted) - closure)
 
@@ -360,6 +363,7 @@ def analyze() -> dict:
         "closure": closure,
         "reason": reason,
         "missing_roots": missing_roots,
+        "outside": outside,
         "unreviewed": unreviewed,
         "stale_accepted": stale_accepted,
         "latent": latent,
@@ -389,6 +393,7 @@ def as_json(result: dict) -> dict:
             "unreviewed_closure_members": result["unreviewed"],
             "stale_accepted_entries": result["stale_accepted"],
             "missing_roots": result["missing_roots"],
+            "outside_closure": result["outside"],
             "dangling_imports": [
                 {"target": edge.target, "kind": edge.kind, "via": edge.via}
                 for edge in result["dangling"]
@@ -469,6 +474,7 @@ def print_report(result: dict) -> None:
         *result["unreviewed"],
         *result["stale_accepted"],
         *result["missing_roots"],
+        *result["outside"],
         *result["dangling"],
     ]
     print("\n## Findings\n")
@@ -489,6 +495,11 @@ def print_report(result: dict) -> None:
         )
     for domain in result["missing_roots"]:
         print(f"- **missing root**: `{domain}` is declared a root but absent.")
+    for domain in result["outside"]:
+        print(
+            f"- **outside**: `{domain}` is in the tree but not in the closure. "
+            "Declare it a root and give it a CI job, or delete it."
+        )
     for edge in result["dangling"]:
         print(
             f"- **dangling**: `{edge.via}` imports `{edge.target}` ({edge.kind}), "
@@ -532,6 +543,7 @@ def main() -> int:
             *result["unreviewed"],
             *result["stale_accepted"],
             *result["missing_roots"],
+            *result["outside"],
             *result["dangling"],
         ]
         if findings:

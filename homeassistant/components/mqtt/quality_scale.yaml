@@ -77,10 +77,10 @@ rules:
       The user can configure this through YAML or discover
       entities that are disabled by default.
   discovery:
-    status: done
+    status: exempt
     comment: >
-      When the Mosquitto MQTT broker add on is installed,
-      a MQTT config flow allows an automatic setup from its discovered settings.
+      A broker is not a discoverable device. ha-lite has no Supervisor add-ons
+      to announce one, so the user supplies the broker.
   stale-devices:
     status: exempt
     comment: >
@@ -99,11 +99,9 @@ rules:
     comment: |
       MQTT allow to dynamically create and remove devices through MQTT discovery.
   discovery-update-info:
-    status: done
+    status: exempt
     comment: >
-      If the Mosquitto broker add-on is used to set up MQTT from discovery,
-      and the broker add-on is re-installed,
-      MQTT will automatically update from the new brokers credentials.
+      The broker is not discovered, so there is no discovery info to update.
   repair-issues:
     status: done
     comment: >

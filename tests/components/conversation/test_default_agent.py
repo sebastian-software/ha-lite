@@ -60,7 +60,7 @@ from homeassistant.helpers import (
 )
 from homeassistant.setup import async_setup_component
 
-from . import expose_entity, expose_new
+from . import expose_entity, expose_new, register_speech_intents
 
 from tests.common import (
     MockConfigEntry,
@@ -670,18 +670,6 @@ async def test_trigger_sentence_response_translation(
         }
 
         unregister()
-
-
-@pytest.mark.usefixtures("init_components", "sl_setup")
-async def test_shopping_list_add_item(hass: HomeAssistant) -> None:
-    """Test adding an item to the shopping list through the default agent."""
-    result = await conversation.async_converse(
-        hass, "add apples to my shopping list", None, Context()
-    )
-    assert result.response.response_type is intent.IntentResponseType.ACTION_DONE
-    assert result.response.speech == {
-        "plain": {"speech": "Added apples", "extra_data": None}
-    }
 
 
 @pytest.mark.usefixtures("init_components")
@@ -2647,15 +2635,7 @@ async def test_custom_sentences_config(
         {"conversation": {"intents": {"StealthMode": ["engage stealth mode"]}}},
     )
     assert await async_setup_component(hass, "intent", {})
-    assert await async_setup_component(
-        hass,
-        "intent_script",
-        {
-            "intent_script": {
-                "StealthMode": {"speech": {"text": "Stealth mode engaged"}}
-            }
-        },
-    )
+    register_speech_intents(hass, {"StealthMode": "Stealth mode engaged"})
 
     # Invoke intent via HTTP API
     result = await conversation.async_converse(
@@ -2883,15 +2863,7 @@ async def test_custom_sentences_priority(
         assert await async_setup_component(hass, DOMAIN, {})
         assert await async_setup_component(hass, "light", {})
         assert await async_setup_component(hass, "intent", {})
-        assert await async_setup_component(
-            hass,
-            "intent_script",
-            {
-                "intent_script": {
-                    "CustomIntent": {"speech": {"text": "custom response"}}
-                }
-            },
-        )
+        register_speech_intents(hass, {"CustomIntent": "custom response"})
 
         # Ensure that a "lamp" exists so that we can verify the custom intent
         # overrides the builtin sentence.
@@ -2946,15 +2918,12 @@ async def test_config_sentences_priority(
     intents["FakeCustomIntent"].data[0].metadata[METADATA_CUSTOM_SENTENCE] = False
 
     assert await async_setup_component(hass, "light", {})
-    assert await async_setup_component(
+    register_speech_intents(
         hass,
-        "intent_script",
         {
-            "intent_script": {
-                "CustomIntent": {"speech": {"text": "custom response"}},
-                "WorseCustomIntent": {"speech": {"text": "worse custom response"}},
-                "FakeCustomIntent": {"speech": {"text": "fake custom response"}},
-            }
+            "CustomIntent": "custom response",
+            "WorseCustomIntent": "worse custom response",
+            "FakeCustomIntent": "fake custom response",
         },
     )
 

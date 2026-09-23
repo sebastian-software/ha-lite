@@ -55,7 +55,6 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import issue_registry as ir
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
 from homeassistant.util.async_ import get_scheduled_timer_handles
@@ -409,21 +408,16 @@ async def test_calling_async_discovered_devices_no_bluetooth(
     assert not bluetooth.async_address_present(hass, "aa:bb:bb:dd:ee:ff")
 
 
-@pytest.mark.usefixtures("enable_bluetooth")
+@pytest.mark.parametrize(
+    "integration_matchers",
+    [[{"domain": "switchbot", "service_uuid": "cba20d00-224d-11e6-9fb8-0002a5d5c51b"}]],
+)
+@pytest.mark.usefixtures("mock_integration_matchers", "enable_bluetooth")
 async def test_discovery_match_by_service_uuid(
     hass: HomeAssistant, mock_bleak_scanner_start: MagicMock
 ) -> None:
     """Test bluetooth discovery match by service_uuid."""
-    mock_bt = [
-        {"domain": "switchbot", "service_uuid": "cba20d00-224d-11e6-9fb8-0002a5d5c51b"}
-    ]
-    with (
-        patch(
-            "homeassistant.components.bluetooth.async_get_bluetooth",
-            return_value=mock_bt,
-        ),
-        patch.object(hass.config_entries.flow, "async_init") as mock_config_flow,
-    ):
+    with patch.object(hass.config_entries.flow, "async_init") as mock_config_flow:
         await async_setup_with_default_adapter(hass)
         hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
         await hass.async_block_till_done()
@@ -727,24 +721,23 @@ async def test_discovery_match_by_local_name(
         assert mock_config_flow.mock_calls[0][1][0] == "switchbot"
 
 
-@pytest.mark.usefixtures("enable_bluetooth")
+@pytest.mark.parametrize(
+    "integration_matchers",
+    [
+        [
+            {
+                "domain": "improv_ble",
+                "service_uuid": "00467768-6228-2272-4663-277478268000",
+            }
+        ]
+    ],
+)
+@pytest.mark.usefixtures("mock_integration_matchers", "enable_bluetooth")
 async def test_discovery_match_by_service_uuid_when_name_changes_from_mac(
     hass: HomeAssistant, mock_bleak_scanner_start: MagicMock
 ) -> None:
     """Test discovery matches when name changes from MAC."""
-    mock_bt = [
-        {
-            "domain": "improv_ble",
-            "service_uuid": "00467768-6228-2272-4663-277478268000",
-        }
-    ]
-    with (
-        patch(
-            "homeassistant.components.bluetooth.async_get_bluetooth",
-            return_value=mock_bt,
-        ),
-        patch.object(hass.config_entries.flow, "async_init") as mock_config_flow,
-    ):
+    with patch.object(hass.config_entries.flow, "async_init") as mock_config_flow:
         await async_setup_with_default_adapter(hass)
         hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
         await hass.async_block_till_done()
@@ -1212,21 +1205,16 @@ async def test_discovery_match_first_by_service_uuid_and_then_manufacturer_id(
         assert len(mock_config_flow.mock_calls) == 0
 
 
-@pytest.mark.usefixtures("enable_bluetooth")
+@pytest.mark.parametrize(
+    "integration_matchers",
+    [[{"domain": "switchbot", "service_uuid": "cba20d00-224d-11e6-9fb8-0002a5d5c51b"}]],
+)
+@pytest.mark.usefixtures("mock_integration_matchers", "enable_bluetooth")
 async def test_rediscovery(
     hass: HomeAssistant, mock_bleak_scanner_start: MagicMock
 ) -> None:
     """Test bluetooth discovery can be re-enabled for a given domain."""
-    mock_bt = [
-        {"domain": "switchbot", "service_uuid": "cba20d00-224d-11e6-9fb8-0002a5d5c51b"}
-    ]
-    with (
-        patch(
-            "homeassistant.components.bluetooth.async_get_bluetooth",
-            return_value=mock_bt,
-        ),
-        patch.object(hass.config_entries.flow, "async_init") as mock_config_flow,
-    ):
+    with patch.object(hass.config_entries.flow, "async_init") as mock_config_flow:
         await async_setup_with_default_adapter(hass)
         hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
         await hass.async_block_till_done()
@@ -1260,21 +1248,16 @@ async def test_rediscovery(
         assert mock_config_flow.mock_calls[1][1][0] == "switchbot"
 
 
-@pytest.mark.usefixtures("enable_bluetooth")
+@pytest.mark.parametrize(
+    "integration_matchers",
+    [[{"domain": "switchbot", "service_uuid": "cba20d00-224d-11e6-9fb8-0002a5d5c51b"}]],
+)
+@pytest.mark.usefixtures("mock_integration_matchers", "enable_bluetooth")
 async def test_clear_address_from_match_history(
     hass: HomeAssistant, mock_bleak_scanner_start: MagicMock
 ) -> None:
     """Test clearing match history without re-triggering discovery."""
-    mock_bt = [
-        {"domain": "switchbot", "service_uuid": "cba20d00-224d-11e6-9fb8-0002a5d5c51b"}
-    ]
-    with (
-        patch(
-            "homeassistant.components.bluetooth.async_get_bluetooth",
-            return_value=mock_bt,
-        ),
-        patch.object(hass.config_entries.flow, "async_init") as mock_config_flow,
-    ):
+    with patch.object(hass.config_entries.flow, "async_init") as mock_config_flow:
         await async_setup_with_default_adapter(hass)
         hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
         await hass.async_block_till_done()
@@ -3646,43 +3629,6 @@ async def test_discover_new_usb_adapters_with_firmware_fallback_delay(
         await hass.async_block_till_done()
 
     assert len(hass.config_entries.flow.async_progress(DOMAIN)) == 1
-
-
-@pytest.mark.usefixtures("no_adapters")
-async def test_issue_outdated_haos_removed(
-    hass: HomeAssistant,
-    mock_bleak_scanner_start: MagicMock,
-    operating_system_85: None,
-    issue_registry: ir.IssueRegistry,
-) -> None:
-    """Test we do not create an issue on outdated haos anymore."""
-    assert await async_setup_component(hass, bluetooth.DOMAIN, {})
-    await hass.async_block_till_done()
-    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
-    await hass.async_block_till_done()
-
-    issue = issue_registry.async_get_issue(DOMAIN, "haos_outdated")
-    assert issue is None
-
-
-@pytest.mark.usefixtures("one_adapter")
-async def test_haos_9_or_later(
-    hass: HomeAssistant,
-    mock_bleak_scanner_start: MagicMock,
-    operating_system_90: None,
-    issue_registry: ir.IssueRegistry,
-) -> None:
-    """Test we do not create issues for haos 9.x or later."""
-    entry = MockConfigEntry(
-        domain=bluetooth.DOMAIN, data={}, unique_id="00:00:00:00:00:01"
-    )
-    entry.add_to_hass(hass)
-    assert await async_setup_component(hass, bluetooth.DOMAIN, {})
-    await hass.async_block_till_done()
-    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
-    await hass.async_block_till_done()
-    issue = issue_registry.async_get_issue(DOMAIN, "haos_outdated")
-    assert issue is None
 
 
 @pytest.mark.usefixtures("one_adapter")

@@ -74,10 +74,12 @@ is the first such case and should stay an exception.
 
 Making `temperature` and `humidity` roots pulls `weather` into the closure:
 both declare a `DomainSpec` over weather entities. No retained integration
-provides the weather platform, so that spec can never match in ha-lite and the
-domain is genuinely removable. It is recorded as `patch_required` against #27
-rather than patched here, because the upstream trigger and condition tests
-reference weather in 99 places and that change deserves its own review.
+provides the weather platform, so that spec cannot match in ha-lite today.
+Removing it would have meant editing both platforms and 99 references in the
+upstream trigger and condition tests — every one a conflict on each future
+import (ADR 0014) — to save one entity domain. #27 kept `weather` instead, as
+entity-domain substrate with its own CI job, so the vocabulary stays exactly as
+upstream ships it.
 
 This decision widens the class of things ha-lite protects: not only what the
 runtime needs in order to work, but the vocabulary it offers an external agent

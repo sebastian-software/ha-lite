@@ -1,7 +1,6 @@
 {
   "domain": "usb",
   "name": "USB Discovery",
-  "after_dependencies": ["hassio"],
   "codeowners": ["@bdraco"],
   "dependencies": ["websocket_api"],
   "documentation": "https://www.home-assistant.io/integrations/usb",

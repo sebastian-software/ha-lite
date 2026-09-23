@@ -55,7 +55,7 @@ This table describes the architectural target. **Removed** means physically abse
 | Logbook, history, energy | **Removed — Wave 3** | Human-facing history and aggregation products (#21) |
 | Onboarding, default bundle, browser upload and link helpers | **Removed — Wave 3** | Replaced by a first-run command and explicit defaults (#22, #30, ADR 0016) |
 | Assist / voice presentation, media browser, AI tasks | **Removed — Wave 3** | Outside the MCP closure; a headless MCP test guards the gap (#23) |
-| Unselected integrations | **Remove — Wave 4** | Keep the computed retained closure rather than all of Home Assistant (#27) |
+| Unselected integrations | **Removed — Wave 4** | The tree is the computed retained closure; a component outside it fails CI (#27) |
 | Recorder, persistence implementation | **Decide — Wave 5** | Define the persistence contract first (#28) |
 
 The detailed classification lives in [the scope matrix](docs/architecture/scope-matrix.md). The [roadmap](docs/architecture/roadmap.md) lists every open block with its GitHub issue.
@@ -66,18 +66,18 @@ A useful measurement needs to distinguish **Home Assistant Core source** from th
 
 | Metric | Before Wave 1 | Current |
 | --- | ---: | ---: |
-| Tracked files in repository | 27,507 | 26,824 |
-| Tracked Python files | 18,497 | 17,985 |
-| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 9,764 files / 49.09 MB |
-| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 9,549 files / 46.24 MB |
-| Top-level component domains | 1,509 | 1,448 |
-| Python tests under `tests/` | 8,269 files / 67.45 MB | 8,021 files / 63.20 MB |
+| Tracked files in repository | 27,507 | 3,198 |
+| Tracked Python files | 18,497 | 2,267 |
+| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 978 files / 8.75 MB |
+| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 765 files / 6.03 MB |
+| Top-level component domains | 1,509 | 90 |
+| Python tests under `tests/` | 8,269 files / 67.45 MB | 1,092 files / 17.31 MB |
 
 "Before Wave 1" is the upstream 2026.9.3 tree immediately before the frontend and Lovelace deletion. "Current" is this checkout; the [roadmap](docs/architecture/roadmap.md#size-checkpoints) keeps the intermediate checkpoints.
 
-Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 88 of the 1,470 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
+Waves 1–3 barely moved these numbers: roughly 94% of the Python bytes under `homeassistant/` were component code, and the product layers are a small part of it. Wave 4 is where the size went. The [retained closure](docs/architecture/retained-closure.md) reached 88 of 1,470 component domains, and deleting everything outside it leaves ha-lite with **17% of the upstream product Python** (8.75 of 51.36 MB), 6% of the component domains, a quarter of the test code, and 42 pinned packages in `requirements_all.txt` where there were 1,146.
 
-For that reason the final reduction percentage is intentionally **not predicted yet**. Every wave updates the measured checkpoint instead, so the README can eventually say exactly how much production code, tests, components and dependencies were removed.
+Wave 5 changes persistence and configuration rather than deleting components, so these numbers should move little from here. Each wave still records its checkpoint.
 
 `script/ha_lite_size_report.py` produces reproducible file/line/byte counts from a checkout, so the same measurement can be repeated before and after each deletion wave.
 
@@ -88,7 +88,7 @@ For that reason the final reduction percentage is intentionally **not predicted 
 | 1 | Frontend, Lovelace and browser-product bootstrap | Done |
 | 2 | Automation and Script | Done |
 | 3 | Remaining product layers ([#16](https://github.com/sebastian-software/ha-lite/issues/16)) | Done |
-| 4 | Explicit retained integration closure ([#17](https://github.com/sebastian-software/ha-lite/issues/17)) | In progress |
+| 4 | Explicit retained integration closure ([#17](https://github.com/sebastian-software/ha-lite/issues/17)) | Done |
 | 5 | Persistence, configuration and runtime composition ([#18](https://github.com/sebastian-software/ha-lite/issues/18)) | In progress |
 
 [docs/architecture/roadmap.md](docs/architecture/roadmap.md) states each wave's entry and exit criteria and links the issue behind every open block. The architecture documents are the design source of truth; GitHub issues track execution.

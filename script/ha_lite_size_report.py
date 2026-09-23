@@ -82,7 +82,9 @@ def main() -> int:
         if rel_str.startswith("homeassistant/components/"):
             groups["Python under `homeassistant/components/`"].add(path)
             parts = rel.parts
-            if len(parts) >= 3:
+            # Modules directly under components/, such as the script domain
+            # marker, are not domains.
+            if len(parts) >= 4:
                 component_domains.add(parts[2])
 
         if rel_str.startswith(

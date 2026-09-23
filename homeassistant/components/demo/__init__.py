@@ -5,12 +5,7 @@ import asyncio
 from homeassistant import config_entries, core as ha, setup
 from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-    EVENT_HOMEASSISTANT_START,
-    Platform,
-    UnitOfSoundPressure,
-)
+from homeassistant.const import EVENT_HOMEASSISTANT_START, Platform
 from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.discovery import async_load_platform
@@ -20,11 +15,9 @@ DOMAIN = "demo"
 
 COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
     Platform.AIR_QUALITY,
-    Platform.ALARM_CONTROL_PANEL,
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.CAMERA,
-    Platform.CALENDAR,
     Platform.CLIMATE,
     Platform.COVER,
     Platform.DATE,
@@ -37,7 +30,6 @@ COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
     Platform.MEDIA_PLAYER,
     Platform.NOTIFY,
     Platform.NUMBER,
-    Platform.REMOTE,
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SIREN,
@@ -52,8 +44,6 @@ COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
 ]
 
 COMPONENTS_WITH_DEMO_PLATFORM = [
-    Platform.GEO_LOCATION,
-    Platform.IMAGE_PROCESSING,
     Platform.DEVICE_TRACKER,
 ]
 
@@ -86,79 +76,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         hass.config.longitude = 117.22743
 
     tasks = [setup.async_setup_component(hass, "sun", config)]
-
-    # Set up input select
-    tasks.append(
-        setup.async_setup_component(
-            hass,
-            "input_select",
-            {
-                "input_select": {
-                    "living_room_preset": {
-                        "options": ["Visitors", "Visitors with kids", "Home Alone"]
-                    },
-                    "who_cooks": {
-                        "icon": "mdi:panda",
-                        "initial": "Anne Therese",
-                        "name": "Cook today",
-                        "options": ["Paulus", "Anne Therese"],
-                    },
-                }
-            },
-        )
-    )
-
-    # Set up input boolean
-    tasks.append(
-        setup.async_setup_component(
-            hass,
-            "input_boolean",
-            {
-                "input_boolean": {
-                    "notify": {
-                        "icon": "mdi:car",
-                        "initial": False,
-                        "name": "Notify Anne Therese is home",
-                    }
-                }
-            },
-        )
-    )
-
-    # Set up input button
-    tasks.append(
-        setup.async_setup_component(
-            hass,
-            "input_button",
-            {
-                "input_button": {
-                    "bell": {
-                        "icon": "mdi:bell-ring-outline",
-                        "name": "Ring bell",
-                    }
-                }
-            },
-        )
-    )
-
-    # Set up input number
-    tasks.append(
-        setup.async_setup_component(
-            hass,
-            "input_number",
-            {
-                "input_number": {
-                    "noise_allowance": {
-                        "icon": "mdi:bell-ring",
-                        "min": 0,
-                        "max": 10,
-                        "name": "Allowed Noise",
-                        "unit_of_measurement": UnitOfSoundPressure.DECIBEL,
-                    }
-                }
-            },
-        )
-    )
 
     results = await asyncio.gather(*tasks)
 
@@ -212,35 +129,6 @@ async def finish_setup(hass: HomeAssistant, config: ConfigType) -> None:
 
     assert switches is not None
     assert lights is not None
-    # Set up scripts
-    await setup.async_setup_component(
-        hass,
-        "script",
-        {
-            "script": {
-                "demo": {
-                    "alias": f"Toggle {lights[0].split('.')[1]}",
-                    "sequence": [
-                        {
-                            "service": "light.turn_off",
-                            "data": {ATTR_ENTITY_ID: lights[0]},
-                        },
-                        {"delay": {"seconds": 5}},
-                        {
-                            "service": "light.turn_on",
-                            "data": {ATTR_ENTITY_ID: lights[0]},
-                        },
-                        {"delay": {"seconds": 5}},
-                        {
-                            "service": "light.turn_off",
-                            "data": {ATTR_ENTITY_ID: lights[0]},
-                        },
-                    ],
-                }
-            }
-        },
-    )
-
     # Set up scenes
     await setup.async_setup_component(
         hass,

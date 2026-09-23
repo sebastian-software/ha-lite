@@ -38,7 +38,7 @@ from homeassistant.util.unit_conversion import (
     VolumeConverter,
 )
 
-from .const import DATA_BACKUP_AGENT_LISTENERS, DOMAIN
+from .const import DOMAIN
 from .services import async_setup_services
 
 COMPONENTS_WITH_DEMO_PLATFORM = [
@@ -51,7 +51,6 @@ COMPONENTS_WITH_DEMO_PLATFORM = [
     Platform.LAWN_MOWER,
     Platform.LOCK,
     Platform.NOTIFY,
-    Platform.RADIO_FREQUENCY,
     Platform.SENSOR,
     Platform.SWITCH,
     Platform.WEATHER,
@@ -94,9 +93,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Start a reauth flow
     entry.async_start_reauth(hass)
 
-    # Notify backup listeners
-    hass.async_create_task(_notify_backup_listeners(hass), eager_start=False)
-
     # Reload config entry when subentries are added/removed/updated
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
@@ -110,9 +106,6 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload config entry."""
-    # Notify backup listeners
-    hass.async_create_task(_notify_backup_listeners(hass), eager_start=False)
-
     return await hass.config_entries.async_unload_platforms(
         entry, COMPONENTS_WITH_DEMO_PLATFORM
     )
@@ -130,11 +123,6 @@ async def async_remove_config_entry_device(
             return False
 
     return True
-
-
-async def _notify_backup_listeners(hass: HomeAssistant) -> None:
-    for listener in hass.data.get(DATA_BACKUP_AGENT_LISTENERS, []):
-        listener()
 
 
 def _create_issues(hass: HomeAssistant) -> None:

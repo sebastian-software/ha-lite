@@ -39,11 +39,11 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | input_boolean / input_button | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the switch/button trigger and condition platforms. |
 | input_datetime / input_number | **REMOVED** | Virtual helpers; physically removed in Wave 3. The time trigger now accepts timestamp sensors only. |
 | input_select / input_text | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the select/text trigger and condition platforms. |
-| group | **KEEP (root)** | Folds several entities of one domain into one — several lamps, several blinds, the mean of several sensors. All twelve of its platforms target retained entity domains. Nothing imports it, so it is a root or Wave 4 deletes it. Its `config_flow` is backend setup, which this matrix already keeps. |
+| group | **KEEP (root)** | Folds several entities of one domain into one — several lamps, several blinds, the mean of several sensors. All twelve of its platforms target retained entity domains. Nothing imports it, so it is a root. Its `config_flow` is backend setup, which this matrix already keeps. |
 | Device-class trigger/condition providers | **KEEP (roots)** | `air_quality`, `battery`, `door`, `doorbell`, `garage_door`, `gate`, `humidity`, `illuminance`, `moisture`, `motion`, `occupancy`, `power`, `temperature`, `vibration`, `window`. The named vocabulary over entity device classes; `binary_sensor` and `sensor` ship none of their own. ADR 0012. |
 | device_tracker | **KEEP** | Entity domain implemented by `mqtt/device_tracker.py`. DHCP discovery also watches it, but that is not what holds it. |
 | image_upload | **REMOVED** | Avatar storage for `person`; physically removed in Wave 3 after dropping the manifest dependency. |
-| weather | DELETE | Forecast product. No retained integration provides the platform. Reached only through a `DomainSpec` in the temperature/humidity triggers that can never match; decouple in #27. |
+| weather | **KEEP (root)** | Entity-domain substrate. The temperature and humidity triggers and conditions declare a `DomainSpec` over weather entities; keeping the domain leaves that vocabulary as upstream ships it, where removing it meant editing both platforms and 99 upstream test references (ADR 0012, ADR 0014). No retained integration provides the platform today. |
 | person | **KEEP (root)** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
 | zone | **KEEP** | Declared dependency in `device_tracker/manifest.json` and imported from its `entity.py` and `legacy.py`. Cannot leave while `device_tracker` stays. |
 | sun | **KEEP (root)** | Solar position from the configured coordinates and the clock: elevation, azimuth, and the next dawn/dusk/noon/midnight/rising/setting. `astral` and `helpers/sun.py` are core already, so this only exposes what the core computes anyway. Fronius makes it device-relevant — a PV site's yield follows solar elevation. Nothing imports it, so it is a root. |
@@ -61,7 +61,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | map | **ABSENT** | Not present in the imported 2026.9.3 tree; the map view is a frontend dashboard. |
 | map_tiles, my, search | **REMOVED** | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). Without `my`, the OAuth2 flow helper redirects to the instance's own callback URL, which is what OAuth applications register (#26). |
 | file_upload | **REMOVED** | MQTT takes certificate material as PEM text since #25 (#22). |
-| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. Outside the closure since #25 and no longer a default or a recovery-mode member (#28). |
+| backup | **REMOVED** / REPLACE | Need backup semantics, not necessarily HA implementation. Deleted with its storage agents in Wave 4 (#27); what a backup of ha-lite is belongs to the persistence contract (#28). |
 | cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
@@ -82,12 +82,13 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | Matter + Matter server boundary | KEEP | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
 | Hue | KEEP initially | Representative bridge-based local integration. |
 | Fronius | KEEP initially | Representative local energy-device integration; energy UI not needed. |
-| HomeKit controller/device | INVESTIGATE | Useful protocol; measure dependency footprint. Not a root, so Wave 4 deletes it unless it is promoted before #27 lands. |
-| HomeKit bridge/export | DELETE initially | Output/product compatibility unless explicitly needed. Outside the closure (#27). |
+| HomeKit controller/device | **REMOVED** | Useful protocol, but not promoted: Matter covers the same local-device ground and is retained. Deleted by reachability in Wave 4 (#27); re-adding it means declaring it a root with a CI job. |
+| HomeKit bridge/export | **REMOVED** | Output/product compatibility. Deleted in Wave 4 (#27). |
+| demo, kitchen_sink | **KEEP (test fixtures)** | Simulated devices that retained upstream test suites set up by name — `demo` behind the `media_player`, `camera`, `group` and config-entry tests, `kitchen_sink` behind `group`'s lock tests. Their platforms for domains ha-lite does not retain are pruned. Roots with a CI job, not runtime (#27). |
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
 | YAML configuration | INVESTIGATE | Config entries likely primary target. Modbus is configured by YAML only (#29). |
 | Dynamic pip requirement installation | INVESTIGATE / REPLACE | Controlled distribution may prefer pre-resolved dependencies (#29). |
-| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); it leaves with the integration long tail (#27). |
+| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); deleted with the integration long tail in Wave 4 (#27). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |
 
@@ -99,8 +100,8 @@ The transitive runtime requirements of Shelly, MQTT, Matter, Hue, Fronius and Mo
 
 1. Frontend, Lovelace, panels and UI-only support. **Done.**
 2. Automation and scripts. **Done.**
-3. Product features: blueprints and automation helpers, logbook/history, energy, cloud, onboarding and the default bundle, voice presentation. Preserve the Conversation/LLM subset required by MCP.
-4. Unselected integrations, deleted by reachability from the computed closure.
+3. Product features: blueprints and automation helpers, logbook/history, energy, cloud, onboarding and the default bundle, voice presentation. Preserve the Conversation/LLM subset required by MCP. **Done.**
+4. Unselected integrations, deleted by reachability from the computed closure. **Done:** the tree is the closure, and a component outside it fails CI.
 5. Persistence/configuration simplification only after the reduced runtime boots and representative integrations pass lifecycle tests.
 
 Entry and exit criteria for each wave, and the issue behind every open block, are in [roadmap.md](roadmap.md).

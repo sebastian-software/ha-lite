@@ -20,7 +20,9 @@ def generate_and_validate(integrations: dict[str, Integration]) -> str:
         for topic in mqtt:
             data[domain].append(topic)
 
-    return format_python_namespace({"MQTT": data})
+    return format_python_namespace(
+        {"MQTT": data}, annotations={"MQTT": "Final[dict[str, list[str]]]"}
+    )
 
 
 def validate(integrations: dict[str, Integration], config: Config) -> None:

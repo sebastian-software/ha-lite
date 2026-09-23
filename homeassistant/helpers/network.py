@@ -3,7 +3,6 @@
 from collections.abc import Callable
 from contextlib import suppress
 from ipaddress import ip_address
-import logging
 
 from aiohttp import hdrs
 import yarl
@@ -14,8 +13,6 @@ from homeassistant.util.network import is_ip_address, is_loopback, normalize_url
 
 from . import http
 from .hassio import is_hassio
-
-_LOGGER = logging.getLogger(__name__)
 
 TYPE_URL_INTERNAL = "internal_url"
 TYPE_URL_EXTERNAL = "external_url"
@@ -184,23 +181,6 @@ def get_url(
         )
 
         known_hostnames = ["localhost"]
-        if is_hassio(hass):
-            # Local import to avoid circular dependencies
-            from homeassistant.components.hassio import (  # noqa: PLC0415
-                HassioNotReadyError,
-                get_host_info,
-            )
-
-            try:
-                host_info = get_host_info(hass)
-                known_hostnames.extend(
-                    [host_info["hostname"], f"{host_info['hostname']}.local"]
-                )
-            except HassioNotReadyError:
-                _LOGGER.debug(
-                    "Could not retrieve Supervisor host information,"
-                    " list of known URLs will be incomplete"
-                )
 
         if (
             (

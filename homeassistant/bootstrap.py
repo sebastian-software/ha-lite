@@ -141,18 +141,13 @@ CORE_INTEGRATIONS = {"homeassistant", "persistent_notification"}
 
 # Integrations that are loaded right after the core is set up
 LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
-    # isal is loaded right away before `http` to ensure if its
-    # enabled, that `isal` is up to date.
-    "isal",
     # Set log levels
     "logger",
-    # Ensure network config is available
-    # before hassio or any other integration is
+    # Ensure network config is available before any integration is
     # loaded that might create an aiohttp client session
     "network",
     # Error logging
     "system_log",
-    "sentry",
 }
 # Stage 0 is divided into substages. Each substage has a name,
 # a set of integrations and a timeout.
@@ -167,8 +162,6 @@ STAGE_0_INTEGRATIONS = (
     ("logging, http deps", LOGGING_AND_HTTP_DEPS_INTEGRATIONS, None),
     # Setup recorder
     ("recorder", {"recorder"}, None),
-    # Start up debuggers. Start these first in case they want to wait.
-    ("debugger", {"debugpy"}, STAGE_0_SUBSTAGE_TIMEOUT),
     # Zeroconf is used for mdns resolution in aiohttp client helper.
     ("zeroconf", {"zeroconf"}, STAGE_0_SUBSTAGE_TIMEOUT),
 )
@@ -182,8 +175,6 @@ STAGE_1_INTEGRATIONS = {
     # been updated which leads to using an old version
     # of the dep, or worse (import errors).
     *DISCOVERY_INTEGRATIONS,
-    # To make sure we forward data to other instances
-    "mqtt_eventstream",
 }
 
 DEFAULT_INTEGRATIONS = {
@@ -215,9 +206,7 @@ DEFAULT_INTEGRATIONS = {
     "zone",
     #
     # Base platforms:
-    # Note: Calendar and todo are not included to prevent them from registering
-    # their frontend panels when there are no calendar or todo integrations.
-    *(BASE_PLATFORMS - {"calendar", "todo"}),
+    *BASE_PLATFORMS,
     #
     # Integrations providing triggers and conditions for base platforms:
     "air_quality",

@@ -6,9 +6,12 @@ import pytest
 
 from homeassistant.components import conversation
 from homeassistant.components.conversation import DOMAIN, trace
+from homeassistant.components.homeassistant.exposed_entities import async_expose_entity
 from homeassistant.core import Context, HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.setup import async_setup_component
+
+from tests.common import async_mock_service
 
 
 @pytest.fixture
@@ -22,11 +25,14 @@ async def init_components(hass: HomeAssistant):
 async def test_converation_trace(
     hass: HomeAssistant,
     init_components: None,
-    sl_setup: None,
 ) -> None:
     """Test tracing a conversation."""
+    hass.states.async_set("light.kitchen", "off", {"friendly_name": "kitchen light"})
+    async_expose_entity(hass, conversation.DOMAIN, "light.kitchen", True)
+    async_mock_service(hass, "light", "turn_on")
+
     await conversation.async_converse(
-        hass, "add apples to my shopping list", None, Context()
+        hass, "turn on the kitchen light", None, Context()
     )
 
     traces = trace.async_get_traces()
@@ -39,7 +45,7 @@ async def test_converation_trace(
         trace_event.get("event_type") == trace.ConversationTraceEventType.ASYNC_PROCESS
     )
     assert trace_event.get("data")
-    assert trace_event["data"].get("text") == "add apples to my shopping list"
+    assert trace_event["data"].get("text") == "turn on the kitchen light"
     assert last_trace.get("result")
     assert (
         last_trace["result"]
@@ -47,24 +53,20 @@ async def test_converation_trace(
         .get("speech", {})
         .get("plain", {})
         .get("speech")
-        == "Added apples"
+        == "Turned on the light"
     )
 
     trace_event = last_trace["events"][1]
     assert trace_event.get("event_type") == trace.ConversationTraceEventType.TOOL_CALL
     assert trace_event.get("data") == {
-        "intent_name": "HassListAddItem",
-        "slots": {
-            "name": "Shopping List",
-            "item": "apples",
-        },
+        "intent_name": "HassTurnOn",
+        "slots": {"name": "kitchen light"},
     }
 
 
 async def test_converation_trace_uncaught_error(
     hass: HomeAssistant,
     init_components: None,
-    sl_setup: None,
 ) -> None:
     """Test tracing a conversation that raises an uncaught error."""
     with (
@@ -75,7 +77,7 @@ async def test_converation_trace_uncaught_error(
         pytest.raises(ValueError),
     ):
         await conversation.async_converse(
-            hass, "add apples to my shopping list", None, Context()
+            hass, "turn on the kitchen light", None, Context()
         )
 
     traces = trace.async_get_traces()
@@ -94,7 +96,6 @@ async def test_converation_trace_uncaught_error(
 async def test_converation_trace_homeassistant_error(
     hass: HomeAssistant,
     init_components: None,
-    sl_setup: None,
 ) -> None:
     """Test tracing a conversation with a HomeAssistant error."""
     with (
@@ -104,7 +105,7 @@ async def test_converation_trace_homeassistant_error(
         ),
     ):
         await conversation.async_converse(
-            hass, "add apples to my shopping list", None, Context()
+            hass, "turn on the kitchen light", None, Context()
         )
 
     traces = trace.async_get_traces()

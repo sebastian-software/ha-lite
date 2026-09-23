@@ -217,6 +217,7 @@ jobs:
           - vacuum
           - valve
           - water_heater
+          - weather
     steps:
       - uses: actions/checkout@v7
         with:
@@ -332,6 +333,39 @@ jobs:
             --durations=20 \
             -p no:sugar \
             "tests/components/${{ matrix.domain }}"
+
+  test-fixtures:
+    # demo and kitchen_sink are not runtime; retained test suites set them up
+    # by name, so they are roots and their own tests keep them loadable.
+    name: Test fixtures
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Run test-fixture tests
+        run: |
+          . venv/bin/activate
+          python -b -X dev -m pytest -q \
+            -n auto \
+            --timeout=20 \
+            --durations=20 \
+            -p no:sugar \
+            tests/components/demo \
+            tests/components/kitchen_sink
 
   retained-integrations:
     name: "Integration: ${{ matrix.integration }}"

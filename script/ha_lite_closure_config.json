@@ -23,6 +23,12 @@
     "what the core computes anyway. Fronius makes it device-relevant: solar",
     "elevation is what a PV site's yield follows. See docs/adr/0002.",
     "",
+    "'test_fixtures' roots are the simulated devices retained upstream suites",
+    "set up: demo as a stand-in domain and as the platform behind the",
+    "media_player, group, camera and other tests; kitchen_sink behind group's",
+    "lock tests. Their platforms for domains ha-lite does not retain are",
+    "pruned, so they add nothing to the closure but themselves.",
+    "",
     "'accepted_transitive' records every domain the closure pulls in that is not",
     "itself a root, with a reviewed reason. A domain reaching the closure without",
     "an entry here fails the check, so new coupling from retained code into an",
@@ -78,7 +84,8 @@
       "update",
       "vacuum",
       "valve",
-      "water_heater"
+      "water_heater",
+      "weather"
     ],
     "retained_integrations": [
       "fronius",
@@ -132,7 +139,8 @@
       "window"
     ],
     "aggregation": ["group", "person"],
-    "environment": ["sun"]
+    "environment": ["sun"],
+    "test_fixtures": ["demo", "kitchen_sink"]
   },
   "cross_cutting_platforms": [
     "backup",
@@ -167,11 +175,6 @@
       "status": "retained",
       "reason": "Camera streaming infrastructure (integration_type: system), imported by camera/__init__.py at module level.",
       "issue": null
-    },
-    "weather": {
-      "status": "patch_required",
-      "reason": "The temperature and humidity triggers declare a DomainSpec over weather entities. No retained integration provides the weather platform, so that spec can never match in ha-lite; dropping it frees the domain. Deferred because the upstream trigger and condition tests reference weather in 99 places.",
-      "issue": 27
     },
     "web_rtc": {
       "status": "retained",

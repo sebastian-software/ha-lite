@@ -7,8 +7,9 @@ when deciding whether code can be removed. This document describes the tool
 that produces that graph and what its current output says.
 
 The closure answers one question: **which integration domains must survive so
-the retained runtime still works?** Everything outside it is a Wave 4 deletion
-candidate (#27), identified by reachability rather than by directory name.
+the retained runtime still works?** Wave 4 (#27) deleted everything outside
+it, identified by reachability rather than by directory name, so the tree and
+the closure are now the same set. A component outside the closure is a finding.
 
 ## Running it
 
@@ -90,8 +91,8 @@ The latent report used to cover closure members only, not core.
 `supported_features` filters in `services.yaml`; all five sat outside the
 closure, so deleting any of them would have broken service-description loading
 for every domain, and nothing reported it. #23 removed `ai_task` and
-`assist_satellite` from that import; `calendar`, `remote` and `todo` are listed
-as latent coupling for #27.
+`assist_satellite` from that import, and #27 removed `calendar`, `remote` and
+`todo` when it deleted them.
 
 ## What the import graph cannot see
 
@@ -148,12 +149,21 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 
 | Category | Count |
 |---|---|
-| Entity-domain substrate | 32 |
+| Entity-domain substrate | 33 |
 | Retained integrations | 7 |
 | Runtime infrastructure | 23 |
 | Device-class semantics | 15 |
 | Aggregation | 2 |
 | Environment | 1 |
+| Test fixtures | 2 |
+
+`demo` and `kitchen_sink` are the one category that is not runtime. Retained
+upstream suites set them up by name — `demo` as a stand-in domain in
+config-entry tests and as the platform behind the `media_player`, `camera` and
+`group` tests, `kitchen_sink` behind `group`'s lock tests — so deleting them by
+reachability would have broken retained CI. Their platforms for domains
+ha-lite does not retain are pruned, which keeps them from pulling anything into
+the closure but themselves.
 
 ## The gate
 
@@ -174,41 +184,75 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,470 |
-| Declared roots | 80 |
-| Retained closure | 88 |
-| Deletion candidates | 1,382 |
+| Component domains in tree | 90 |
+| Declared roots | 83 |
+| Retained closure | 90 |
+| Deletion candidates | 0 |
 
-Of the 8 transitively required domains, 6 are `retained`, 1 is an `adapter` and 1 is `patch_required`.
+Of the 7 transitively required domains, 6 are `retained` and 1 is an `adapter`.
 
-### What this says about Wave 4
+### Wave 4
 
-The closure is small — 6% of the tree. The 1,382 candidates outside it are
-reachable from no retained root, which is the evidence #27 needs to delete in
-bulk instead of one directory at a time.
+Before Wave 4 the closure held 88 of 1,470 domains. #27 deleted the other
+1,380 in one change, with their tests, brand entries, generated matchers and
+requirements, and the tree has held only the closure since: the report lists
+no deletion candidates. `requirements_all.txt` went from 1,146 pinned packages
+to 42.
 
-Reachability is necessary but not sufficient. 27 of those candidates provide a
-runtime-resolved platform, so #27 must work the capability-at-risk list as well
-as the closure: deleting them breaks nothing and still costs something.
+From then on the relationship runs the other way. A component in the tree that
+the closure does not reach was added without being declared, and the gate
+reports it as **outside**: declare it a root and give it a CI job, or delete it.
 
-The closure is also not yet minimal. `device_automation` is held in only by
-the entity domains' `device_action.py` and `device_trigger.py` adapters. This
-is the same shape as the per-integration `logbook.py` files removed in #21 —
-the adapter is deletable independently of the domain that hosts it, and the
-target leaves with it. #19 confirmed the pattern by removing the five
-`input_*` helpers this way, and #23 by removing `media_source`: deleting the
-`camera` and `image` `media_source.py` adapters was all it took.
+The imports the deletion broke were the ones the latent-coupling report had
+already listed: `helpers/service.py` into `calendar`, `remote` and `todo`, and
+`helpers/network.py` and `helpers/system_info.py` into `hassio`. Deleting the
+targets turned them into dangling findings, and the code behind them went.
+What the report could not list were three kinds of coupling by name, in
+strings:
 
-One `patch_required` member is left:
+- **Bootstrap.** Stage 0 set up `isal`, `sentry` and `debugpy` by name, stage 1
+  `mqtt_eventstream`, and the defaults every member of the generated `Platform`
+  enum. Entity domains that left the tree also left the enum, and the rest
+  were removed from bootstrap. `tests/ha_lite/test_bootstrap_domains.py` now
+  checks every set bootstrap and the generated `configuration.yaml` name
+  against this closure.
+- **Test fixtures.** `demo`, `kitchen_sink` and the `testing_config` custom
+  platforms named deleted domains; see the roots above.
+- **Test doubles.** Some retained tests used a deleted integration as a
+  convenient stand-in — `intent_script` to answer a custom intent,
+  `shell_command` to register a service at runtime, `mjpeg` to exercise the
+  stream proxy, `browser` as an integration to set up. Each now uses a handler,
+  mock integration or plain view of its own. Four Bluetooth tests patched
+  their matchers after a fixture had already set Bluetooth up, so they only
+  ever passed against SwitchBot's generated matcher; the patch now applies
+  first.
 
-- `weather` ← the `temperature` and `humidity` triggers declare a `DomainSpec`
-  over weather entities. No retained integration provides the weather
-  platform, so the spec can never match; the upstream tests reference weather
-  in 99 places, which is why it is deferred rather than patched (#27)
+One `patch_required` member was left before Wave 4, and it was settled the
+other way. `weather` is held in by the `temperature` and `humidity` triggers
+and conditions, which declare a `DomainSpec` over weather entities. Patching
+that out meant editing both platforms and 99 upstream test references, each a
+conflict on every future import (ADR 0014), to save one entity domain. It is
+entity-domain substrate instead, with a CI job.
 
-#22 removed two more. `file_upload` was held only by `bootstrap.py`'s
-pre-import once #25 moved MQTT to PEM text, and `onboarding` by checks in
-`auth/login_flow.py`, `bluetooth/config_flow.py` and
+### The capability-at-risk list, worked
+
+ADR 0011 requires the list to be worked before a bulk deletion, not just read.
+It named 29 providers outside the closure. `kitchen_sink` became a root and
+lost its `backup` platform; the other 28 were deleted, for these reasons:
+
+| Platform | Providers | Why the capability goes |
+|---|---|---|
+| `backup` | `backup` and its 12 storage agents; `hassio`, `zha` | What a backup of ha-lite contains belongs to the persistence contract (#28), not to Home Assistant's backup product. `hassio` and `zha` leave with their integration. |
+| `trigger`, `condition`, `intent`, `reproduce_state`, `significant_change` | `calendar`, `geo_location`, `remote`, `todo` | Entity domains no retained integration implements, so their vocabulary could never match an entity. |
+| `trigger`, `condition` | `moon` | Computed like `sun`, but not device-relevant; ADR 0002 keeps `sun` for what solar elevation means to a PV site. |
+| `intent`, `reproduce_state` | `shopping_list`, `alert` | Product features. |
+| `trigger` | `knx`, `lg_netcast`, `litejet`, `samsungtv`, `webostv`, `zwave_js` | Device and hub triggers leave with their integration. |
+
+### Coupling settled before Wave 4
+
+#22 removed two `patch_required` members. `file_upload` was held only by
+`bootstrap.py`'s pre-import once #25 moved MQTT to PEM text, and `onboarding`
+by checks in `auth/login_flow.py`, `bluetooth/config_flow.py` and
 `helpers/config_entry_flow.py` that all read "already onboarded" whenever
 onboarding was not set up — which in ha-lite was always. Both are deleted, and
 ADR 0016 records what replaced onboarding.
@@ -216,7 +260,7 @@ ADR 0016 records what replaced onboarding.
 #25 resolved two more. `hassio` was held in by the Matter Server and Mosquitto
 add-on paths in Matter and MQTT, and by `usb` listing the serial ports
 Supervisor apps claim; all three paths are gone, and `backup`, reached only
-through `hassio`, left with it. Both are ordinary deletion candidates now.
+through `hassio`, left with it. Wave 4 deleted both.
 `dependency-findings-2026.9.3.md` had predicted the Matter and MQTT coupling;
 the `usb` edge it did not.
 

@@ -56,7 +56,10 @@ def generate_and_validate(integrations: dict[str, Integration]) -> str:
     return format_python_namespace(
         {
             "LABS_PREVIEW_FEATURES": labs_dict,
-        }
+        },
+        annotations={
+            "LABS_PREVIEW_FEATURES": "Final[dict[str, dict[str, dict[str, str]]]]"
+        },
     )
 
 
