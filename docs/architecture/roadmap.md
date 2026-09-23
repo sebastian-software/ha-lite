@@ -132,8 +132,9 @@ because removing onboarding in #22 needed its replacement.
 ## The catalog restored
 
 **Done.** ADR 0020 records the decision: the tree carries Home Assistant's
-integration catalog, and what ha-lite removes is a product layer. 1,219
-components deleted in Wave 4 came back, together with `media_source`. The
+integration catalog, and what ha-lite removes is a product layer. 1,218
+components deleted in Wave 4 came back, together with `media_source`;
+`trace`, which only serves automations and scripts, joined the excluded layers. The
 closure gate now rejects an excluded product layer in the tree and an import,
 from anywhere, of a component that is gone. The `catalog` CI job runs every
 catalog suite in ten shards.

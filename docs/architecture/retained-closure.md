@@ -207,10 +207,10 @@ the `catalog` CI job runs its suite.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,310 |
+| Component domains in tree | 1,309 |
 | Declared roots | 90 |
 | Retained closure | 98 |
-| Catalog | 1,212 |
+| Catalog | 1,211 |
 
 Of the 8 transitively required domains, 7 are `retained` and 1 is an `adapter`.
 `recorder` was one more until #28 removed it (ADR 0018). The tree count
@@ -318,8 +318,10 @@ candidates were the 1,377 components Wave 4 deleted, less `recorder`,
 `hassio` and `backup`, which are excluded product layers. A candidate came
 back when nothing it imports at module level or declares as a dependency is
 missing from the tree, counting the other candidates as present. That brought
-back 1,219 of them, and `media_source`, which Wave 3 had removed with the
-voice stack, came back beside them.
+back 1,218 of them, and `media_source`, which Wave 3 had removed with the
+voice stack, came back beside them. `trace` passed the test as well but went
+back out as an excluded layer: it records and debugs automations and scripts,
+which ha-lite does not run.
 
 Six restored components are entity domains — `calendar`, `geo_location`,
 `image_processing`, `radio_frequency`, `remote` and `todo` — and became
@@ -336,7 +338,10 @@ returned (`shell_command`, `mjpeg`, `browser`, `shopping_list`, `todo`,
 Four restored manifests listed a missing domain in `after_dependencies`, which
 hassfest rejects: `bluetooth_adapters` (`esphome`) and `litellm`, `llama_cpp`
 and `ovhcloud_ai_endpoints` (`assist_pipeline`). Those entries are removed;
-the loader ignored them anyway. Brand files keep only the integrations in the
+the loader ignored them anyway. `unifi_discovery`, which UniFi Network and
+UniFi Access depend on, no longer maps Protect consoles to `unifiprotect`, so
+it starts no flow for an integration that is not there; its tests use the
+Network consumer instead. Brand files keep only the integrations in the
 tree, and a brand left with fewer than two is removed, as hassfest requires.
 
 158 integrations are still out. 120 import something that is gone, listed by

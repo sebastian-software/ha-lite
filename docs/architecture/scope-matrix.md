@@ -33,6 +33,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | onboarding | **REMOVED** | Replaced by `hass --script owner` for the first user and tokens, and the existing config APIs for everything else (#22, #30, ADR 0016). |
 | automation | **REMOVED** | Decision engine belongs outside core; physically removed in Wave 2. |
 | script | **REMOVED** | Behavioral orchestration belongs outside core; physically removed in Wave 2. |
+| trace | **REMOVED** | Records and debugs automation and script runs, which ha-lite does not have. Deleted in Wave 4 and kept out of the catalog restore (ADR 0020). |
 | blueprint | **REMOVED** | Automation authoring/distribution; physically removed in Wave 3 together with Template, its only importer. |
 | scene | **KEEP** | Entity domain implemented by `hue/scene.py` and `mqtt/scene.py`. A Hue scene lives on the bridge, so this is device state, not automation semantics. |
 | schedule | **REMOVED** | External decision/scheduling layer; physically removed in Wave 3. |
@@ -79,7 +80,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | webhook | KEEP / INVESTIGATE | Some integrations require inbound events. |
 | OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. Miele exercises them in CI as the OAuth lifecycle anchor (#26, ADR 0017). |
 | Miele | KEEP (anchor) | Application credentials, OAuth2 authorize/callback/token, reauth and reconfigure against a real integration. Kept for what its tests exercise, not as a promise to retain cloud integrations (ADR 0017). |
-| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,212 catalog members, run by the `catalog` CI job (ADR 0020). 158 wait for a decoupling change, listed in [retained-closure.md](retained-closure.md#the-catalog-restored). |
+| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,211 catalog members, run by the `catalog` CI job (ADR 0020). 158 wait for a decoupling change, listed in [retained-closure.md](retained-closure.md#the-catalog-restored). |
 | MQTT | KEEP (anchor) | Representative protocol/integration substrate. |
 | Shelly | KEEP (anchor) | Primary representative local-device integration. |
 | Matter + Matter server boundary | KEEP (anchor) | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
