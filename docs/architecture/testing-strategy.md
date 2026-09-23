@@ -33,12 +33,20 @@ A headless/reduced core is not acceptable if these contracts silently regress.
 
 ### Headless infrastructure
 
-Initially protected as directories:
+Protected as directories:
 
+- `tests/components/api`
 - `tests/components/auth`
 - `tests/components/http`
 - `tests/components/websocket_api`
 - `tests/components/config`
+- `tests/components/logger`
+- `tests/components/system_log`
+- `tests/components/system_health`
+- `tests/components/application_credentials`
+- `tests/components/webhook`
+- `tests/components/persistent_notification`
+- the `homeassistant` integration's init, exposed-entities and repairs tests
 - `tests/components/network`
 - `tests/components/zeroconf`
 - `tests/components/bluetooth`
@@ -51,6 +59,13 @@ Initially protected as directories:
 - `tests/components/mcp_server`
 
 Tests inside these directories may later be split into retained runtime behavior versus Home Assistant product/UI behavior. Until that split is explicit, they remain a safety net.
+
+### Entity domains, device-class semantics and derived state
+
+Every other root of the closure has its own matrix job: the entity-domain
+substrate, the fifteen device-class trigger and condition providers, and
+`group`, `person` and `sun`. [retained-closure.md](retained-closure.md) lists
+them; ADR 0010 is why a root without a job is not allowed.
 
 ### Representative integrations
 
@@ -78,18 +93,21 @@ The reason for outcomes 2–4 should be captured in the relevant ADR/deletion-wa
 
 ## CI shape
 
-The initial workflow has four gates:
+The workflow started with four gates and has since grown a matrix per root category:
 
 ```text
 prepare environment
        |
        +--> core runtime
        +--> headless infrastructure
+       +--> entity-domain substrate (matrix)
+       +--> device-class semantics (matrix)
+       +--> derived state (matrix)
        +--> retained integrations (matrix)
-       +--> static sanity
+       +--> static sanity (prek, trigger targets, closure gate)
 ```
 
-The dependency environment is built once and cached. Integration suites run separately so a failure in Matter does not obscure a Shelly regression.
+The dependency environment is built once and cached. Matrix suites run separately so a failure in Matter does not obscure a Shelly regression.
 
 ## Full upstream suite
 
@@ -120,6 +138,6 @@ The official Home Assistant MCP server is a retained ha-lite capability, not opt
 
 `conversation` is tested alongside it because it is a hard dependency of `mcp_server`. Passing import-only tests is insufficient: protocol-level MCP tests are the contract.
 
-When Wave 1 physically removes `frontend` and `lovelace`, add/retain a ha-lite-specific assertion that MCP setup and a representative protocol round-trip succeed with those packages absent. That test should fail if a future upstream merge reintroduces a presentation dependency.
+Wave 1 called for a ha-lite-specific assertion that MCP setup and a representative protocol round-trip succeed with the presentation packages absent, failing if a future upstream merge reintroduces such a dependency. Until it exists, the upstream suite running in a tree without `frontend` and `lovelace` is the only evidence. #23 adds it, together with the voice components it removes.
 
 `homeassistant-ai/ha-mcp` is an external compatibility canary. A later CI layer may install its current custom component and exercise its embedded server with `enable_sidebar_panel=false`; avoid vendoring its implementation or requiring dashboard/Lovelace tools as part of the ha-lite core contract.

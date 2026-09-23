@@ -137,45 +137,46 @@ build failure rather than a discovery made months later.
 | Retained closure | 91 |
 | Deletion candidates | 1,396 |
 
-Of the 20 transitively required domains, 8 are `retained`, 6 are `adapter` and 6 are `patch_required`.
+Of the 13 transitively required domains, 6 are `retained`, 2 are `adapter` and 5 are `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 6% of the tree. The 1,399 candidates outside it are
+The closure is small — 6% of the tree. The 1,396 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 
-Reachability is necessary but not sufficient. 31 of those candidates provide a
+Reachability is necessary but not sufficient. 28 of those candidates provide a
 runtime-resolved platform, so #27 must work the capability-at-risk list as well
 as the closure: deleting them breaks nothing and still costs something.
 
-The closure is also not yet minimal. Six of its members are held in only by
-platform-adapter files: `condition.py`, `trigger.py`, `device_action.py`,
-`device_trigger.py`, `media_source.py`. This is the same shape as the
-per-integration `logbook.py` files removed in #21 — the adapter is deletable
-independently of the domain that hosts it, and the target leaves with it.
-#19 confirmed the pattern by removing the five `input_*` helpers this way:
-dropping one entry from each domain's `_domain_specs` was enough to make them
-fall out of the closure, after which they could simply be deleted.
+The closure is also not yet minimal. Two of its members are held in only by
+platform-adapter files: `device_automation` by the entity domains'
+`device_action.py` and `device_trigger.py`, and `media_source` by the `camera`
+and `image` `media_source.py`. This is the same shape as the per-integration
+`logbook.py` files removed in #21 — the adapter is deletable independently of
+the domain that hosts it, and the target leaves with it. #19 confirmed the
+pattern by removing the five `input_*` helpers this way: dropping one entry
+from each domain's `_domain_specs` was enough to make them fall out of the
+closure, after which they could simply be deleted.
 
-The six `patch_required` members are the real blockers, and
-`dependency-findings-2026.9.3.md` predicted four of them:
+The five `patch_required` members are the real blockers, and
+`dependency-findings-2026.9.3.md` predicted three of them:
 
-- `file_upload` ← MQTT certificate configuration UX (#22)
-- `hassio` ← Matter add-on lifecycle (#25)
-- `onboarding` ← Matter config flow reading onboarding state (#22)
-- `device_tracker` ← DHCP discovery watching device_tracker registrations (#20)
+- `file_upload` ← MQTT certificate configuration UX (#25, then #22)
+- `hassio` ← Matter add-on lifecycle, and MQTT's add-on discovery (#25)
+- `onboarding` ← the Matter config flow reading onboarding state, which the
+  findings predicted, and `auth/login_flow.py`, `bluetooth/config_flow.py` and
+  `helpers/config_entry_flow.py`, which they did not (#22, #30)
 - `backup` ← reached only through `hassio`, so it leaves with that patch unless
-  headless backup semantics keep it (#30)
+  headless backup semantics keep it (#28, #30)
 - `weather` ← the `temperature` and `humidity` triggers declare a `DomainSpec`
   over weather entities. No retained integration provides the weather
   platform, so the spec can never match; the upstream tests reference weather
   in 99 places, which is why it is deferred rather than patched (#27)
 
-`device_tracker` is the one the findings document did not anticipate. It is
-also the one that cannot be solved by deleting an adapter file: `dhcp/__init__`
-imports it at module level to watch device_tracker registrations during
-discovery.
+`device_tracker` used to be a sixth, held in by DHCP discovery watching its
+registrations. #20 resolved it the other way: `device_tracker` is an entity
+domain MQTT implements, so it became a root rather than a patch.
 
 ### Entity domains that were retained without CI
 

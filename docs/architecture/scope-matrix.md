@@ -1,10 +1,12 @@
-# Initial Keep / Delete / Investigate matrix
+# Keep / Delete / Investigate matrix
 
 ## Status and method
 
-This is the first architectural classification, **not yet a proven deletion list**. Before deletion, each item must be checked against both Home Assistant integration manifests and actual Python imports.
+This matrix is the design intent, **not a deletion list**. Before deletion, each item is checked against both Home Assistant integration manifests and actual Python imports.
 
-That check is now automated: `script/ha_lite_closure.py` computes the retained closure from both graphs, and [retained-closure.md](retained-closure.md) records what it currently says. This matrix remains the design intent; the closure is the evidence.
+That check is automated: `script/ha_lite_closure.py` computes the retained closure from both graphs, and [retained-closure.md](retained-closure.md) records what it currently says. The matrix records intent; the closure is the evidence (ADR 0010).
+
+**REMOVED** means physically absent from the tree. A row that still has work to do names the issue that carries it; [roadmap.md](roadmap.md) groups those issues by wave.
 
 Guiding rule: keep machinery required to discover, configure, identify, observe and control devices; remove product behavior and presentation.
 
@@ -15,7 +17,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | Device registry | KEEP | Stable device identity and relationships. |
 | Entity registry | KEEP | Stable exposed endpoint identity. |
 | Area/floor/label registries | INVESTIGATE | Useful metadata; may belong above core. |
-| Integration loader / setup / requirements | KEEP | Required while executing HA integrations. Simplify later. |
+| Integration loader / setup / requirements | KEEP | Required while executing HA integrations. Simplify in #29. |
 | Repairs/issues infrastructure | KEEP / REDUCE | Failures must remain machine-readable; UI presentation goes. |
 | Diagnostics | KEEP / REDUCE | Operationally useful; remove presentation assumptions. |
 | Auth | KEEP / REDUCE | Network API requires explicit security. |
@@ -24,10 +26,10 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | REST API | INVESTIGATE | Retain only where useful after API contract is defined. |
 | frontend | **REMOVED** | Outside headless core; physically removed in Wave 1 after bootstrap/config decoupling. |
 | lovelace | **REMOVED** | Dashboard product surface; physically removed in Wave 1. |
-| UI panels / panel registration | DELETE | Presentation concern; decouple backend config first. |
-| onboarding | DELETE / REPLACE | Replace product onboarding with API/CLI bootstrap. |
-| automation | DELETE | Decision engine belongs outside core. |
-| script | DELETE | Behavioral orchestration belongs outside core. |
+| UI panels / panel registration | **REMOVED** | Registration lived in `frontend` and left with it in Wave 1; `config` no longer registers a panel. `panel_custom` and the integrations that still call it are outside the closure and leave in Wave 4 (#27). |
+| onboarding | DELETE / REPLACE | Replace product onboarding with API/CLI bootstrap (#22, #30). Still reached at module level from `auth/login_flow.py`, `helpers/config_entry_flow.py` and the Bluetooth and Matter config flows. |
+| automation | **REMOVED** | Decision engine belongs outside core; physically removed in Wave 2. |
+| script | **REMOVED** | Behavioral orchestration belongs outside core; physically removed in Wave 2. |
 | blueprint | **REMOVED** | Automation authoring/distribution; physically removed in Wave 3 together with Template, its only importer. |
 | scene | **KEEP** | Entity domain implemented by `hue/scene.py` and `mqtt/scene.py`. A Hue scene lives on the bridge, so this is device state, not automation semantics. |
 | schedule | **REMOVED** | External decision/scheduling layer; physically removed in Wave 3. |
@@ -44,23 +46,26 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | person | **KEEP (root)** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
 | zone | **KEEP** | Declared dependency in `device_tracker/manifest.json` and imported from its `entity.py` and `legacy.py`. Cannot leave while `device_tracker` stays. |
 | sun | **KEEP (root)** | Solar position from the configured coordinates and the clock: elevation, azimuth, and the next dawn/dusk/noon/midnight/rising/setting. `astral` and `helpers/sun.py` are core already, so this only exposes what the core computes anyway. Fronius makes it device-relevant — a PV site's yield follows solar elevation. Nothing imports it, so it is a root. |
-| default_config | DELETE | Product bundle conflicts with explicit minimal composition. |
+| default_config | DELETE | Product bundle conflicts with explicit minimal composition. `bootstrap.py` still pre-imports it (#22). |
 | config | KEEP / REDUCE | Backend configuration useful; remove frontend/panel coupling. |
 | system_health | KEEP / REDUCE | Headless operations need health data. |
+| analytics, labs | DELETE | Usage reporting to Home Assistant and its preview-feature flags. Both are still bootstrap defaults; `analytics` is there "for onboarding" (#22). |
+| brands, hardware | DELETE | Brand-image proxy and hardware-status panel for the frontend. Still bootstrap defaults (#22). |
 | logger | KEEP | Operational infrastructure. |
 | logbook | **REMOVED** | Human-facing historical narrative; physically removed in Wave 3 together with its per-integration describe platforms. |
 | history | **REMOVED** | Human-facing history product; physically removed in Wave 3. Raw state history stays a Recorder concern (#28). |
-| recorder | INVESTIGATE | Current persistence/history machinery; candidate for replacement. |
-| long-term statistics | DELETE initially | Product analytics/history concern. |
+| recorder | INVESTIGATE | Current persistence/history machinery; candidate for replacement (#28). Reached from `sensor/recorder.py` and pre-imported by bootstrap. |
+| long-term statistics | DELETE initially | Product analytics/history concern (#28). |
 | energy | **REMOVED** | Product/domain aggregation; physically removed in Wave 3 after decoupling Analytics reporting. |
-| map | DELETE | UI/product feature. |
-| file_upload | DELETE initially | UI/product support unless an integration proves need. |
-| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. |
+| map | **ABSENT** | Not present in the imported 2026.9.3 tree; the map view is a frontend dashboard. |
+| map_tiles, my, search | DELETE | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). While `my` is loaded, the OAuth2 flow helper uses its redirect instead of the instance's own callback URL, so removing it changes the redirect URI OAuth integrations register (#26). |
+| file_upload | PATCH, then DELETE | Held in by the MQTT certificate flow (`patch_required`). Replace the browser upload with a headless certificate contract (#25), then delete (#22). |
+| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. Reached only through `hassio` today (#28, #30). |
 | cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
-| STT / TTS / voice presentation | DELETE / INVESTIGATE | Voice product surface is not retained merely because Conversation/MCP is retained; reassess concrete runtime dependencies before deletion. |
-| media source/browser | DELETE initially | Product feature; device media controls can remain. |
+| STT / TTS / voice presentation | DELETE / INVESTIGATE | Voice product surface is not retained merely because Conversation/MCP is retained. `assist_pipeline`, `stt`, `tts`, `wake_word` and `assist_satellite` are outside the `mcp_server` closure (#23). |
+| media source/browser | DELETE initially | Product feature; device media controls can remain. Reached only through the `camera` and `image` `media_source.py` adapters (#23). |
 | bluetooth | KEEP | Discovery/transport for physical integrations. |
 | dhcp | KEEP | Discovery infrastructure. |
 | ssdp | KEEP | Discovery infrastructure. |
@@ -68,29 +73,31 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | usb | KEEP | Discovery infrastructure for local adapters. |
 | network | KEEP / REDUCE | Shared integration infrastructure. |
 | webhook | KEEP / INVESTIGATE | Some integrations require inbound events. |
-| OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. |
+| OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. A retained OAuth integration is to exercise them in CI (#26). |
 | MQTT | KEEP | Representative protocol/integration substrate. |
 | Shelly | KEEP | Primary representative local-device integration. |
 | Matter + Matter server boundary | KEEP | Modern protocol; external helper process is acceptable. |
 | Hue | KEEP initially | Representative bridge-based local integration. |
 | Fronius | KEEP initially | Representative local energy-device integration; energy UI not needed. |
-| HomeKit controller/device | INVESTIGATE | Useful protocol; measure dependency footprint. |
-| HomeKit bridge/export | DELETE initially | Output/product compatibility unless explicitly needed. |
-| Frigate | KEEP as test candidate | Useful MQTT/event/media stress case; baseline status TBD. |
-| YAML configuration | INVESTIGATE | Config entries likely primary target. |
-| Dynamic pip requirement installation | INVESTIGATE / REPLACE | Controlled distribution may prefer pre-resolved dependencies. |
-| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. |
+| HomeKit controller/device | INVESTIGATE | Useful protocol; measure dependency footprint. Not a root, so Wave 4 deletes it unless it is promoted before #27 lands. |
+| HomeKit bridge/export | DELETE initially | Output/product compatibility unless explicitly needed. Outside the closure (#27). |
+| Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
+| YAML configuration | INVESTIGATE | Config entries likely primary target. Modbus is configured by YAML only (#29). |
+| Dynamic pip requirement installation | INVESTIGATE / REPLACE | Controlled distribution may prefer pre-resolved dependencies (#29). |
+| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. `hassio` is still reached through the Matter and MQTT add-on paths (#25). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |
 
 ## First dependency closure
 
-Calculate transitive runtime requirements for Shelly, MQTT, Matter, Hue and Fronius. Then add one OAuth/cloud integration to exercise generic configuration and reauthentication machinery.
+The transitive runtime requirements of Shelly, MQTT, Matter, Hue, Fronius and Modbus are computed by `script/ha_lite_closure.py` and gated in CI (#24). One OAuth/cloud integration still has to be added to exercise generic configuration and reauthentication machinery (#26).
 
 ## Deletion waves
 
-1. Frontend, Lovelace, panels and UI-only support.
-2. Automation, scripts, blueprints and automation helpers.
-3. Product features: logbook/history UI, energy, map, voice presentation and cloud. Preserve the Conversation/LLM subset required by MCP.
-4. Unselected integrations, after representative dependency closure is generated.
+1. Frontend, Lovelace, panels and UI-only support. **Done.**
+2. Automation and scripts. **Done.**
+3. Product features: blueprints and automation helpers, logbook/history, energy, cloud, onboarding and the default bundle, voice presentation. Preserve the Conversation/LLM subset required by MCP.
+4. Unselected integrations, deleted by reachability from the computed closure.
 5. Persistence/configuration simplification only after the reduced runtime boots and representative integrations pass lifecycle tests.
+
+Entry and exit criteria for each wave, and the issue behind every open block, are in [roadmap.md](roadmap.md).
