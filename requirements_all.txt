@@ -35,7 +35,6 @@ PSNAWP==3.0.3
 
 # homeassistant.components.doods
 # homeassistant.components.generic
-# homeassistant.components.image_upload
 # homeassistant.components.matrix
 # homeassistant.components.proxy
 # homeassistant.components.qrcode
@@ -1258,7 +1257,6 @@ harbor-python==1.5.0
 # homeassistant.components.splunk
 hass-splunk==0.1.4
 
-# homeassistant.components.assist_satellite
 # homeassistant.components.conversation
 hassil==3.12.1
 
@@ -1657,9 +1655,6 @@ mullvad-api==1.0.0
 
 # homeassistant.components.music_assistant
 music-assistant-client==1.5.1
-
-# homeassistant.components.tts
-mutagen==1.48.1
 
 # homeassistant.components.mutesync
 mutesync==0.0.1
@@ -2395,9 +2390,6 @@ pymediaroom==0.6.5.4
 # homeassistant.components.meteoclimatic
 pymeteoclimatic==0.1.1
 
-# homeassistant.components.assist_pipeline
-pymicro-vad==1.0.1
-
 # homeassistant.components.miele
 pymiele==0.6.2
 
@@ -2639,9 +2631,6 @@ pysomfymylink==1.0.0
 
 # homeassistant.components.spc
 pyspcwebgw==0.7.0
-
-# homeassistant.components.assist_pipeline
-pyspeex-noise==1.0.2
 
 # homeassistant.components.squeezebox
 pysqueezebox==0.14.0

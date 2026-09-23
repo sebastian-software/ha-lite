@@ -64,8 +64,9 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
-| STT / TTS / voice presentation | DELETE / INVESTIGATE | Voice product surface is not retained merely because Conversation/MCP is retained. `assist_pipeline`, `stt`, `tts`, `wake_word` and `assist_satellite` are outside the `mcp_server` closure (#23). |
-| media source/browser | DELETE initially | Product feature; device media controls can remain. Reached only through the `camera` and `image` `media_source.py` adapters (#23). |
+| STT / TTS / voice presentation | **REMOVED** | `assist_pipeline`, `assist_satellite`, `stt`, `tts` and `wake_word` were outside the `mcp_server` closure; physically removed in Wave 3 (#23). `tests/ha_lite/test_mcp_headless.py` keeps MCP working without them. |
+| media source/browser | **REMOVED** | Product feature; device media controls remain in `media_player`. Reached only through the `camera` and `image` `media_source.py` adapters, which left with it (#23). |
+| ai_task | **REMOVED** | LLM product surface, set up only because bootstrap defaults to every entity platform. No retained integration provides it; agents use MCP (#23). |
 | bluetooth | KEEP | Discovery/transport for physical integrations. |
 | dhcp | KEEP | Discovery infrastructure. |
 | ssdp | KEEP | Discovery infrastructure. |

@@ -38,7 +38,6 @@ from .components import (
     api as api_pre_import,  # noqa: F401
     auth as auth_pre_import,  # noqa: F401
     config as config_pre_import,  # noqa: F401
-    default_config as default_config_pre_import,  # noqa: F401
     device_automation as device_automation_pre_import,  # noqa: F401
     diagnostics as diagnostics_pre_import,  # noqa: F401
     file_upload as file_upload_pre_import,  # noqa: F401
@@ -273,7 +272,6 @@ PRELOAD_STORAGE = [
     "core.uuid",
     "bluetooth.passive_update_processor",
     "bluetooth.remote_scanners",
-    "assist_pipeline.pipelines",
     "core.analytics",
     "auth_module.totp",
     "backup",

@@ -13,10 +13,8 @@ core: &core
 
 # Our base platforms, that are used by other integrations
 base_platforms: &base_platforms
-  - homeassistant/components/ai_task/**
   - homeassistant/components/air_quality/**
   - homeassistant/components/alarm_control_panel/**
-  - homeassistant/components/assist_satellite/**
   - homeassistant/components/binary_sensor/**
   - homeassistant/components/button/**
   - homeassistant/components/calendar/**
@@ -47,16 +45,13 @@ base_platforms: &base_platforms
   - homeassistant/components/select/**
   - homeassistant/components/sensor/**
   - homeassistant/components/siren/**
-  - homeassistant/components/stt/**
   - homeassistant/components/switch/**
   - homeassistant/components/text/**
   - homeassistant/components/time/**
   - homeassistant/components/todo/**
-  - homeassistant/components/tts/**
   - homeassistant/components/update/**
   - homeassistant/components/vacuum/**
   - homeassistant/components/valve/**
-  - homeassistant/components/wake_word/**
   - homeassistant/components/water_heater/**
   - homeassistant/components/weather/**
 
@@ -65,9 +60,7 @@ components: &components
   - homeassistant/components/alexa/**
   - homeassistant/components/analytics/**
   - homeassistant/components/application_credentials/**
-  - homeassistant/components/assist_pipeline/**
   - homeassistant/components/auth/**
-  - homeassistant/components/automation/**
   - homeassistant/components/backup/**
   - homeassistant/components/blueprint/**
   - homeassistant/components/bluetooth/**
@@ -80,7 +73,6 @@ components: &components
   - homeassistant/components/discovery/**
   - homeassistant/components/energy/**
   - homeassistant/components/ffmpeg/**
-  - homeassistant/components/frontend/**
   - homeassistant/components/google_assistant/**
   - homeassistant/components/group/**
   - homeassistant/components/hassio/**
@@ -98,7 +90,6 @@ components: &components
   - homeassistant/components/llm/**
   - homeassistant/components/logbook/**
   - homeassistant/components/logger/**
-  - homeassistant/components/media_source/**
   - homeassistant/components/mjpeg/**
   - homeassistant/components/modbus/**
   - homeassistant/components/mqtt/**
@@ -110,7 +101,6 @@ components: &components
   - homeassistant/components/recorder/**
   - homeassistant/components/recovery_mode/**
   - homeassistant/components/repairs/**
-  - homeassistant/components/script/**
   - homeassistant/components/shopping_list/**
   - homeassistant/components/ssdp/**
   - homeassistant/components/stream/**

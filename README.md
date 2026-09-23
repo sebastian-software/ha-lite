@@ -53,7 +53,7 @@ This table describes the architectural target. **Removed** means physically abse
 | Blueprints, templates, automation helpers, cloud, Alexa, Google Assistant | **Removed — Wave 3** | Automation authoring and cloud products (#19) |
 | Logbook, history, energy | **Removed — Wave 3** | Human-facing history and aggregation products (#21) |
 | Onboarding, default bundle, browser upload and link helpers | **Remove — Wave 3** | Product bootstrap and UI support (#22) |
-| Assist / voice presentation | **Remove — Wave 3** | Voice product outside the MCP closure (#23) |
+| Assist / voice presentation, media browser, AI tasks | **Removed — Wave 3** | Outside the MCP closure; a headless MCP test guards the gap (#23) |
 | Unselected integrations | **Remove — Wave 4** | Keep the computed retained closure rather than all of Home Assistant (#27) |
 | Recorder, persistence implementation | **Decide — Wave 5** | Define the persistence contract first (#28) |
 
@@ -65,16 +65,16 @@ A useful measurement needs to distinguish **Home Assistant Core source** from th
 
 | Metric | Before Wave 1 | Current |
 | --- | ---: | ---: |
-| Tracked files in repository | 27,507 | 27,023 |
-| Tracked Python files | 18,497 | 18,138 |
-| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 9,844 files / 49.63 MB |
-| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 9,630 files / 46.78 MB |
-| Top-level component domains | 1,509 | 1,465 |
-| Python tests under `tests/` | 8,269 files / 67.45 MB | 8,094 files / 64.12 MB |
+| Tracked files in repository | 27,507 | 26,894 |
+| Tracked Python files | 18,497 | 18,039 |
+| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 9,792 files / 49.26 MB |
+| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 9,578 files / 46.42 MB |
+| Top-level component domains | 1,509 | 1,458 |
+| Python tests under `tests/` | 8,269 files / 67.45 MB | 8,047 files / 63.58 MB |
 
 "Before Wave 1" is the upstream 2026.9.3 tree immediately before the frontend and Lovelace deletion. "Current" is this checkout; the [roadmap](docs/architecture/roadmap.md#size-checkpoints) keeps the intermediate checkpoints.
 
-Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 91 of the 1,487 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
+Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 90 of the 1,480 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
 
 For that reason the final reduction percentage is intentionally **not predicted yet**. Every wave updates the measured checkpoint instead, so the README can eventually say exactly how much production code, tests, components and dependencies were removed.
 

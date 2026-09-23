@@ -15,7 +15,7 @@ what is still to do.
 |---|---|---|---|
 | 1 | Frontend, Lovelace and browser-product bootstrap | — | Done |
 | 2 | Automation and Script | — | Done |
-| 3 | Remaining Home Assistant product layers | [#16] | 3 of 5 blocks done |
+| 3 | Remaining Home Assistant product layers | [#16] | 4 of 5 blocks done |
 | 4 | Explicit retained integration closure | [#17] | 1 of 4 blocks done |
 | 5 | Persistence, configuration and runtime composition | [#18] | Not started |
 
@@ -64,7 +64,7 @@ closed.
 | Scenes, groups and the derived location domains (`person`, `zone`, `device_tracker`, `sun`) | [#20] | Done — all kept; ADR 0002, ADR 0010 |
 | History, logbook and energy | [#21] | Done |
 | `onboarding`, `default_config`, `file_upload`, `my`, `map_tiles`, `search` | [#22] | Open. `cloud` and `image_upload` are already gone |
-| Assist and voice presentation | [#23] | Open |
+| Assist and voice presentation, `media_source`, `ai_task` | [#23] | Done — MCP guarded by `tests/ha_lite/test_mcp_headless.py` |
 
 ## Wave 4 — explicit integration closure ([#17])
 
@@ -91,6 +91,13 @@ OAuth/reauth lifecycle to be protected in CI ([#26]).
 | Decouple retained integrations from product conveniences (MQTT, Matter) | [#25] | Open |
 | OAuth/cloud integration lifecycle anchor in CI | [#26] | Open |
 | Physically remove the unselected integrations | [#27] | Open; blocked by #25 and #26 |
+
+Found on the way, for #27 to settle: `demo` is outside the closure, but about
+twenty retained test suites use it — as a stand-in domain in config-entry
+tests, and as the platform the `media_player`, `group` and `camera` tests set
+up. Removing the STT and TTS platforms in #23 made it fail to import, which is
+how this surfaced. It either becomes a root, as test infrastructure, or those
+uses are rewritten; deleting it by reachability would break retained CI.
 
 ## Wave 5 — persistence, configuration, runtime composition ([#18])
 
@@ -129,6 +136,7 @@ checkpoint. The README carries the current numbers.
 | Before Wave 1 (upstream 2026.9.3, not reproducible here) | 27,507 | 10,028 files / 51.36 MB | 8,269 files / 67.45 MB | 1,509 |
 | After Waves 1–2 (root commit `b9b89717`) | 27,437 | 10,004 files / 51.14 MB | 8,247 files / 67.07 MB | 1,482 |
 | During Wave 3 (after #19, #20, #21, #24) | 27,023 | 9,844 files / 49.63 MB | 8,094 files / 64.12 MB | 1,465 |
+| After #23 (voice, media browser, AI tasks) | 26,894 | 9,792 files / 49.26 MB | 8,047 files / 63.58 MB | 1,458 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot

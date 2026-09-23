@@ -51,6 +51,48 @@ edge as soft is what showed the coupling was removable; #19 then removed it.
 Soft edges are not discarded. They are reported as **latent coupling**: the
 things that would widen the closure if they ever hardened.
 
+Core — everything under `homeassistant/` outside `components/` — is walked as
+a pseudo-domain, `<core>`, because it is loaded unconditionally. Its hard edges
+grow the closure like any root's, and its soft edges are latent coupling like
+any member's.
+
+Relative imports are resolved against the importing file's package, so
+`from .components import api` in `bootstrap.py` counts exactly like its
+absolute spelling. Inside a component they resolve to the component itself
+and add nothing.
+
+### Imports of components that are gone
+
+The walk only follows edges into domains that exist, so an import of a deleted
+component is invisible to it — and a deferred one fails only when its function
+runs. Retained code (closure members and core) importing a component that is
+not in the tree is therefore a finding of its own, **dangling**, whatever the
+edge's strength. Only `after_dependencies` is exempt: the loader ignores an
+ordering hint on a missing domain.
+
+### What these rules found
+
+The first version of the tool skipped relative imports, on the reasoning that
+one cannot leave its component. That holds inside `components/` and not in
+core. `bootstrap.py` pre-imports its components as `from .components import
+...`, and one of them was `default_config`: resolving it pulled fifteen
+unreviewed domains into the closure, among them the whole voice stack through
+`default_config`'s manifest. The pre-import was dropped in #23; `default_config`
+itself leaves in #22.
+
+The same change surfaced `core_config.py` importing the deleted `frontend`
+inside a storage migration. It was caught by a `broad-except`, so migrating a
+pre-1.3 core store only logged an exception — and `tests/test_core_config.py`,
+which was not in CI, failed on it.
+
+The latent report used to cover closure members only, not core.
+`helpers/service.py` imports five entity domains inside a function to validate
+`supported_features` filters in `services.yaml`; all five sat outside the
+closure, so deleting any of them would have broken service-description loading
+for every domain, and nothing reported it. #23 removed `ai_task` and
+`assist_satellite` from that import; `calendar`, `remote` and `todo` are listed
+as latent coupling for #27.
+
 ## What the import graph cannot see
 
 Some platforms are loaded **by name**, through `async_get_platform`, and never
@@ -132,32 +174,30 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,487 |
+| Component domains in tree | 1,480 |
 | Declared roots | 78 |
-| Retained closure | 91 |
-| Deletion candidates | 1,396 |
+| Retained closure | 90 |
+| Deletion candidates | 1,390 |
 
-Of the 13 transitively required domains, 6 are `retained`, 2 are `adapter` and 5 are `patch_required`.
+Of the 12 transitively required domains, 6 are `retained`, 1 is an `adapter` and 5 are `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 6% of the tree. The 1,396 candidates outside it are
+The closure is small — 6% of the tree. The 1,390 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 
-Reachability is necessary but not sufficient. 28 of those candidates provide a
+Reachability is necessary but not sufficient. 27 of those candidates provide a
 runtime-resolved platform, so #27 must work the capability-at-risk list as well
 as the closure: deleting them breaks nothing and still costs something.
 
-The closure is also not yet minimal. Two of its members are held in only by
-platform-adapter files: `device_automation` by the entity domains'
-`device_action.py` and `device_trigger.py`, and `media_source` by the `camera`
-and `image` `media_source.py`. This is the same shape as the per-integration
-`logbook.py` files removed in #21 — the adapter is deletable independently of
-the domain that hosts it, and the target leaves with it. #19 confirmed the
-pattern by removing the five `input_*` helpers this way: dropping one entry
-from each domain's `_domain_specs` was enough to make them fall out of the
-closure, after which they could simply be deleted.
+The closure is also not yet minimal. `device_automation` is held in only by
+the entity domains' `device_action.py` and `device_trigger.py` adapters. This
+is the same shape as the per-integration `logbook.py` files removed in #21 —
+the adapter is deletable independently of the domain that hosts it, and the
+target leaves with it. #19 confirmed the pattern by removing the five
+`input_*` helpers this way, and #23 by removing `media_source`: deleting the
+`camera` and `image` `media_source.py` adapters was all it took.
 
 The five `patch_required` members are the real blockers, and
 `dependency-findings-2026.9.3.md` predicted three of them:

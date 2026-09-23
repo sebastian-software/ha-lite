@@ -49,7 +49,6 @@ homeassistant.components.actron_air.*
 homeassistant.components.adax.*
 homeassistant.components.adguard.*
 homeassistant.components.aftership.*
-homeassistant.components.ai_task.*
 homeassistant.components.air_quality.*
 homeassistant.components.airgradient.*
 homeassistant.components.airly.*
@@ -100,12 +99,9 @@ homeassistant.components.arris_tg2492lg.*
 homeassistant.components.aruba.*
 homeassistant.components.arwn.*
 homeassistant.components.aseko_pool_live.*
-homeassistant.components.assist_pipeline.*
-homeassistant.components.assist_satellite.*
 homeassistant.components.asuswrt.*
 homeassistant.components.autarco.*
 homeassistant.components.auth.*
-homeassistant.components.automation.*
 homeassistant.components.awair.*
 homeassistant.components.axis.*
 homeassistant.components.azure_storage.*
@@ -222,7 +218,6 @@ homeassistant.components.fritz.*
 homeassistant.components.fritzbox.*
 homeassistant.components.fritzbox_callmonitor.*
 homeassistant.components.fronius.*
-homeassistant.components.frontend.*
 homeassistant.components.fujitsu_fglair.*
 homeassistant.components.fully_kiosk.*
 homeassistant.components.fumis.*
@@ -297,7 +292,6 @@ homeassistant.components.ibeacon.*
 homeassistant.components.idasen_desk.*
 homeassistant.components.image.*
 homeassistant.components.image_processing.*
-homeassistant.components.image_upload.*
 homeassistant.components.imap.*
 homeassistant.components.imgw_pib.*
 homeassistant.components.immich.*
@@ -373,7 +367,6 @@ homeassistant.components.mcp_server.*
 homeassistant.components.mealie.*
 homeassistant.components.media_extractor.*
 homeassistant.components.media_player.*
-homeassistant.components.media_source.*
 homeassistant.components.met_eireann.*
 homeassistant.components.metoffice.*
 homeassistant.components.miele.*
@@ -508,7 +501,6 @@ homeassistant.components.saunum.*
 homeassistant.components.scene.*
 homeassistant.components.schlage.*
 homeassistant.components.scrape.*
-homeassistant.components.script.*
 homeassistant.components.search.*
 homeassistant.components.season.*
 homeassistant.components.select.*
@@ -550,7 +542,6 @@ homeassistant.components.steamist.*
 homeassistant.components.stookwijzer.*
 homeassistant.components.stream.*
 homeassistant.components.streamlabswater.*
-homeassistant.components.stt.*
 homeassistant.components.suez_water.*
 homeassistant.components.sun.*
 homeassistant.components.surepetcare.*
@@ -601,7 +592,6 @@ homeassistant.components.trafikverket_weatherstation.*
 homeassistant.components.transmission.*
 homeassistant.components.trend.*
 homeassistant.components.trmnl.*
-homeassistant.components.tts.*
 homeassistant.components.twentemilieu.*
 homeassistant.components.unifi.*
 homeassistant.components.unifi_access.*
@@ -627,7 +617,6 @@ homeassistant.components.vlc_telnet.*
 homeassistant.components.vodafone_station.*
 homeassistant.components.volvo.*
 homeassistant.components.wake_on_lan.*
-homeassistant.components.wake_word.*
 homeassistant.components.wallbox.*
 homeassistant.components.waqi.*
 homeassistant.components.water_heater.*

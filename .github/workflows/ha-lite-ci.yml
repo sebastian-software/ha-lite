@@ -97,6 +97,7 @@ jobs:
             tests/test_bootstrap.py \
             tests/test_core.py \
             tests/test_config_entries.py \
+            tests/test_core_config.py \
             tests/test_loader.py \
             tests/test_setup.py \
             tests/helpers/test_aiohttp_client.py \
@@ -169,7 +170,8 @@ jobs:
             tests/components/repairs \
             tests/components/diagnostics \
             tests/components/conversation \
-            tests/components/mcp_server
+            tests/components/mcp_server \
+            tests/ha_lite
 
   entity-domain-substrate:
     name: "Entity domain: ${{ matrix.domain }}"
@@ -397,6 +399,13 @@ jobs:
           else
             prek run --from-ref "${base}" --to-ref HEAD
           fi
+
+      - name: Test the ha-lite gates themselves
+        run: |
+          . venv/bin/activate
+          python -m pytest -q -p no:sugar \
+            tests/script/test_ha_lite_closure.py \
+            tests/script/test_ha_lite_trigger_targets.py
 
       - name: Check trigger and condition targets
         run: |
