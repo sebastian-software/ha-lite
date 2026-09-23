@@ -70,7 +70,7 @@ Tests inside these directories may later be split into retained runtime behavior
 Every other root of the closure has its own matrix job: the entity-domain
 substrate, the fifteen device-class trigger and condition providers, and
 `group`, `person` and `sun`. [retained-closure.md](retained-closure.md) lists
-them; ADR 0010 is why a root without a job is not allowed.
+them; ADR 0020 is why a root without a job is not allowed.
 
 ### Representative integrations
 
@@ -85,6 +85,10 @@ The complete test directories for these integrations are required:
 - Miele, the OAuth lifecycle anchor (ADR 0017)
 
 The whole integration directory is tested rather than a hand-picked test subset. This protects config flows, migrations, entity behavior, diagnostics, lifecycle, discovery, failures and edge cases already learned by Home Assistant.
+
+### Catalog
+
+Every other integration in the tree is a catalog member (ADR 0020), and the `catalog` job runs its full test directory as upstream ships it. The job is split into ten shards; `script/ha_lite_catalog_shard.py` weighs each directory by the size of its test modules and hands them out so the shards take similar time. Device-trigger tests keep working without the Automation product because `tests/components/__init__.py` routes `automation` and `script` setups to the retained trigger, condition and action primitives in `tests/helpers/automation_harness.py`.
 
 ## Classification of test failures during reduction
 
@@ -110,6 +114,7 @@ prepare environment
        +--> device-class semantics (matrix)
        +--> derived state (matrix)
        +--> retained integrations (matrix)
+       +--> catalog (10 shards)
        +--> test fixtures (demo, kitchen_sink)
        +--> static sanity (prek, the gates' own tests, trigger targets, closure gate,
                            hassfest, requirement files, mypy)
@@ -121,13 +126,13 @@ The dependency environment is built once and cached. Matrix suites run separatel
 
 Running all ~Home Assistant tests on every ha-lite change is not a useful long-term goal because thousands of tests protect integrations and product features we intend to remove.
 
-Wave 4 settled that question for components: the tree holds only the retained closure, and every root has a CI job running its tests. What does not run yet is most of `tests/helpers` and `tests/util`, and the own suites of the transitive members (`device_automation`, `intent`, `llm`, `stream`, `web_rtc`, `zone`). Adding them is ordinary coverage work, not a separate full-suite run.
+Wave 4 answered that question by deleting the integrations, and ADR 0020 reversed the deletion. With the catalog back, every root has a CI job running its tests and the `catalog` job runs every other integration's suite, so CI covers every integration in the tree. What does not run yet is most of `tests/helpers` and `tests/util`, and the own suites of the transitive members (`device_automation`, `intent`, `llm`, `manual`, `stream`, `web_rtc`, `zone`). Adding them is ordinary coverage work, not a separate full-suite run.
 
 ## Adding integrations
 
-A new integration is not considered retained merely because its source directory remains in the repository.
+An integration copied in from upstream joins the catalog: the closure gate accepts it once nothing it imports is missing, and the `catalog` job runs its suite.
 
-When an integration is promoted to retained scope:
+When an integration is promoted to an anchor, a root CI runs on its own:
 
 1. add its full `tests/components/<domain>` directory to the CI matrix;
 2. add its manifest/import dependencies to the dependency map;

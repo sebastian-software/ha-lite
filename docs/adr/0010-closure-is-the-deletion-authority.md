@@ -1,6 +1,11 @@
 # ADR 0010: Let the computed closure decide what may be deleted
 
-- Status: Accepted
+- Status: Superseded by 0020
+
+ADR 0020 keeps the closure and its edge rules but ends its role as the
+deletion authority: Wave 4 let it delete the integration catalog, which was
+never the goal. The closure now defines the protected core, and the catalog
+sits beside it.
 
 ## Context
 

@@ -61,9 +61,13 @@ root, and the other 28 went, each for a stated reason — backup storage agents
 because backup semantics belong to the persistence contract, the `calendar`,
 `geo_location`, `remote` and `todo` vocabularies because no retained
 integration implements those domains, hub and device triggers with their
-integration. `retained-closure.md` records the table. With the tree equal to
-the closure, the list is empty until something outside the closure appears,
-and that is a finding of its own.
+integration. `retained-closure.md` records the table.
+
+ADR 0020 brought the catalog back, and with it most of those providers:
+`calendar`, `geo_location`, `remote` and `todo` as entity-domain roots, the
+hub and device triggers with their integrations. The list now names the
+catalog members that provide a cross-cutting platform, which is what to
+consult before removing one of them.
 
 Because the mechanism is invisible to static analysis, a provider only
 contributes its platform once its integration has actually been set up.
