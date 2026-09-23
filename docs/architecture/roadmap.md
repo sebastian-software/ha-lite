@@ -18,7 +18,7 @@ what is still to do.
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
 | 4 | Explicit retained integration closure | [#17] | Done, integration deletion reversed |
 | 5 | Persistence, configuration and runtime composition | [#18] | Done |
-| — | Integration catalog restored | — | Done; 158 integrations wait for decoupling |
+| — | Integration catalog restored | — | Done; 34 integrations wait for decoupling, 56 are out by design |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -139,13 +139,26 @@ closure gate now rejects an excluded product layer in the tree and an import,
 from anywhere, of a component that is gone. The `catalog` CI job runs every
 catalog suite in ten shards.
 
-**Still open:** 158 integrations wait for a decoupling change, because they
-import a removed layer or point at an integration that does.
-[retained-closure.md](retained-closure.md#the-catalog-restored) lists each with
-what it needs. The largest groups need `script` (17), `tts` (17),
-`recorder` (16), `automation` (15), `cloud` (14), `backup` (12) and
-`onboarding` (12), and the 38 virtual integrations wait for their target. No issue carries this
-yet.
+Three compat modules — `automation.py`, `script.py` and `onboarding.py` —
+answer what integrations asked the removed Automation, Script and Onboarding
+layers, without being integrations. They brought back 35 more components,
+among them Sonos, Google Cast, TP-Link, UniFi Protect, Ring and SmartThings.
+
+**Still open:** 90 integrations and 33 virtual integrations pointing at them.
+[retained-closure.md](retained-closure.md#what-is-still-out) lists them in two
+groups:
+
+- 56 are out by design: speech and AI, Recorder statistics, backup agents,
+  Home Assistant's own hardware and `intent_script`.
+- 34 wait for a decoupling. The largest groups are:
+  - `cloud` (14), whose integrations fall back to a local webhook URL
+    without it;
+  - `hassio` and Home Assistant's own hardware (ESPHome, ZHA, Z-Wave JS,
+    OTBR);
+  - `file_upload` and `frontend` (KNX, Insteon, Velbus and others);
+  - the `input_*` domain names (HomeKit Bridge and five helpers).
+
+No issue carries this yet.
 
 ## Open questions without an issue
 

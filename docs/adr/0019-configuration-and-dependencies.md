@@ -48,7 +48,7 @@ definitions such as Modbus register maps.
 
 **The tree's dependencies are the distribution.** This decision first read
 "the closure's dependencies", which made `requirements_all.txt` 40 packages.
-ADR 0020 brought the catalog back, and the file now lists 1,035. A deployment
+ADR 0020 brought the catalog back, and the file now lists 1,067. A deployment
 chooses between two installs:
 
 - `requirements.txt` and `requirements_all.txt`, as CI and upstream's

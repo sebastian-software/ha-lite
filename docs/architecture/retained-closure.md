@@ -79,7 +79,8 @@ exempt: the loader ignores an ordering hint on a missing domain.
 
 For the catalog this is the entry condition. An integration that still imports
 a removed product layer cannot load, so it stays out of the tree until it is
-decoupled.
+decoupled. An import of a declared compat module is satisfied: the module is
+there, it is just not an integration.
 
 ### What these rules found
 
@@ -199,6 +200,9 @@ Two more findings guard the tree as a whole:
   platform. The scope matrix gives each one's reason.
 - **dangling** — code anywhere in the tree imports a component that is not
   there; see above.
+- **undeclared compat** and **stale compat** — a file directly under
+  `components/` that is not listed under `compat_modules` in the config, or
+  a listed one that is gone. See "Compat modules" below.
 
 A catalog member is not a finding. It needs no root and no reviewed entry, and
 the `catalog` CI job runs its suite.
@@ -207,15 +211,16 @@ the `catalog` CI job runs its suite.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,309 |
+| Component domains in tree | 1,344 |
 | Declared roots | 90 |
 | Retained closure | 98 |
-| Catalog | 1,211 |
+| Catalog | 1,246 |
 
 Of the 8 transitively required domains, 7 are `retained` and 1 is an `adapter`.
 `recorder` was one more until #28 removed it (ADR 0018). The tree count
-includes 20 virtual integrations, which are a manifest pointing at another
-integration and carry no code.
+includes 106 virtual integrations, which are a manifest pointing at another
+integration and carry no code. Three compat modules — `automation.py`,
+`onboarding.py` and `script.py` — are files, not domains, and not counted.
 
 ### Wave 4
 
@@ -338,68 +343,134 @@ returned (`shell_command`, `mjpeg`, `browser`, `shopping_list`, `todo`,
 Four restored manifests listed a missing domain in `after_dependencies`, which
 hassfest rejects: `bluetooth_adapters` (`esphome`) and `litellm`, `llama_cpp`
 and `ovhcloud_ai_endpoints` (`assist_pipeline`). Those entries are removed;
-the loader ignored them anyway. `unifi_discovery`, which UniFi Network and
-UniFi Access depend on, no longer maps Protect consoles to `unifiprotect`, so
-it starts no flow for an integration that is not there; its tests use the
-Network consumer instead. Brand files keep only the integrations in the
-tree, and a brand left with fewer than two is removed, as hassfest requires.
+the loader ignored them anyway. Brand files keep only the integrations in
+the tree, and a brand left with fewer than two is removed, as hassfest
+requires.
 
-158 integrations are still out. 120 import something that is gone, listed by
-what they need; an integration appears once for each thing it needs:
+### Compat modules
 
-| Needs | Kind | Integrations |
+Many of the integrations that stayed out imported a removed layer only to ask
+it one question:
+
+- thirteen asked `automation`, most of them `script` as well, which
+  automations and scripts use an entity or device, to decide whether a
+  deprecation notice lists them;
+- `emulated_hue` and `telegram_bot` needed only the `script` domain name;
+- eleven config flows asked `onboarding` whether the browser wizard is still
+  running, to add a discovered device without asking.
+
+Three compat modules answer those questions. Each is a single file directly
+under `homeassistant/components/`, without a manifest, so it is not an
+integration and cannot be set up (ADR 0020):
+
+| Module | Provides | Answer in ha-lite |
 |---|---|---|
-| `script` | removed layer | `elkm1`, `emulated_hue`, `homekit`, `intent_script`, `jvc_projector`, `lg_thinq`, `opensensemap`, `ring`, `roborock`, `smartthings`, `telegram_bot`, `tplink`, `unifiprotect`, `v2c`, `victron_gx`, `whirlpool`, `zwave_js` |
-| `tts` | removed layer | `amazon_polly`, `baidu`, `elevenlabs`, `esphome`, `fish_audio`, `google_cloud`, `google_generative_ai_conversation`, `google_translate`, `marytts`, `microsoft`, `openai_conversation`, `picotts`, `smtp`, `voicerss`, `voip`, `wyoming`, `yandextts` |
-| `recorder` | removed layer | `anglian_water`, `elvia`, `filter`, `history_stats`, `ista_ecotrend`, `mill`, `opower`, `plant`, `solaredge`, `sql`, `srp_energy`, `statistics`, `suez_water`, `tibber`, `usage_prediction`, `waterfurnace` |
-| `automation` | removed layer | `airvisual`, `elkm1`, `homekit`, `jvc_projector`, `lg_thinq`, `opensensemap`, `ring`, `roborock`, `smartthings`, `tplink`, `unifiprotect`, `v2c`, `victron_gx`, `whirlpool`, `zwave_js` |
-| `cloud` | removed layer | `august`, `loqed`, `mobile_app`, `monzo`, `netatmo`, `overseerr`, `owntracks`, `plaato`, `rachio`, `switchbot_cloud`, `toon`, `watts`, `withings`, `yale` |
-| `backup` | removed layer | `aws_s3`, `azure_storage`, `backblaze_b2`, `cloudflare_r2`, `dropbox`, `google_drive`, `idrive_e2`, `onedrive`, `onedrive_for_business`, `sftp_storage`, `synology_dsm`, `webdav` |
-| `onboarding` | removed layer | `awair`, `bthome`, `cast`, `elgato`, `homewizard`, `technove`, `thread`, `wiz`, `wled`, `xiaomi_ble`, `yeelight`, `zha` |
-| `hassio` | removed layer | `esphome`, `hardkernel`, `homeassistant_alerts`, `homeassistant_green`, `homeassistant_hardware`, `homeassistant_yellow`, `otbr`, `raspberry_pi`, `zwave_js` |
-| `file_upload` | removed layer | `google_cloud`, `influxdb`, `knx`, `local_calendar`, `sftp_storage`, `velbus`, `zha` |
-| `homeassistant_hardware` | blocked integration | `homeassistant_connect_zbt2`, `homeassistant_green`, `homeassistant_sky_connect`, `homeassistant_yellow`, `otbr`, `raspberry_pi`, `zha` |
-| `hardware` | removed layer | `hardkernel`, `homeassistant_connect_zbt2`, `homeassistant_green`, `homeassistant_sky_connect`, `homeassistant_yellow`, `raspberry_pi` |
-| `input_number` | removed layer | `bayesian`, `derivative`, `filter`, `homekit`, `integration`, `min_max` |
-| `ai_task` | removed layer | `anthropic`, `google_generative_ai_conversation`, `ollama`, `open_router`, `openai_conversation` |
-| `frontend` | removed layer | `insteon`, `knx`, `lcn`, `mobile_app`, `panel_custom` |
-| `stt` | removed layer | `elevenlabs`, `google_cloud`, `google_generative_ai_conversation`, `openai_conversation`, `wyoming` |
-| `panel_custom` | blocked integration | `dynalite`, `insteon`, `knx`, `lcn` |
-| `analytics` | removed layer | `esphome`, `mobile_app`, `wled` |
-| `assist_pipeline` | removed layer | `esphome`, `voip`, `wyoming` |
-| `assist_satellite` | removed layer | `esphome`, `voip`, `wyoming` |
-| `counter` | removed layer | `derivative`, `integration`, `trend` |
-| `homeassistant_yellow` | blocked integration | `otbr`, `zha` |
-| `input_boolean` | removed layer | `bayesian`, `homekit` |
-| `thread` | blocked integration | `homekit_controller`, `otbr` |
-| `cast` | blocked integration | `plex` |
-| `default_config` | removed layer | `go2rtc` |
-| `homeassistant_sky_connect` | blocked integration | `zha` |
-| `input_button` | removed layer | `homekit` |
-| `input_select` | removed layer | `homekit` |
-| `input_text` | removed layer | `bayesian` |
-| `plex` | blocked integration | `sonos` |
-| `sensor.recorder` | removed layer | `utility_meter` |
-| `telegram_bot` | blocked integration | `telegram` |
-| `wake_word` | removed layer | `wyoming` |
-| `zha` | blocked integration | `homeassistant_hardware` |
+| `automation.py` | `DOMAIN`, `automations_with_entity`, `automations_with_device` | No automation references anything |
+| `script.py` | `DOMAIN`, `CONF_MODE`, `CONF_SEQUENCE`, `scripts_with_entity` | No script references anything |
+| `onboarding.py` | `DOMAIN`, `async_is_onboarded`, `async_is_user_onboarded` | Onboarded |
+
+Each answer is the one upstream gives when the product integration is not
+loaded. So these integrations behave as they do on a Home Assistant without
+automations or a wizard: a deprecation notice lists no automations, and a
+discovered device waits for the user's confirmation. `script.py` was there
+before as a domain marker, and it gained `scripts_with_entity`. The closure
+config lists the modules under `compat_modules`, and `retained-closure.json`
+records which components import each one.
+
+In tests, the lookups answer from the automation harness instead
+(`tests/components/__init__.py`), so a deprecation test finds the automations
+and scripts it set up.
+
+The modules brought back 30 integrations and the 5 virtual integrations that
+point at them:
+
+- **Through `automation` and `script`:** `airvisual`, `elkm1`,
+  `emulated_hue`, `jvc_projector`, `lg_thinq`, `opensensemap`, `ring`,
+  `roborock`, `smartthings`, `telegram_bot`, `tplink`, `unifiprotect`, `v2c`,
+  `victron_gx`, `whirlpool`.
+- **Through `onboarding`:** `awair`, `bthome`, `cast`, `elgato`, `homewizard`,
+  `technove`, `thread`, `wiz`, `wled`, `xiaomi_ble`, `yeelight`.
+- **With one of the above, which they depend on:**
+  - `homekit_controller`, on `thread`;
+  - `plex`, on `cast`;
+  - `sonos`, on `plex`;
+  - `telegram`, on `telegram_bot`.
+- **Virtual:** `bauknecht`, `eastron`, `maytag`, `symfonisk`, `tplink_tapo`.
+
+Around them, these files changed:
+
+- WLED's `analytics.py` platform and its test are removed. Only the removed
+  `analytics` integration loads that platform, so it leaves with that layer,
+  as logbook's describe platforms did.
+- Cast's manifest drops `cloud` and `tts` from `after_dependencies`, which
+  hassfest rejects for domains that are not in the tree.
+- `unifi_discovery` maps Protect consoles to `unifiprotect` again, as upstream
+  does.
+
+These upstream tests changed:
+
+- Cast's tests for failed casts no longer set up TTS, which only gave them a
+  URL to cast.
+- Cast's test of the Home Assistant Cloud URL is removed.
+- UniFi Protect's `test_recorder.py` is removed.
+
+### What is still out
+
+90 integrations are still out, and 33 virtual integrations point at them. They
+fall into two groups.
+
+**Out by design (56).** Their purpose is a product layer ha-lite removed, so
+they leave with it:
+
+| Group | Integrations |
+|---|---|
+| Speech and AI: text-to-speech, speech-to-text, conversation agents, AI tasks (18) | `amazon_polly`, `anthropic`, `baidu`, `elevenlabs`, `fish_audio`, `google_cloud`, `google_generative_ai_conversation`, `google_translate`, `marytts`, `microsoft`, `ollama`, `open_router`, `openai_conversation`, `picotts`, `voicerss`, `voip`, `wyoming`, `yandextts` |
+| History and statistics: they write to or read from Recorder's database (17) | `anglian_water`, `elvia`, `filter`, `history_stats`, `ista_ecotrend`, `mill`, `opower`, `plant`, `solaredge`, `sql`, `srp_energy`, `statistics`, `suez_water`, `tibber`, `usage_prediction`, `utility_meter`, `waterfurnace` |
+| Backup agents (12) | `aws_s3`, `azure_storage`, `backblaze_b2`, `cloudflare_r2`, `dropbox`, `google_drive`, `idrive_e2`, `onedrive`, `onedrive_for_business`, `sftp_storage`, `synology_dsm`, `webdav` |
+| Home Assistant's own hardware and OS (8) | `hardkernel`, `homeassistant_alerts`, `homeassistant_connect_zbt2`, `homeassistant_green`, `homeassistant_hardware`, `homeassistant_sky_connect`, `homeassistant_yellow`, `raspberry_pi` |
+| Automation logic (1) | `intent_script` |
+
+Five of these are device integrations for which the removed layer is a side
+feature:
+
+- Mill, SolarEdge, Tibber and WaterFurnace import their history into Recorder's
+  statistics.
+- Synology DSM reaches `backup` only through its backup-agent platform.
+
+Each could come back without that part, as WLED did.
 
 `utility_meter` imports `reset_detected` from `sensor/recorder.py`, which left
-with Recorder (#28); the domain-level walk cannot see a removed module inside
-a retained component, and the import check of the restore did.
+with Recorder (#28). The domain-level walk cannot see a removed module inside
+a retained component; the import check of the restore did.
 
-38 virtual integrations point at one of those, and wait for their target:
+**Waiting for a decoupling (34).** These serve devices, and a coupling holds
+them back, not their purpose:
+
+| Needs | Integrations | What for |
+|---|---|---|
+| `cloud` | `august`, `loqed`, `mobile_app`, `monzo`, `netatmo`, `overseerr`, `owntracks`, `plaato`, `rachio`, `switchbot_cloud`, `toon`, `watts`, `withings`, `yale` | A public webhook URL through Home Assistant Cloud, with the local webhook URL as the fallback. August, Yale and Watts sign in through Nabu Casa's account linking |
+| `hassio`, Home Assistant hardware | `esphome`, `otbr`, `zha`, `zwave_js` | Managing the add-on that runs the server, firmware for Home Assistant's own radios. ESPHome also brings the voice satellite |
+| `file_upload` | `influxdb`, `knx`, `local_calendar`, `velbus` | Uploading a certificate, keyring or file in a config flow |
+| `frontend`, `panel_custom` | `dynalite`, `insteon`, `knx`, `lcn`, `panel_custom` | A configuration panel in the web UI |
+| `input_*`, `counter` | `bayesian`, `derivative`, `homekit`, `integration`, `min_max`, `trend` | Domain names |
+| `default_config` | `go2rtc` | Its domain name: go2rtc sets itself up when `default_config` is configured |
+| `tts` | `smtp` | Attaching generated speech to a mail |
+
+`mobile_app` also needs `frontend` and `analytics`.
+
+The 33 virtual integrations wait for their target:
 
 - `esphome`: `apollo_automation`, `iotorero`, `konnected_esphome`
-- `homewizard`: `eastron`
 - `netatmo`: `bticino`, `bubendorff`, `home_plus_control`, `legrand`, `smarther`
 - `opower`: `aep_ohio`, `aep_texas`, `appalachianpower`, `atlanticcityelectric`, `bge`, `burbank_water_and_power`, `coautilities`, `comed`, `coned`, `delmarva`, `duquesne_light`, `evergy`, `indianamichiganpower`, `kentuckypower`, `oru_opower`, `peco_opower`, `pepco`, `pge`, `pse`, `psoklahoma`, `scl`, `smud`, `swepco`
-- `sonos`: `symfonisk`
-- `tplink`: `tplink_tapo`
-- `whirlpool`: `bauknecht`, `maytag`
 - `wyoming`: `piper`, `whisper`
 
-Bringing one back is a decoupling change of the #25 kind: patch the import of
-the removed layer out of the integration, or restore a layer that turns out to
-serve devices rather than people, as `media_source` did. The gate then
-accepts it, and the catalog job runs its suite.
+An integration in the second group comes back in one of three ways:
+
+- a decoupling change of the #25 kind, which patches the import of the removed
+  layer out of the integration;
+- a compat module, where the coupling is only a question;
+- restoring a layer that turns out to serve devices rather than people, as
+  `media_source` did.
+
+The gate then accepts it, and the catalog job runs its suite.
