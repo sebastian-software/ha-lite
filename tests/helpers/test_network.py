@@ -832,11 +832,6 @@ async def test_get_request_host_port_no_host_header(hass: HomeAssistant) -> None
         assert _get_request_host_port() == (None, None)
 
 
-@patch("homeassistant.helpers.hassio.is_hassio", Mock(return_value=True))
-@patch(
-    "homeassistant.components.hassio.get_host_info",
-    Mock(return_value={"hostname": "homeassistant"}),
-)
 async def test_get_current_request_url_with_known_host(
     hass: HomeAssistant, current_request: MagicMock
 ) -> None:
@@ -867,26 +862,6 @@ async def test_get_current_request_url_with_known_host(
         with pytest.raises(NoURLAvailableError):
             get_url(hass, require_current_request=True, allow_ip=False)
 
-    # Ensure hostname from Supervisor is accepted transparently
-    mock_component(hass, "hassio")
-
-    with patch(
-        "homeassistant.helpers.network._get_request_host_port",
-        return_value=("homeassistant.local", 8123),
-    ):
-        assert (
-            get_url(hass, require_current_request=True)
-            == "http://homeassistant.local:8123"
-        )
-
-    with patch(
-        "homeassistant.helpers.network._get_request_host_port",
-        return_value=("homeassistant", 8123),
-    ):
-        assert (
-            get_url(hass, require_current_request=True) == "http://homeassistant:8123"
-        )
-
     with (
         patch(
             "homeassistant.helpers.network._get_request_host_port",
@@ -897,14 +872,6 @@ async def test_get_current_request_url_with_known_host(
         get_url(hass, require_current_request=True)
 
 
-@patch(
-    "homeassistant.helpers.network.is_hassio",
-    Mock(return_value={"hostname": "homeassistant"}),
-)
-@patch(
-    "homeassistant.components.hassio.get_host_info",
-    Mock(return_value={"hostname": "hellohost"}),
-)
 async def test_is_internal_request(
     hass: HomeAssistant,
     mock_current_request: Mock,
@@ -957,15 +924,6 @@ async def test_is_internal_request(
     # Test for matching against local IP
     hass.config.api = Mock(use_ssl=False, local_ip="192.168.123.123", port=8123)
     for allowed in ("127.0.0.1", "192.168.123.123"):
-        mock_current_request.return_value = Mock(
-            headers=CIMultiDictProxy(CIMultiDict({hdrs.HOST: f"{allowed}:8123"})),
-            host=f"{allowed}:8123",
-            url=URL(f"http://{allowed}:8123"),
-        )
-        assert is_internal_request(hass), mock_current_request.return_value.url
-
-    # Test for matching against HassOS hostname
-    for allowed in ("hellohost", "hellohost.local"):
         mock_current_request.return_value = Mock(
             headers=CIMultiDictProxy(CIMultiDict({hdrs.HOST: f"{allowed}:8123"})),
             host=f"{allowed}:8123",

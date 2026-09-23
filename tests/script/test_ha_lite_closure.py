@@ -218,6 +218,18 @@ def test_missing_root_is_a_finding(tree: Path, tmp_path: Path) -> None:
     assert result["missing_roots"] == ["ghost"]
 
 
+def test_component_outside_the_closure_is_a_finding(tree: Path, tmp_path: Path) -> None:
+    """A component nothing retained reaches was added without being declared."""
+    write_component(tree, "alpha")
+    write_component(tree, "stray")
+
+    write_config(tmp_path, roots=["alpha"])
+    result = ha_lite_closure.analyze()
+
+    assert result["outside"] == ["stray"]
+    assert ha_lite_closure.as_json(result)["findings"]["outside_closure"] == ["stray"]
+
+
 def test_platform_provider_is_flagged_without_growing_the_closure(
     tree: Path, tmp_path: Path
 ) -> None:

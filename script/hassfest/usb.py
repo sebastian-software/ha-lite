@@ -22,7 +22,9 @@ def generate_and_validate(integrations: dict[str, Integration]) -> str:
             for entry in match_types
         )
 
-    return format_python_namespace({"USB": match_list})
+    return format_python_namespace(
+        {"USB": match_list}, annotations={"USB": "Final[list[dict[str, str]]]"}
+    )
 
 
 def validate(integrations: dict[str, Integration], config: Config) -> None:

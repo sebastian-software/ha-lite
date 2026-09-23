@@ -2,7 +2,6 @@
 
 from functools import cache
 from getpass import getuser
-import logging
 import platform
 from typing import Any
 
@@ -13,8 +12,6 @@ from homeassistant.util.system_info import is_official_image
 
 from .hassio import is_hassio
 from .singleton import singleton
-
-_LOGGER = logging.getLogger(__name__)
 
 _DATA_MAC_VER = "system_info_mac_ver"
 _DATA_CONTAINER_ARCH = "system_info_container_arch"
@@ -88,31 +85,5 @@ async def async_get_system_info(hass: HomeAssistant) -> dict[str, Any]:
 
     elif is_virtual_env():
         info_object["installation_type"] = "Home Assistant Core"
-
-    # Enrich with Supervisor information
-    if is_hassio_:
-        # Local import to avoid circular dependencies
-        from homeassistant.components import hassio  # noqa: PLC0415
-
-        try:
-            info = hassio.get_info(hass)
-        except hassio.HassioNotReadyError:
-            _LOGGER.warning("No Home Assistant Supervisor info available")
-            info = {}
-
-        try:
-            host = hassio.get_host_info(hass)
-        except hassio.HassioNotReadyError:
-            _LOGGER.warning("No Home Assistant Supervisor host info available")
-            host = {}
-        info_object["supervisor"] = info.get("supervisor")
-        info_object["host_os"] = host.get("operating_system")
-        info_object["docker_version"] = info.get("docker")
-        info_object["chassis"] = host.get("chassis")
-
-        if info.get("hassos") is not None:
-            info_object["installation_type"] = "Home Assistant OS"
-        else:
-            info_object["installation_type"] = "Home Assistant Supervised"
 
     return info_object

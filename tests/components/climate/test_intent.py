@@ -68,7 +68,9 @@ def mock_setup_integration(hass: HomeAssistant) -> None:
         hass: HomeAssistant,
         config_entry: ConfigEntry,
     ) -> bool:
-        await hass.config_entries.async_unload_platforms(config_entry, [Platform.TODO])
+        await hass.config_entries.async_unload_platforms(
+            config_entry, [Platform.CLIMATE]
+        )
         return True
 
     mock_platform(hass, f"{TEST_DOMAIN}.config_flow")

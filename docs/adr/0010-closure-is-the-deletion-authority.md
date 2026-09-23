@@ -91,6 +91,20 @@ exist; retained code doing that is now a **dangling** finding, however soft the
 import. The first run found `core_config.py` still importing the deleted
 `frontend`.
 
+Wave 4 deleted everything the closure did not reach, so the tree and the
+closure became the same set, and the gate now also works the other way round:
+a component in the tree that the closure does not reach is an **outside**
+finding. It was added without being declared a root, which is exactly the
+coupling-free growth the closure exists to prevent.
+
+The deletion also showed what reachability cannot see. Bootstrap sets up
+integrations by name — its stages, its defaults, the generated
+`configuration.yaml` — and those names are strings, not edges.
+`tests/ha_lite/test_bootstrap_domains.py` checks each of them against the
+committed closure. Retained upstream suites set up `demo` and `kitchen_sink`
+by name too, so those two are roots in a `test_fixtures` category, pruned to
+the retained domains: what CI runs has to exist, even when it is not runtime.
+
 Reachability is necessary but not sufficient. It says nothing about capabilities
 resolved by name at runtime; see ADR 0011.
 

@@ -19,7 +19,6 @@ import homeassistant.components  # noqa: F401
 from homeassistant.components.button import DOMAIN as BUTTON_DOMAIN
 from homeassistant.components.group import DOMAIN as GROUP_DOMAIN, Group
 from homeassistant.components.logger import DOMAIN as LOGGER_DOMAIN
-from homeassistant.components.shell_command import DOMAIN as SHELL_COMMAND_DOMAIN
 from homeassistant.components.system_health import DOMAIN as SYSTEM_HEALTH_DOMAIN
 from homeassistant.const import (
     ATTR_ENTITY_ID,
@@ -1323,12 +1322,18 @@ async def test_async_get_all_descriptions_dynamically_created_services(
     assert "description" not in descriptions["group"]["reload"]
     assert "fields" in descriptions["group"]["reload"]
 
-    shell_command_config = {SHELL_COMMAND_DOMAIN: {"test_service": "ls /bin"}}
-    await async_setup_component(hass, SHELL_COMMAND_DOMAIN, shell_command_config)
+    # An integration that registers services at runtime ships no services.yaml
+    mock_integration(hass, MockModule("dynamic_services"))
+    hass.services.async_register(
+        "dynamic_services",
+        "test_service",
+        lambda call: None,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
     descriptions = await service.async_get_all_descriptions(hass)
 
     assert len(descriptions) == 2
-    assert descriptions[SHELL_COMMAND_DOMAIN]["test_service"] == {
+    assert descriptions["dynamic_services"]["test_service"] == {
         "fields": {},
         "response": {"optional": True},
     }

@@ -16,7 +16,6 @@ NO_IMPLICIT_REEXPORT_MODULES: set[str] = {
     "homeassistant.components",
     "homeassistant.components.application_credentials.*",
     "homeassistant.components.diagnostics.*",
-    "homeassistant.components.spotify.*",
     "homeassistant.components.stream.*",
     "homeassistant.components.update.*",
 }

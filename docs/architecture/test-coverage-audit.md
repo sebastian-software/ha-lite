@@ -132,8 +132,8 @@ The audit does **not** promote these to retained scope merely because tests exis
 - cloud/Nabu Casa (removed)
 - onboarding and the default bundle (removed)
 - Assist/voice pipelines and the media browser (removed)
-- Home Assistant OS/Supervisor behavior (removed from the retained integrations)
-- every unrelated device integration (#27)
+- Home Assistant OS/Supervisor behavior (removed)
+- every unrelated device integration (removed in Wave 4, #27)
 
 Their tests disappear with the production behavior they protect. Scenes were on this list once; they are now retained substrate, because Hue and MQTT implement the `scene` entity domain.
 
@@ -145,7 +145,6 @@ A few areas remain INVESTIGATE rather than fully committed:
 - Recorder/history persistence (#28);
 - YAML configuration (#29);
 - backup semantics (#28, #30);
-- HomeKit controller (#27 deletes it unless it is promoted first).
 
 Frigate was listed here as a representative higher-level integration. It is a custom integration that Home Assistant Core does not ship, so it cannot be retained in-tree; at most it becomes an external compatibility canary.
 

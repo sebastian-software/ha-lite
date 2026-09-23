@@ -38,7 +38,7 @@ from homeassistant.helpers import (
 from homeassistant.setup import async_setup_component
 from homeassistant.util import dt as dt_util
 
-from . import expose_entity
+from . import expose_entity, register_speech_intents
 
 from tests.common import MockConfigEntry, async_fire_time_changed, async_mock_service
 
@@ -1011,11 +1011,7 @@ async def test_a_custom_sentence_keeps_its_own_error(hass: HomeAssistant) -> Non
         {"conversation": {"intents": {"MoodLight": ["please activate {name} now"]}}},
     )
     assert await async_setup_component(hass, "intent", {})
-    assert await async_setup_component(
-        hass,
-        "intent_script",
-        {"intent_script": {"MoodLight": {"speech": {"text": "Mood set"}}}},
-    )
+    register_speech_intents(hass, {"MoodLight": "Mood set"})
     calls = async_mock_service(hass, "light", "turn_on")
 
     result = await conversation.async_converse(

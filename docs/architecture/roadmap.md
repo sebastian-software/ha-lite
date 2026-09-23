@@ -16,7 +16,7 @@ what is still to do.
 | 1 | Frontend, Lovelace and browser-product bootstrap | — | Done |
 | 2 | Automation and Script | — | Done |
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
-| 4 | Explicit retained integration closure | [#17] | 3 of 4 blocks done |
+| 4 | Explicit retained integration closure | [#17] | Done |
 | 5 | Persistence, configuration and runtime composition | [#18] | 1 of 3 blocks done |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
@@ -72,6 +72,9 @@ deletion additionally waits for the retained integrations to be decoupled from
 product conveniences ([#25], done) and for an OAuth/reauth lifecycle to be
 protected in CI ([#26], done).
 
+**Done.** The tree is the closure, and a component outside it is a CI
+finding.
+
 **Exit:**
 
 - the tree contains the retained closure and nothing else — the closure report
@@ -89,14 +92,15 @@ protected in CI ([#26], done).
 | Generate the authoritative retained closure | [#24] | Done — `script/ha_lite_closure.py`, [retained-closure.md](retained-closure.md) |
 | Decouple retained integrations from product conveniences (MQTT, Matter, `usb`) | [#25] | Done — `hassio` and `backup` left the closure |
 | OAuth/cloud integration lifecycle anchor in CI | [#26] | Done — Miele; ADR 0017 |
-| Physically remove the unselected integrations | [#27] | Open; no longer blocked |
+| Physically remove the unselected integrations | [#27] | Done — 1,380 components deleted; capability-at-risk list and HomeKit controller settled in [retained-closure.md](retained-closure.md#wave-4) |
 
-Found on the way, for #27 to settle: `demo` is outside the closure, but about
-twenty retained test suites use it — as a stand-in domain in config-entry
-tests, and as the platform the `media_player`, `group` and `camera` tests set
-up. Removing the STT and TTS platforms in #23 made it fail to import, which is
-how this surfaced. It either becomes a root, as test infrastructure, or those
-uses are rewritten; deleting it by reachability would break retained CI.
+Found on the way: `demo` was outside the closure, but about twenty retained
+test suites use it — as a stand-in domain in config-entry tests, and as the
+platform the `media_player`, `group` and `camera` tests set up — and
+`kitchen_sink` sits behind `group`'s lock tests. #27 made both roots in a
+`test_fixtures` category, pruned to the retained domains, with their own CI
+job. HomeKit controller, the last scope-matrix row the closure did not reach,
+was not promoted: Matter covers the same local-device ground.
 
 ## Wave 5 — persistence, configuration, runtime composition ([#18])
 
@@ -138,14 +142,15 @@ checkpoint. The README carries the current numbers.
 | During Wave 3 (after #19, #20, #21, #24) | 27,023 | 9,844 files / 49.63 MB | 8,094 files / 64.12 MB | 1,465 |
 | After #23 (voice, media browser, AI tasks) | 26,894 | 9,792 files / 49.26 MB | 8,047 files / 63.58 MB | 1,458 |
 | After Wave 3 (#22, #25, #30) | 26,824 | 9,764 files / 49.09 MB | 8,021 files / 63.20 MB | 1,448 |
+| After Wave 4 (#26, #27) | 3,198 | 978 files / 8.75 MB | 1,092 files / 17.31 MB | 90 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot
 be regenerated from this repository. Every later row can.
 
-The numbers barely move until Wave 4. That is expected: product layers are a
-small part of the tree, and roughly 94% of the Python under `homeassistant/`
-is component code, almost all of it integrations the closure does not reach.
+The numbers barely moved until Wave 4. Product layers are a small part of
+the tree; roughly 94% of the Python under `homeassistant/` was component code,
+almost all of it integrations the closure did not reach. Wave 4 deleted them.
 
 [#15]: https://github.com/sebastian-software/ha-lite/issues/15
 [#16]: https://github.com/sebastian-software/ha-lite/issues/16

@@ -3,8 +3,7 @@
 from http import HTTPStatus
 from ipaddress import ip_address
 import logging
-import os
-from unittest.mock import AsyncMock, Mock, mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized
@@ -30,19 +29,7 @@ from tests.common import async_get_persistent_notifications
 from tests.test_util import mock_real_ip
 from tests.typing import ClientSessionGenerator
 
-SUPERVISOR_IP = "1.2.3.4"
 BANNED_IPS = ["200.201.202.203", "100.64.0.2"]
-BANNED_IPS_WITH_SUPERVISOR = [*BANNED_IPS, SUPERVISOR_IP]
-
-
-@pytest.fixture(name="hassio_env")
-def hassio_env_fixture(supervisor_is_connected: AsyncMock):
-    """Fixture to inject hassio env."""
-    with (
-        patch.dict(os.environ, {"SUPERVISOR": "127.0.0.1"}),
-        patch.dict(os.environ, {"SUPERVISOR_TOKEN": "123456"}),
-    ):
-        yield
 
 
 @pytest.fixture(autouse=True)
@@ -236,79 +223,6 @@ async def test_ip_ban_manager_never_started(
     resp = await client.get("/")
     assert resp.status == HTTPStatus.NOT_FOUND
     assert "IP Ban middleware loaded but banned IPs not loaded" in caplog.text
-
-
-@pytest.mark.parametrize(
-    ("remote_addr", "bans", "status"),
-    list(
-        zip(
-            BANNED_IPS_WITH_SUPERVISOR,
-            [1, 1, 0],
-            [HTTPStatus.FORBIDDEN, HTTPStatus.FORBIDDEN, HTTPStatus.UNAUTHORIZED],
-            strict=False,
-        )
-    ),
-)
-@pytest.mark.usefixtures(
-    "hassio_env",
-    "resolution_info",
-    "os_info",
-    "store_info",
-    "supervisor_info",
-    "supervisor_root_info",
-    "homeassistant_info",
-    "host_info",
-    "network_info",
-    "addons_list",
-    "addon_info",
-    "homeassistant_stats",
-    "supervisor_stats",
-    "ingress_panels",
-)
-async def test_access_from_supervisor_ip(
-    remote_addr,
-    bans,
-    status,
-    hass: HomeAssistant,
-    aiohttp_client: ClientSessionGenerator,
-) -> None:
-    """Test accessing to server from supervisor IP."""
-    app = web.Application()
-    app[KEY_HASS] = hass
-
-    async def unauth_handler(request):
-        """Return a mock web response."""
-        raise HTTPUnauthorized
-
-    app.router.add_get("/", unauth_handler)
-    setup_bans(hass, app, 1)
-    mock_real_ip(app)(remote_addr)
-
-    with patch(
-        "homeassistant.components.http.ban.load_yaml_config_file",
-        return_value={},
-    ):
-        client = await aiohttp_client(app)
-
-    manager = app[KEY_BAN_MANAGER]
-
-    assert await async_setup_component(hass, "hassio", {"hassio": {}})
-
-    m_open = mock_open()
-
-    with (
-        patch.dict(os.environ, {"SUPERVISOR": SUPERVISOR_IP}),
-        patch("homeassistant.components.http.ban.open", m_open, create=True),
-    ):
-        resp = await client.get("/")
-        assert resp.status == HTTPStatus.UNAUTHORIZED
-        assert len(manager.ip_bans_lookup) == bans
-        assert m_open.call_count == bans
-
-        # second request should be forbidden if banned
-        resp = await client.get("/")
-        assert resp.status == status
-        assert len(manager.ip_bans_lookup) == bans
 
 
 async def test_ban_middleware_not_loaded_by_config(hass: HomeAssistant) -> None:

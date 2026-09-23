@@ -9,57 +9,35 @@ from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 import pytest
 
-from homeassistant.components.mjpeg import (
-    CONF_MJPEG_URL,
-    CONF_STILL_IMAGE_URL,
-    DOMAIN as MJPEG_DOMAIN,
-)
-from homeassistant.const import (
-    CONF_AUTHENTICATION,
-    CONF_PASSWORD,
-    CONF_USERNAME,
-    CONF_VERIFY_SSL,
-    EVENT_HOMEASSISTANT_CLOSE,
-    HTTP_BASIC_AUTHENTICATION,
-)
+from homeassistant.const import EVENT_HOMEASSISTANT_CLOSE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import aiohttp_client as client
 from homeassistant.util import ssl as ssl_util
 from homeassistant.util.color import RGBColor
 from homeassistant.util.ssl import SSLCipherList
 
-from tests.common import (
-    MockConfigEntry,
-    MockModule,
-    extract_stack_to_frame,
-    mock_integration,
-)
+from tests.common import MockModule, extract_stack_to_frame, mock_integration
 from tests.test_util.aiohttp import AiohttpClientMocker
 from tests.typing import ClientSessionGenerator
 
 
 @pytest.fixture(name="camera_client")
 async def camera_client_fixture(
-    hass: HomeAssistant, hass_client: ClientSessionGenerator
+    hass: HomeAssistant,
+    aiohttp_client: ClientSessionGenerator,
+    socket_enabled: None,
 ) -> TestClient:
-    """Fixture to fetch camera streams."""
-    mock_config_entry = MockConfigEntry(
-        title="MJPEG Camera",
-        domain=MJPEG_DOMAIN,
-        options={
-            CONF_AUTHENTICATION: HTTP_BASIC_AUTHENTICATION,
-            CONF_MJPEG_URL: "http://example.com/mjpeg_stream",
-            CONF_PASSWORD: None,
-            CONF_STILL_IMAGE_URL: None,
-            CONF_USERNAME: None,
-            CONF_VERIFY_SSL: True,
-        },
-    )
-    mock_config_entry.add_to_hass(hass)
-    await hass.config_entries.async_setup(mock_config_entry.entry_id)
-    await hass.async_block_till_done()
+    """Fixture to fetch a stream proxied the way camera streams are."""
 
-    return await hass_client()
+    async def proxy_stream(request: web.Request) -> web.StreamResponse | None:
+        session = client.async_get_clientsession(hass)
+        return await client.async_aiohttp_proxy_web(
+            hass, request, session.get("http://example.com/mjpeg_stream")
+        )
+
+    app = web.Application()
+    app.router.add_get("/api/camera_proxy_stream/camera.mjpeg_camera", proxy_stream)
+    return await aiohttp_client(app)
 
 
 async def test_get_clientsession_with_ssl(hass: HomeAssistant) -> None:

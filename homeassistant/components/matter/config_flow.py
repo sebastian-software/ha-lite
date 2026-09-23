@@ -85,7 +85,8 @@ class MatterConfigFlow(ConfigFlow, domain=DOMAIN):
         self, discovery_info: ZeroconfServiceInfo
     ) -> ConfigFlowResult:
         """Handle zeroconf discovery."""
-        return await self._async_step_discovery_without_unique_id()
+        await self._async_handle_discovery_without_unique_id()
+        return await self.async_step_user()
 
     async def _async_create_entry_or_abort(self) -> ConfigFlowResult:
         """Return a config entry for the flow or abort if already configured."""

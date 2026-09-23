@@ -56,6 +56,15 @@ report exists to force the question, not to answer it.
 The report immediately surfaced a finding larger than the Template case, which
 ADR 0012 decides.
 
+Wave 4 worked the list before deleting. It named 29 providers; one became a
+root, and the other 28 went, each for a stated reason — backup storage agents
+because backup semantics belong to the persistence contract, the `calendar`,
+`geo_location`, `remote` and `todo` vocabularies because no retained
+integration implements those domains, hub and device triggers with their
+integration. `retained-closure.md` records the table. With the tree equal to
+the closure, the list is empty until something outside the closure appears,
+and that is a finding of its own.
+
 Because the mechanism is invisible to static analysis, a provider only
 contributes its platform once its integration has actually been set up.
 A component that ships `trigger.py` but is never set up contributes nothing.

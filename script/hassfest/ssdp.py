@@ -20,7 +20,9 @@ def generate_and_validate(integrations: dict[str, Integration]) -> str:
         for matcher in ssdp:
             data[domain].append(matcher)
 
-    return format_python_namespace({"SSDP": data})
+    return format_python_namespace(
+        {"SSDP": data}, annotations={"SSDP": "Final[dict[str, list[dict[str, str]]]]"}
+    )
 
 
 def validate(integrations: dict[str, Integration], config: Config) -> None:

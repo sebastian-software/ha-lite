@@ -103,3 +103,24 @@ def expose_new(hass: HomeAssistant, expose_new: bool) -> None:
 def expose_entity(hass: HomeAssistant, entity_id: str, should_expose: bool) -> None:
     """Expose an entity to the default agent."""
     async_expose_entity(hass, conversation.DOMAIN, entity_id, should_expose)
+
+
+class SpeechIntentHandler(intent.IntentHandler):
+    """Answer an intent with fixed speech, as a user's intent_script would."""
+
+    def __init__(self, intent_type: str, speech: str) -> None:
+        """Initialize the handler."""
+        self.intent_type = intent_type
+        self._speech = speech
+
+    async def async_handle(self, intent_obj: intent.Intent) -> intent.IntentResponse:
+        """Return the speech."""
+        response = intent_obj.create_response()
+        response.async_set_speech(self._speech)
+        return response
+
+
+def register_speech_intents(hass: HomeAssistant, speeches: dict[str, str]) -> None:
+    """Register a SpeechIntentHandler for each intent type."""
+    for intent_type, speech in speeches.items():
+        intent.async_register(hass, SpeechIntentHandler(intent_type, speech))
