@@ -47,7 +47,7 @@ Records are written in English, like everything else in the repository
 | [0001](0001-headless-device-core.md) | Define ha-lite as a headless device core | Accepted |
 | [0002](0002-externalize-automation.md) | Keep automation and decision making outside the core | Accepted |
 | [0003](0003-reduction-over-compatibility.md) | Prefer explicit reduction over maximum upstream compatibility | Accepted |
-| [0004](0004-persistence-direction.md) | Converge toward simple SQLite-backed persistence | Proposed |
+| [0004](0004-persistence-direction.md) | Converge toward simple SQLite-backed persistence | Superseded by 0018 |
 | [0005](0005-preserve-runtime-scheduling.md) | Distinguish runtime scheduling from user automation | Accepted |
 | [0006](0006-integration-compatibility-boundary.md) | Preserve Home Assistant integration contracts before replacing them | Accepted |
 | [0007](0007-headless-bootstrap.md) | Make bootstrap headless rather than merely disabling frontend | Accepted |
@@ -61,6 +61,7 @@ Records are written in English, like everything else in the repository
 | [0015](0015-repository-conventions.md) | Follow the Sebastian Software repository conventions | Accepted |
 | [0016](0016-headless-first-run-and-recovery.md) | Initialize, recover and administer ha-lite without a browser | Accepted |
 | [0017](0017-oauth-lifecycle-anchor.md) | Keep one OAuth integration as the anchor for authorization | Accepted |
+| [0018](0018-persistence-contract.md) | Persist configuration and identity in versioned stores, keep no history | Accepted |
 
 ## How these relate to the rest of the documentation
 

@@ -13,9 +13,6 @@ PyQRCode==1.2.1
 # homeassistant.components.stream
 PyTurboJPEG==1.8.3
 
-# homeassistant.components.recorder
-SQLAlchemy==2.0.52
-
 # homeassistant.components.dhcp
 aiodhcpwatcher==1.2.7
 
@@ -67,9 +64,6 @@ colorlog==6.10.1
 # homeassistant.components.bluetooth
 dbus-fast==5.0.22
 
-# homeassistant.components.recorder
-fnv-hash-fast==2.0.3
-
 # homeassistant.components.fronius
 fronius-modbus==0.2.0
 
@@ -111,9 +105,6 @@ numpy==2.3.2
 
 # homeassistant.components.mqtt
 paho-mqtt==2.1.0
-
-# homeassistant.components.recorder
-psutil-home-assistant==0.0.1
 
 # homeassistant.components.miele
 pymiele==0.6.2

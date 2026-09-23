@@ -1,6 +1,10 @@
 # ADR 0004: Converge toward simple SQLite-backed persistence
 
-- Status: Proposed
+- Status: Superseded by 0018
+
+ADR 0018 answers the open questions below from the reduced tree: the
+persistence contract is the versioned JSON stores, Recorder is removed, and
+SQLite is not introduced.
 
 ## Context
 

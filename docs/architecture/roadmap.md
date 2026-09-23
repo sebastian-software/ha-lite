@@ -17,7 +17,7 @@ what is still to do.
 | 2 | Automation and Script | — | Done |
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
 | 4 | Explicit retained integration closure | [#17] | Done |
-| 5 | Persistence, configuration and runtime composition | [#18] | 1 of 3 blocks done |
+| 5 | Persistence, configuration and runtime composition | [#18] | 2 of 3 blocks done |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -119,7 +119,7 @@ because removing onboarding in #22 needed its replacement.
 
 | Block | Issue | Status |
 |---|---|---|
-| Minimal persistence contract; retire Recorder product semantics | [#28] | Open. ADR 0004 is still `Proposed` |
+| Minimal persistence contract; retire Recorder product semantics | [#28] | Done — Recorder removed; ADR 0018 supersedes ADR 0004 |
 | Configuration, YAML loading and dependency installation | [#29] | Open |
 | Headless bootstrap, recovery and administrative control | [#30] | Done — `hass --script owner`, recovery as an API path; ADR 0016 |
 

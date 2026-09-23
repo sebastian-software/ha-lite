@@ -85,7 +85,6 @@ homeassistant.components.notify.*
 homeassistant.components.number.*
 homeassistant.components.persistent_notification.*
 homeassistant.components.person.*
-homeassistant.components.recorder.*
 homeassistant.components.recovery_mode.*
 homeassistant.components.repairs.*
 homeassistant.components.scene.*

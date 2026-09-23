@@ -38,7 +38,6 @@ from homeassistant.exceptions import HomeAssistantError, Unauthorized, UnknownUs
 from homeassistant.helpers import (
     config_validation as cv,
     issue_registry as ir,
-    recorder,
     restore_state,
 )
 from homeassistant.helpers.entity_component import async_update_entity
@@ -93,7 +92,6 @@ SCHEMA_RELOAD_CONFIG_ENTRY = vol.All(
 )
 SCHEMA_RESTART = vol.Schema({vol.Optional(ATTR_SAFE_MODE, default=False): bool})
 
-SHUTDOWN_SERVICES = (SERVICE_HOMEASSISTANT_STOP, SERVICE_HOMEASSISTANT_RESTART)
 
 DEPRECATION_URL = (
     "https://www.home-assistant.io/blog/2025/05/22/"
@@ -195,18 +193,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:  # noqa:
     async def async_handle_core_service(call: ServiceCall) -> None:
         """Service handler for handling core services."""
         stop_handler: Callable[[HomeAssistant, bool], Coroutine[Any, Any, None]]
-
-        if call.service in SHUTDOWN_SERVICES and recorder.async_migration_in_progress(
-            hass
-        ):
-            _LOGGER.error(
-                "The system cannot %s while a database upgrade is in progress",
-                call.service,
-            )
-            raise HomeAssistantError(
-                f"The system cannot {call.service} "
-                "while a database upgrade is in progress."
-            )
 
         if call.service == SERVICE_HOMEASSISTANT_STOP:
             stop_handler = hass.data[DATA_STOP_HANDLER]

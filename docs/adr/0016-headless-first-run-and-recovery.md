@@ -54,8 +54,8 @@ the line. `sun` is retained but added through its config flow.
 
 `default_config`, `analytics`, `labs`, `brands`, `hardware`, `file_upload`,
 `my`, `map_tiles` and `search` are removed. `backup` is no longer a default or
-a recovery-mode member; what backup means for ha-lite is part of the
-persistence contract (#28).
+a recovery-mode member; ADR 0018 makes backup a copy of the configuration
+directory.
 
 An existing configuration that still says `default_config:` gets an
 "integration not found" error for that key and nothing else. Replacing it with

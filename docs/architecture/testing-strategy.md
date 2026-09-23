@@ -25,6 +25,7 @@ These tests protect lifecycle and integration-host behavior:
 - `tests/test_config_entries.py`
 - `tests/test_loader.py`
 - `tests/test_setup.py`
+- `tests/helpers/test_condition.py`
 - `tests/helpers/test_device_registry.py`
 - `tests/helpers/test_entity_registry.py`
 - `tests/helpers/test_storage.py`

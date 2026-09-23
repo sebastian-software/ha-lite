@@ -42,14 +42,12 @@ from .components import (
     diagnostics as diagnostics_pre_import,  # noqa: F401
     http as http_import,  # noqa: F401 - not named pre_import since it has requirements
     person as person_pre_import,  # noqa: F401
-    recorder as recorder_import,  # noqa: F401 - not named pre_import since it has requirements
     repairs as repairs_pre_import,  # noqa: F401
     sensor as sensor_pre_import,  # noqa: F401
     system_log as system_log_pre_import,  # noqa: F401
     webhook as webhook_pre_import,  # noqa: F401
     websocket_api as websocket_api_pre_import,  # noqa: F401
 )
-from .components.sensor import recorder as sensor_recorder  # noqa: F401
 from .const import (
     BASE_PLATFORMS,
     FORMAT_DATETIME,
@@ -71,7 +69,6 @@ from .helpers import (
     frame,
     issue_registry,
     label_registry,
-    recorder,
     restore_state,
     template,
     translation,
@@ -154,17 +151,11 @@ LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
 }
 # Stage 0 is divided into substages. Each substage has a name,
 # a set of integrations and a timeout.
-# The substage containing recorder should have no timeout, as it
-# could cancel a database migration.
-# Recorder freezes "recorder" timeout during a migration, but it
-# does not freeze other timeouts.
 # If we add timeouts to the frontend substages, we should make sure
 # they don't apply in recovery mode.
 STAGE_0_INTEGRATIONS = (
     # Load logging and http deps as soon as possible
     ("logging, http deps", LOGGING_AND_HTTP_DEPS_INTEGRATIONS, None),
-    # Setup recorder
-    ("recorder", {"recorder"}, None),
     # Zeroconf is used for mdns resolution in aiohttp client helper.
     ("zeroconf", {"zeroconf"}, STAGE_0_SUBSTAGE_TIMEOUT),
 )
@@ -863,10 +854,6 @@ async def _async_set_up_integrations(
     )
 
     async_set_domains_to_be_loaded(hass, all_domains)
-
-    # Initialize recorder
-    if "recorder" in all_domains:
-        recorder.async_initialize_recorder(hass)
 
     stages: list[tuple[str, set[str], int | None]] = [
         *(

@@ -60,7 +60,6 @@
     "persistent_notification",
     "person",
     "power",
-    "recorder",
     "recovery_mode",
     "repairs",
     "scene",
@@ -182,7 +181,6 @@
     "device_automation",
     "intent",
     "llm",
-    "recorder",
     "stream",
     "web_rtc",
     "zone"
@@ -203,11 +201,6 @@
       "source": "climate",
       "kind": "import_runtime",
       "via": "homeassistant/components/climate/llm.py"
-    },
-    "recorder": {
-      "source": "kitchen_sink",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/kitchen_sink/__init__.py"
     },
     "stream": {
       "source": "camera",
