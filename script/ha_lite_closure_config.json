@@ -29,6 +29,16 @@
     "lock tests. Their platforms for domains ha-lite does not retain are",
     "pruned, so they add nothing to the closure but themselves.",
     "",
+    "Every component in the tree outside the closure is the catalog: upstream",
+    "integrations kept as they are. They are not roots, so the closure does not",
+    "grow with them, and CI runs their suites in the catalog job.",
+    "",
+    "'excluded' lists the product layers ha-lite removed on purpose, grouped by",
+    "what they served. One of them appearing in the tree again is a finding.",
+    "The reasons are in docs/architecture/scope-matrix.md. An integration that",
+    "still imports one of them is kept out of the catalog by the dangling-import",
+    "finding until it is decoupled.",
+    "",
     "'accepted_transitive' records every domain the closure pulls in that is not",
     "itself a root, with a reviewed reason. A domain reaching the closure without",
     "an entry here fails the check, so new coupling from retained code into an",
@@ -56,6 +66,7 @@
       "alarm_control_panel",
       "binary_sensor",
       "button",
+      "calendar",
       "camera",
       "climate",
       "cover",
@@ -64,8 +75,10 @@
       "device_tracker",
       "event",
       "fan",
+      "geo_location",
       "humidifier",
       "image",
+      "image_processing",
       "infrared",
       "lawn_mower",
       "light",
@@ -73,6 +86,8 @@
       "media_player",
       "notify",
       "number",
+      "radio_frequency",
+      "remote",
       "scene",
       "select",
       "sensor",
@@ -81,6 +96,7 @@
       "tag",
       "text",
       "time",
+      "todo",
       "update",
       "vacuum",
       "valve",
@@ -167,6 +183,11 @@
       "reason": "LLM API substrate behind mcp_server; entity domains expose themselves to it through llm.py.",
       "issue": null
     },
+    "manual": {
+      "status": "retained",
+      "reason": "demo's alarm_control_panel platform builds on the manual alarm panel entity.",
+      "issue": null
+    },
     "media_source": {
       "status": "retained",
       "reason": "Media browsing and resolution for camera, image and media player entities; camera/media_source.py and image/media_source.py import it at module level.",
@@ -187,5 +208,53 @@
       "reason": "Declared dependency in device_tracker/manifest.json, and imported from device_tracker/entity.py and legacy.py. Not an adapter: it cannot leave while device_tracker stays.",
       "issue": null
     }
+  },
+  "excluded": {
+    "presentation": [
+      "brands",
+      "default_config",
+      "file_upload",
+      "frontend",
+      "hardware",
+      "image_upload",
+      "lovelace",
+      "map_tiles",
+      "my",
+      "onboarding",
+      "search"
+    ],
+    "automation": [
+      "automation",
+      "blueprint",
+      "counter",
+      "input_boolean",
+      "input_button",
+      "input_datetime",
+      "input_number",
+      "input_select",
+      "input_text",
+      "schedule",
+      "script",
+      "template",
+      "timer"
+    ],
+    "history": ["energy", "history", "logbook", "recorder"],
+    "voice_and_ai": [
+      "ai_task",
+      "assist_pipeline",
+      "assist_satellite",
+      "stt",
+      "tts",
+      "wake_word"
+    ],
+    "cloud_and_platform": [
+      "alexa",
+      "analytics",
+      "backup",
+      "cloud",
+      "google_assistant",
+      "hassio",
+      "labs"
+    ]
   }
 }

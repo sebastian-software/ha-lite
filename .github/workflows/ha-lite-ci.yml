@@ -192,6 +192,7 @@ jobs:
           - alarm_control_panel
           - binary_sensor
           - button
+          - calendar
           - camera
           - climate
           - cover
@@ -200,8 +201,10 @@ jobs:
           - device_tracker
           - event
           - fan
+          - geo_location
           - humidifier
           - image
+          - image_processing
           - infrared
           - lawn_mower
           - light
@@ -209,6 +212,8 @@ jobs:
           - media_player
           - notify
           - number
+          - radio_frequency
+          - remote
           - scene
           - select
           - sensor
@@ -217,6 +222,7 @@ jobs:
           - tag
           - text
           - time
+          - todo
           - update
           - vacuum
           - valve
@@ -411,6 +417,48 @@ jobs:
             -p no:sugar \
             "tests/components/${{ matrix.integration }}"
 
+  catalog:
+    name: "Catalog: shard ${{ matrix.shard }}/10"
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/restore-or-build-venv
+        with:
+          python-version: ${{ needs.prepare.outputs.python-version }}
+          uv-version: ${{ needs.prepare.outputs.uv-version }}
+          python-cache-key: ${{ needs.prepare.outputs.cache-key }}
+          uv-cache-dir: ${{ env.UV_CACHE_DIR }}
+          apt-cache-version: ${{ env.APT_CACHE_VERSION }}
+      - name: Install system dependencies
+        uses: ./.github/actions/cache-apt-packages
+        with:
+          packages: ffmpeg libturbojpeg
+          version: ${{ env.APT_CACHE_VERSION }}
+      - name: Compile English translations
+        run: |
+          . venv/bin/activate
+          python -m script.translations develop --all
+      - name: Run catalog tests
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          . venv/bin/activate
+          mapfile -t suites < <(python -m script.ha_lite_catalog_shard "${SHARD}" 10)
+          python -b -X dev -m pytest -q \
+            -n auto \
+            --timeout=60 \
+            --durations=20 \
+            -p no:sugar \
+            "${suites[@]}"
+
   static-sanity:
     name: Static sanity
     needs: prepare
@@ -446,6 +494,7 @@ jobs:
         run: |
           . venv/bin/activate
           python -m pytest -q -p no:sugar \
+            tests/script/test_ha_lite_catalog_shard.py \
             tests/script/test_ha_lite_closure.py \
             tests/script/test_ha_lite_trigger_targets.py
 
