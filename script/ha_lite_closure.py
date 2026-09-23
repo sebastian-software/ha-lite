@@ -58,6 +58,7 @@ CORE = "<core>"
 
 # Only these grow the closure; every other kind is soft. See the module docstring.
 HARD_KINDS = ("dependencies", "import_runtime")
+MANIFEST_KINDS = ("dependencies", "after_dependencies")
 
 
 class Edge:
@@ -343,15 +344,16 @@ def analyze() -> dict:
 
     # Code naming a component the tree does not have. The walk cannot see
     # these, because it only follows edges into domains that exist, and a
-    # deferred one only fails when the function runs. An ordering hint on a
-    # missing domain is ignored by the loader, so it is not counted.
+    # deferred one only fails when the function runs. A manifest naming a
+    # missing domain fails setup even as an after dependency: with pip allowed,
+    # the requirements manager resolves those too. A compat module answers an
+    # import, but it is no integration a manifest can name.
     dangling: list[Edge] = sorted(
         (
             edge
             for edge in edges
-            if edge.kind != "after_dependencies"
-            and edge.target not in domains
-            and edge.target not in compat
+            if edge.target not in domains
+            and (edge.kind in MANIFEST_KINDS or edge.target not in compat)
         ),
         key=lambda edge: (edge.target, edge.via),
     )
@@ -548,8 +550,8 @@ def print_report(result: dict) -> None:
         )
     for edge in result["dangling"]:
         print(
-            f"- **dangling**: `{edge.via}` imports `{edge.target}` ({edge.kind}), "
-            "which is not in the tree. Decouple the import, or leave its "
+            f"- **dangling**: `{edge.via}` names `{edge.target}` ({edge.kind}), "
+            "which is not an integration in the tree. Decouple it, or leave its "
             "component out of the tree."
         )
 
