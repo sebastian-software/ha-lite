@@ -1,6 +1,6 @@
 {
   "domain": "leviton",
   "name": "Leviton",
-  "integrations": [],
+  "integrations": ["decora_wifi"],
   "iot_standards": ["zwave"]
 }
