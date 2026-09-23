@@ -46,6 +46,7 @@ This table describes the architectural target. **Removed** means physically abse
 | MCP server | **Keep** | First-class agent-control surface; protected by protocol-level CI |
 | Conversation / intent / LLM substrate | **Keep / reduce** | Retain the subset required by MCP, not the voice product |
 | Representative integrations (Shelly, MQTT, Matter, Hue, Fronius, Modbus) | **Keep** | Compatibility anchors while reducing the runtime |
+| Miele | **Keep** | OAuth anchor: application credentials, authorization and reauth against a real integration (ADR 0017) |
 | Entity-domain substrate, device-class trigger vocabulary | **Keep** | What the retained integrations implement, and the named triggers/conditions over it (ADR 0012) |
 | Scenes, `person`, `group`, `zone`, `sun` | **Keep** | Device-stored state, aggregation over retained entities and solar position; none of it decides anything (ADR 0002) |
 | Frontend, Lovelace, panel registration, browser launch | **Removed — Wave 1** | Backend boots and operates with the packages physically absent |
@@ -74,7 +75,7 @@ A useful measurement needs to distinguish **Home Assistant Core source** from th
 
 "Before Wave 1" is the upstream 2026.9.3 tree immediately before the frontend and Lovelace deletion. "Current" is this checkout; the [roadmap](docs/architecture/roadmap.md#size-checkpoints) keeps the intermediate checkpoints.
 
-Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 87 of the 1,470 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
+Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 88 of the 1,470 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
 
 For that reason the final reduction percentage is intentionally **not predicted yet**. Every wave updates the measured checkpoint instead, so the README can eventually say exactly how much production code, tests, components and dependencies were removed.
 

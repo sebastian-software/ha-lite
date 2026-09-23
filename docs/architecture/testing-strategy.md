@@ -79,6 +79,7 @@ The complete test directories for these integrations are required:
 - Hue
 - Fronius
 - Modbus
+- Miele, the OAuth lifecycle anchor (ADR 0017)
 
 The whole integration directory is tested rather than a hand-picked test subset. This protects config flows, migrations, entity behavior, diagnostics, lifecycle, discovery, failures and edge cases already learned by Home Assistant.
 

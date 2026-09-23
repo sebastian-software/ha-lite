@@ -149,7 +149,7 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 | Category | Count |
 |---|---|
 | Entity-domain substrate | 32 |
-| Retained integrations | 6 |
+| Retained integrations | 7 |
 | Runtime infrastructure | 23 |
 | Device-class semantics | 15 |
 | Aggregation | 2 |
@@ -175,15 +175,15 @@ build failure rather than a discovery made months later.
 | Metric | Count |
 |---|---|
 | Component domains in tree | 1,470 |
-| Declared roots | 79 |
-| Retained closure | 87 |
-| Deletion candidates | 1,383 |
+| Declared roots | 80 |
+| Retained closure | 88 |
+| Deletion candidates | 1,382 |
 
 Of the 8 transitively required domains, 6 are `retained`, 1 is an `adapter` and 1 is `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 6% of the tree. The 1,383 candidates outside it are
+The closure is small — 6% of the tree. The 1,382 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 

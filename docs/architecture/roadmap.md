@@ -16,7 +16,7 @@ what is still to do.
 | 1 | Frontend, Lovelace and browser-product bootstrap | — | Done |
 | 2 | Automation and Script | — | Done |
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
-| 4 | Explicit retained integration closure | [#17] | 2 of 4 blocks done |
+| 4 | Explicit retained integration closure | [#17] | 3 of 4 blocks done |
 | 5 | Persistence, configuration and runtime composition | [#18] | 1 of 3 blocks done |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
@@ -70,7 +70,7 @@ closed.
 **Entry:** the closure is authoritative and gated in CI ([#24], done). Bulk
 deletion additionally waits for the retained integrations to be decoupled from
 product conveniences ([#25], done) and for an OAuth/reauth lifecycle to be
-protected in CI ([#26]).
+protected in CI ([#26], done).
 
 **Exit:**
 
@@ -88,8 +88,8 @@ protected in CI ([#26]).
 |---|---|---|
 | Generate the authoritative retained closure | [#24] | Done — `script/ha_lite_closure.py`, [retained-closure.md](retained-closure.md) |
 | Decouple retained integrations from product conveniences (MQTT, Matter, `usb`) | [#25] | Done — `hassio` and `backup` left the closure |
-| OAuth/cloud integration lifecycle anchor in CI | [#26] | Open |
-| Physically remove the unselected integrations | [#27] | Open; blocked by #26 |
+| OAuth/cloud integration lifecycle anchor in CI | [#26] | Done — Miele; ADR 0017 |
+| Physically remove the unselected integrations | [#27] | Open; no longer blocked |
 
 Found on the way, for #27 to settle: `demo` is outside the closure, but about
 twenty retained test suites use it — as a stand-in domain in config-entry
