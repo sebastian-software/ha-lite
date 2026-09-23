@@ -448,6 +448,8 @@ async def test_todo_add_item_fr(
 ) -> None:
     """Test that wildcard matches prioritize results with more literal text matched."""
     assert await async_setup_component(hass, todo.DOMAIN, {})
+    # The intent platform that registers the handler loads in the background.
+    await hass.async_block_till_done()
     hass.states.async_set("todo.liste_des_courses", 0, {})
 
     with (
