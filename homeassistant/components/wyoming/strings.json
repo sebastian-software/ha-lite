@@ -27,7 +27,7 @@
   "entity": {
     "binary_sensor": {
       "assist_in_progress": {
-        "name": "[%key:component::assist_pipeline::entity::binary_sensor::assist_in_progress::name%]"
+        "name": "Assist in progress"
       }
     },
     "number": {
@@ -50,23 +50,23 @@
         }
       },
       "pipeline": {
-        "name": "[%key:component::assist_pipeline::entity::select::pipeline::name%]",
+        "name": "Assistant",
         "state": {
-          "preferred": "[%key:component::assist_pipeline::entity::select::pipeline::state::preferred%]"
+          "preferred": "Preferred"
         }
       },
       "pipeline_n": {
-        "name": "[%key:component::assist_pipeline::entity::select::pipeline_n::name%]",
+        "name": "Assistant {index}",
         "state": {
-          "preferred": "[%key:component::assist_pipeline::entity::select::pipeline::state::preferred%]"
+          "preferred": "Preferred"
         }
       },
       "vad_sensitivity": {
-        "name": "[%key:component::assist_pipeline::entity::select::vad_sensitivity::name%]",
+        "name": "Finished speaking detection",
         "state": {
-          "aggressive": "[%key:component::assist_pipeline::entity::select::vad_sensitivity::state::aggressive%]",
-          "default": "[%key:component::assist_pipeline::entity::select::vad_sensitivity::state::default%]",
-          "relaxed": "[%key:component::assist_pipeline::entity::select::vad_sensitivity::state::relaxed%]"
+          "aggressive": "Aggressive",
+          "default": "Default",
+          "relaxed": "Relaxed"
         }
       }
     },
