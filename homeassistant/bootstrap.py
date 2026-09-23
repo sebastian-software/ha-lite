@@ -141,6 +141,9 @@ CORE_INTEGRATIONS = {"homeassistant", "persistent_notification"}
 
 # Integrations that are loaded right after the core is set up
 LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
+    # isal is loaded right away before `http` to ensure if its
+    # enabled, that `isal` is up to date.
+    "isal",
     # Set log levels
     "logger",
     # Ensure network config is available before any integration is

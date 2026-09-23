@@ -7,6 +7,7 @@
 # --- Only for core file! ---
 homeassistant.auth.auth_store
 homeassistant.auth.providers.*
+homeassistant.components.isal.*
 homeassistant.core
 homeassistant.exceptions
 homeassistant.helpers.area_registry

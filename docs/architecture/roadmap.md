@@ -92,7 +92,7 @@ finding.
 | Generate the authoritative retained closure | [#24] | Done — `script/ha_lite_closure.py`, [retained-closure.md](retained-closure.md) |
 | Decouple retained integrations from product conveniences (MQTT, Matter, `usb`) | [#25] | Done — `hassio` and `backup` left the closure |
 | OAuth/cloud integration lifecycle anchor in CI | [#26] | Done — Miele; ADR 0017 |
-| Physically remove the unselected integrations | [#27] | Done — 1,380 components deleted; capability-at-risk list and HomeKit controller settled in [retained-closure.md](retained-closure.md#wave-4) |
+| Physically remove the unselected integrations | [#27] | Done — 1,379 components deleted; capability-at-risk list and HomeKit controller settled in [retained-closure.md](retained-closure.md#wave-4) |
 
 Found on the way: `demo` was outside the closure, but about twenty retained
 test suites use it — as a stand-in domain in config-entry tests, and as the
@@ -142,7 +142,7 @@ checkpoint. The README carries the current numbers.
 | During Wave 3 (after #19, #20, #21, #24) | 27,023 | 9,844 files / 49.63 MB | 8,094 files / 64.12 MB | 1,465 |
 | After #23 (voice, media browser, AI tasks) | 26,894 | 9,792 files / 49.26 MB | 8,047 files / 63.58 MB | 1,458 |
 | After Wave 3 (#22, #25, #30) | 26,824 | 9,764 files / 49.09 MB | 8,021 files / 63.20 MB | 1,448 |
-| After Wave 4 (#26, #27) | 3,198 | 978 files / 8.75 MB | 1,092 files / 17.31 MB | 90 |
+| After Wave 4 (#26, #27) | 3,202 | 979 files / 8.75 MB | 1,094 files / 17.31 MB | 91 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot
