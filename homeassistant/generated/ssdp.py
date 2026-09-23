@@ -337,6 +337,11 @@ SSDP: Final[dict[str, list[dict[str, str]]]] = {
             "st": "urn:schemas-sony-com:service:ScalarWebAPI:1",
         },
     ],
+    "sonos": [
+        {
+            "st": "urn:schemas-upnp-org:device:ZonePlayer:1",
+        },
+    ],
     "syncthru": [
         {
             "deviceType": "urn:schemas-upnp-org:device:Printer:1",
@@ -373,6 +378,12 @@ SSDP: Final[dict[str, list[dict[str, str]]]] = {
         },
         {
             "nt": "urn:schemas-upnp-org:device:InternetGatewayDevice:2",
+        },
+    ],
+    "victron_gx": [
+        {
+            "X_MqttOnLan": "1",
+            "manufacturer": "Victron Energy",
         },
     ],
     "webostv": [

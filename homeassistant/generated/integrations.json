@@ -160,11 +160,22 @@
       "config_flow": true,
       "iot_class": "local_push"
     },
-    "airvisual_pro": {
-      "name": "AirVisual Pro",
-      "integration_type": "device",
-      "config_flow": true,
-      "iot_class": "local_polling"
+    "airvisual": {
+      "name": "AirVisual",
+      "integrations": {
+        "airvisual": {
+          "integration_type": "service",
+          "config_flow": true,
+          "iot_class": "cloud_polling",
+          "name": "AirVisual Cloud"
+        },
+        "airvisual_pro": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_polling",
+          "name": "AirVisual Pro"
+        }
+      }
     },
     "airzone": {
       "name": "Airzone",
@@ -366,6 +377,11 @@
           "config_flow": true,
           "iot_class": "local_push",
           "name": "Apple TV"
+        },
+        "homekit_controller": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_push"
         },
         "ibeacon": {
           "integration_type": "hub",
@@ -569,16 +585,16 @@
       "config_flow": true,
       "iot_class": "cloud_polling"
     },
-    "avea": {
-      "name": "Elgato Avea",
-      "integration_type": "device",
-      "config_flow": true,
-      "iot_class": "local_polling"
-    },
     "avosdim": {
       "name": "Avosdim",
       "integration_type": "virtual",
       "supported_by": "motion_blinds"
+    },
+    "awair": {
+      "name": "Awair",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_polling"
     },
     "axis": {
       "name": "Axis",
@@ -608,6 +624,11 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_push"
+    },
+    "bauknecht": {
+      "name": "Bauknecht",
+      "integration_type": "virtual",
+      "supported_by": "whirlpool"
     },
     "bbox": {
       "name": "Bbox",
@@ -811,6 +832,12 @@
       "integration_type": "hub",
       "config_flow": false,
       "iot_class": "local_polling"
+    },
+    "bthome": {
+      "name": "BTHome",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_push"
     },
     "bugu": {
       "name": "Bugu",
@@ -1428,6 +1455,11 @@
       "config_flow": true,
       "iot_class": "local_push"
     },
+    "eastron": {
+      "name": "Eastron",
+      "integration_type": "virtual",
+      "supported_by": "homewizard"
+    },
     "easyenergy": {
       "name": "easyEnergy",
       "integration_type": "service",
@@ -1544,6 +1576,29 @@
       "config_flow": true,
       "iot_class": "cloud_polling"
     },
+    "elgato": {
+      "name": "Elgato",
+      "integrations": {
+        "avea": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_polling",
+          "name": "Elgato Avea"
+        },
+        "elgato": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_polling",
+          "name": "Elgato Light"
+        }
+      }
+    },
+    "elkm1": {
+      "name": "Elk-M1 Control",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_push"
+    },
     "elmax": {
       "name": "Elmax",
       "integration_type": "hub",
@@ -1590,6 +1645,12 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_polling"
+    },
+    "emulated_hue": {
+      "name": "Emulated Hue",
+      "integration_type": "hub",
+      "config_flow": false,
+      "iot_class": "local_push"
     },
     "emulated_kasa": {
       "name": "Emulated Kasa",
@@ -2446,6 +2507,12 @@
           "iot_class": "cloud_push",
           "name": "Google Nest"
         },
+        "cast": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "local_polling",
+          "name": "Google Cast"
+        },
         "dialogflow": {
           "integration_type": "hub",
           "config_flow": true,
@@ -2757,6 +2824,12 @@
       "config_flow": true,
       "iot_class": "local_polling"
     },
+    "homewizard": {
+      "name": "HomeWizard",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_polling"
+    },
     "honeywell": {
       "name": "Honeywell",
       "integrations": {
@@ -2951,6 +3024,12 @@
     "ikea": {
       "name": "IKEA",
       "integrations": {
+        "symfonisk": {
+          "integration_type": "virtual",
+          "config_flow": false,
+          "supported_by": "sonos",
+          "name": "IKEA SYMFONISK"
+        },
         "tradfri": {
           "integration_type": "hub",
           "config_flow": true,
@@ -3209,6 +3288,12 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "cloud_polling"
+    },
+    "jvc_projector": {
+      "name": "JVC Projector",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_polling"
     },
     "kaiser_nienhaus": {
       "name": "Kaiser Nienhaus",
@@ -3489,6 +3574,12 @@
           "config_flow": true,
           "iot_class": "local_polling",
           "name": "LG Soundbars"
+        },
+        "lg_thinq": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "cloud_push",
+          "name": "LG ThinQ"
         },
         "lg_tv_rs232": {
           "integration_type": "device",
@@ -3818,6 +3909,11 @@
       "integration_type": "hub",
       "config_flow": true,
       "iot_class": "local_push"
+    },
+    "maytag": {
+      "name": "Maytag",
+      "integration_type": "virtual",
+      "supported_by": "whirlpool"
     },
     "mcp": {
       "name": "Model Context Protocol",
@@ -4762,6 +4858,12 @@
       "config_flow": true,
       "iot_class": "local_polling"
     },
+    "opensensemap": {
+      "name": "openSenseMap",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "cloud_polling"
+    },
     "opensky": {
       "name": "OpenSky Network",
       "integration_type": "service",
@@ -5026,6 +5128,12 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_polling"
+    },
+    "plex": {
+      "name": "Plex Media Server",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "local_push"
     },
     "plugwise": {
       "name": "Plugwise",
@@ -5526,6 +5634,12 @@
       "config_flow": true,
       "iot_class": "cloud_polling"
     },
+    "ring": {
+      "name": "Ring",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_polling"
+    },
     "ripple": {
       "name": "Ripple",
       "integration_type": "hub",
@@ -5549,6 +5663,12 @@
       "integration_type": "hub",
       "config_flow": false,
       "iot_class": "cloud_polling"
+    },
+    "roborock": {
+      "name": "Roborock",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_polling"
     },
     "rocketchat": {
       "name": "Rocket.Chat",
@@ -6115,6 +6235,12 @@
       "integration_type": "virtual",
       "supported_by": "motion_blinds"
     },
+    "smartthings": {
+      "name": "SmartThings",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_push"
+    },
     "smarttub": {
       "name": "SmartTub",
       "integration_type": "hub",
@@ -6215,6 +6341,12 @@
       "integration_type": "service",
       "config_flow": true,
       "iot_class": "local_polling"
+    },
+    "sonos": {
+      "name": "Sonos",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_push"
     },
     "sony": {
       "name": "Sony",
@@ -6555,6 +6687,12 @@
       "config_flow": false,
       "iot_class": "local_polling"
     },
+    "technove": {
+      "name": "TechnoVE",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_polling"
+    },
     "ted5000": {
       "name": "The Energy Detective TED5000",
       "integration_type": "hub",
@@ -6566,6 +6704,23 @@
       "integration_type": "hub",
       "config_flow": true,
       "iot_class": "local_push"
+    },
+    "telegram": {
+      "name": "Telegram",
+      "integrations": {
+        "telegram": {
+          "integration_type": "hub",
+          "config_flow": false,
+          "iot_class": "cloud_polling",
+          "name": "Telegram"
+        },
+        "telegram_bot": {
+          "integration_type": "service",
+          "config_flow": true,
+          "iot_class": "cloud_push",
+          "name": "Telegram bot"
+        }
+      }
     },
     "teleinfo": {
       "name": "Teleinfo",
@@ -6696,6 +6851,13 @@
       "config_flow": false,
       "iot_class": "local_polling"
     },
+    "thread": {
+      "name": "Thread",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "local_polling",
+      "single_config_entry": true
+    },
     "tile": {
       "name": "Tile",
       "integration_type": "hub",
@@ -6786,6 +6948,12 @@
     "tplink": {
       "name": "TP-Link",
       "integrations": {
+        "tplink": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_polling",
+          "name": "TP-Link Smart Home"
+        },
         "tplink_omada": {
           "integration_type": "hub",
           "config_flow": true,
@@ -6797,6 +6965,12 @@
           "config_flow": false,
           "iot_class": "local_polling",
           "name": "TP-Link LTE"
+        },
+        "tplink_tapo": {
+          "integration_type": "virtual",
+          "config_flow": false,
+          "supported_by": "tplink",
+          "name": "Tapo"
         }
       },
       "iot_standards": [
@@ -6981,6 +7155,12 @@
           "config_flow": true,
           "iot_class": "local_polling",
           "name": "UniFi AP"
+        },
+        "unifiprotect": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "local_push",
+          "name": "UniFi Protect"
         }
       }
     },
@@ -7090,6 +7270,12 @@
       "config_flow": false,
       "iot_class": "local_polling"
     },
+    "v2c": {
+      "name": "V2C",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_polling"
+    },
     "vagner_pool": {
       "name": "V\u00c1GNER POOL",
       "integration_type": "virtual",
@@ -7178,6 +7364,12 @@
     "victron": {
       "name": "Victron",
       "integrations": {
+        "victron_gx": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "local_push",
+          "name": "Victron GX"
+        },
         "victron_ble": {
           "integration_type": "device",
           "config_flow": true,
@@ -7333,6 +7525,12 @@
       "config_flow": true,
       "iot_class": "local_push"
     },
+    "whirlpool": {
+      "name": "Whirlpool Appliances",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_push"
+    },
     "whois": {
       "name": "Whois",
       "integration_type": "service",
@@ -7362,6 +7560,18 @@
       "integration_type": "hub",
       "config_flow": false,
       "iot_class": "cloud_push"
+    },
+    "wiz": {
+      "name": "WiZ",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_push"
+    },
+    "wled": {
+      "name": "WLED",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "local_push"
     },
     "wmspro": {
       "name": "WMS WebControl pro",
@@ -7430,6 +7640,12 @@
           "config_flow": true,
           "iot_class": "local_push",
           "name": "Xiaomi Gateway (Aqara)"
+        },
+        "xiaomi_ble": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_push",
+          "name": "Xiaomi BLE"
         },
         "xiaomi_miio": {
           "integration_type": "hub",
@@ -7515,11 +7731,22 @@
       "config_flow": true,
       "iot_class": "local_polling"
     },
-    "yeelightsunflower": {
-      "name": "Yeelight Sunflower",
-      "integration_type": "hub",
-      "config_flow": false,
-      "iot_class": "local_polling"
+    "yeelight": {
+      "name": "Yeelight",
+      "integrations": {
+        "yeelight": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_push",
+          "name": "Yeelight"
+        },
+        "yeelightsunflower": {
+          "integration_type": "hub",
+          "config_flow": false,
+          "iot_class": "local_polling",
+          "name": "Yeelight Sunflower"
+        }
+      }
     },
     "yi": {
       "name": "Yi Home Cameras",
@@ -7711,6 +7938,7 @@
     "group",
     "growatt_server",
     "holiday",
+    "homekit_controller",
     "irm_kmi",
     "islamic_prayer_times",
     "local_ip",

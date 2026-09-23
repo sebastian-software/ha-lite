@@ -248,6 +248,10 @@ HOMEKIT = {
         "always_discover": False,
         "domain": "wemo",
     },
+    "YL*": {
+        "always_discover": False,
+        "domain": "yeelight",
+    },
     "ecobee*": {
         "always_discover": True,
         "domain": "ecobee",
@@ -461,6 +465,11 @@ ZEROCONF = {
             "domain": "ecobee",
         },
     ],
+    "_elg._tcp.local.": [
+        {
+            "domain": "elgato",
+        },
+    ],
     "_elmax-ssl._tcp.local.": [
         {
             "domain": "elmax",
@@ -486,10 +495,23 @@ ZEROCONF = {
             "domain": "energieleser",
         },
     ],
+    "_googlecast._tcp.local.": [
+        {
+            "domain": "cast",
+        },
+    ],
     "_hap._tcp.local.": [
+        {
+            "domain": "homekit_controller",
+        },
         {
             "domain": "zwave_me",
             "name": "*z.wave-me*",
+        },
+    ],
+    "_hap._udp.local.": [
+        {
+            "domain": "homekit_controller",
         },
     ],
     "_heos-audio._tcp.local.": [
@@ -500,6 +522,11 @@ ZEROCONF = {
     "_homeconnect._tcp.local.": [
         {
             "domain": "home_connect",
+        },
+    ],
+    "_homewizard._tcp.local.": [
+        {
+            "domain": "homewizard",
         },
     ],
     "_hscp._tcp.local.": [
@@ -513,6 +540,10 @@ ZEROCONF = {
             "properties": {
                 "device": "air-q",
             },
+        },
+        {
+            "domain": "awair",
+            "name": "awair*",
         },
         {
             "domain": "bosch_shc",
@@ -616,6 +647,11 @@ ZEROCONF = {
             "domain": "hue",
         },
     ],
+    "_hwenergy._tcp.local.": [
+        {
+            "domain": "homewizard",
+        },
+    ],
     "_iometer._tcp.local.": [
         {
             "domain": "iometer",
@@ -707,6 +743,11 @@ ZEROCONF = {
             "domain": "apple_tv",
         },
     ],
+    "_meshcop._udp.local.": [
+        {
+            "domain": "thread",
+        },
+    ],
     "_mieleathome._tcp.local.": [
         {
             "domain": "miele",
@@ -718,6 +759,10 @@ ZEROCONF = {
         },
         {
             "domain": "xiaomi_miio",
+        },
+        {
+            "domain": "yeelight",
+            "name": "yeelink-*",
         },
     ],
     "_musc._tcp.local.": [
@@ -768,6 +813,11 @@ ZEROCONF = {
     "_philipstv_s_rpc._tcp.local.": [
         {
             "domain": "philips_js",
+        },
+    ],
+    "_plexmediasvr._tcp.local.": [
+        {
+            "domain": "plex",
         },
     ],
     "_plugwise._tcp.local.": [
@@ -860,6 +910,11 @@ ZEROCONF = {
             "domain": "solarman",
         },
     ],
+    "_sonos._tcp.local.": [
+        {
+            "domain": "sonos",
+        },
+    ],
     "_soundtouch._tcp.local.": [
         {
             "domain": "soundtouch",
@@ -908,6 +963,11 @@ ZEROCONF = {
             "domain": "flow_it",
         },
     ],
+    "_technove-stations._tcp.local.": [
+        {
+            "domain": "technove",
+        },
+    ],
     "_touch-able._tcp.local.": [
         {
             "domain": "apple_tv",
@@ -941,6 +1001,11 @@ ZEROCONF = {
     "_wattwaechter._tcp.local.": [
         {
             "domain": "wattwaechter",
+        },
+    ],
+    "_wled._tcp.local.": [
+        {
+            "domain": "wled",
         },
     ],
     "_ws._tcp.local.": [

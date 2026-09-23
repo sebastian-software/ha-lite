@@ -311,6 +311,18 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "registered_devices": True,
     },
     {
+        "domain": "elgato",
+        "registered_devices": True,
+    },
+    {
+        "domain": "elkm1",
+        "registered_devices": True,
+    },
+    {
+        "domain": "elkm1",
+        "macaddress": "00409D*",
+    },
+    {
         "domain": "emonitor",
         "hostname": "emonitor*",
         "macaddress": "0090C2*",
@@ -447,6 +459,10 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "macaddress": "38B4D3*",
     },
     {
+        "domain": "homewizard",
+        "registered_devices": True,
+    },
+    {
         "domain": "hunterdouglas_powerview",
         "registered_devices": True,
     },
@@ -518,6 +534,10 @@ DHCP: Final[list[dict[str, str | bool]]] = [
     {
         "domain": "lametric",
         "registered_devices": True,
+    },
+    {
+        "domain": "lg_thinq",
+        "macaddress": "34E6E6*",
     },
     {
         "domain": "lifx",
@@ -798,6 +818,43 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "registered_devices": True,
     },
     {
+        "domain": "ring",
+        "hostname": "ring*",
+        "macaddress": "0CAE7D*",
+    },
+    {
+        "domain": "ring",
+        "hostname": "ring*",
+        "macaddress": "2CAB33*",
+    },
+    {
+        "domain": "ring",
+        "hostname": "ring*",
+        "macaddress": "94E36D*",
+    },
+    {
+        "domain": "ring",
+        "hostname": "ring*",
+        "macaddress": "9C7613*",
+    },
+    {
+        "domain": "ring",
+        "hostname": "ring*",
+        "macaddress": "341513*",
+    },
+    {
+        "domain": "roborock",
+        "macaddress": "249E7D*",
+    },
+    {
+        "domain": "roborock",
+        "macaddress": "B04A39*",
+    },
+    {
+        "domain": "roborock",
+        "hostname": "roborock-*",
+    },
+    {
         "domain": "roomba",
         "hostname": "irobot-*",
         "macaddress": "501479*",
@@ -904,6 +961,40 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "registered_devices": True,
     },
     {
+        "domain": "smartthings",
+        "hostname": "st*",
+        "macaddress": "24FD5B*",
+    },
+    {
+        "domain": "smartthings",
+        "hostname": "smartthings*",
+        "macaddress": "24FD5B*",
+    },
+    {
+        "domain": "smartthings",
+        "hostname": "hub*",
+        "macaddress": "24FD5B*",
+    },
+    {
+        "domain": "smartthings",
+        "hostname": "hub*",
+        "macaddress": "D052A8*",
+    },
+    {
+        "domain": "smartthings",
+        "hostname": "hub*",
+        "macaddress": "286D97*",
+    },
+    {
+        "domain": "smartthings",
+        "hostname": "smarthub",
+        "macaddress": "683A48*",
+    },
+    {
+        "domain": "smartthings",
+        "hostname": "samsung-*",
+    },
+    {
         "domain": "smlight",
         "registered_devices": True,
     },
@@ -968,6 +1059,370 @@ DHCP: Final[list[dict[str, str | bool]]] = [
     {
         "domain": "tolo",
         "hostname": "usr-tcp232-ed2",
+    },
+    {
+        "domain": "tplink",
+        "registered_devices": True,
+    },
+    {
+        "domain": "tplink",
+        "hostname": "e[sp]*",
+        "macaddress": "3C52A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "e[sp]*",
+        "macaddress": "54AF97*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "e[sp]*",
+        "macaddress": "E848B8*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "e[sp]*",
+        "macaddress": "1C61B4*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "e[sp]*",
+        "macaddress": "003192*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "B4B024*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "9C5322*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "5091E3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "5091E3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "9C5322*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "1C3BF3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "50C7BF*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "68FF7B*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "98DAC4*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "B09575*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "C006C3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "lb*",
+        "macaddress": "1C3BF3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "lb*",
+        "macaddress": "50C7BF*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "lb*",
+        "macaddress": "68FF7B*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "lb*",
+        "macaddress": "98DAC4*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "lb*",
+        "macaddress": "B09575*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "60A4B7*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "005F67*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "1027F5*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "B0A7B9*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "403F8C*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "C0C9E3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "909A4A*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "E848B8*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "003192*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "1C3BF3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "50C7BF*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "68FF7B*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "98DAC4*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "B09575*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "C006C3*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "6C5AB0*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "54AF97*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l[59]*",
+        "macaddress": "54AF97*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "AC15A2*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "788CB5*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "3460F9*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "1C61B4*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l[59]*",
+        "macaddress": "5CE931*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l[59]*",
+        "macaddress": "3C52A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l[59]*",
+        "macaddress": "5C628B*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l[59]*",
+        "macaddress": "14EBB6*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "tp*",
+        "macaddress": "5C628B*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "482254*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "s5*",
+        "macaddress": "482254*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "30DE4B*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "3C52A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "tp*",
+        "macaddress": "3C52A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "s5*",
+        "macaddress": "3C52A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "h1*",
+        "macaddress": "3C52A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l9*",
+        "macaddress": "A842A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "A842A1*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l9*",
+        "macaddress": "3460F9*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "3460F9*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "704F57*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "74DA88*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "74DA88*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p3*",
+        "macaddress": "788CB5*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "CC32E5*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "CC32E5*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "hs*",
+        "macaddress": "CC32E5*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "D80D17*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "k[lps]*",
+        "macaddress": "D84732*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "p1*",
+        "macaddress": "F0A731*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "l9*",
+        "macaddress": "F0A731*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "ks2*",
+        "macaddress": "F0A731*",
+    },
+    {
+        "domain": "tplink",
+        "hostname": "kh1*",
+        "macaddress": "F0A731*",
     },
     {
         "domain": "tuya",
@@ -1083,6 +1538,30 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "hostname": "sugarwifi",
     },
     {
+        "domain": "wiz",
+        "registered_devices": True,
+    },
+    {
+        "domain": "wiz",
+        "macaddress": "A8BB50*",
+    },
+    {
+        "domain": "wiz",
+        "macaddress": "D8A011*",
+    },
+    {
+        "domain": "wiz",
+        "macaddress": "444F8E*",
+    },
+    {
+        "domain": "wiz",
+        "macaddress": "6C2990*",
+    },
+    {
+        "domain": "wiz",
+        "hostname": "wiz_*",
+    },
+    {
         "domain": "wmspro",
         "macaddress": "0023D5*",
     },
@@ -1093,6 +1572,10 @@ DHCP: Final[list[dict[str, str | bool]]] = [
     {
         "domain": "xbox",
         "hostname": "xbox*",
+    },
+    {
+        "domain": "yeelight",
+        "hostname": "yeelink-*",
     },
     {
         "domain": "yoto",
