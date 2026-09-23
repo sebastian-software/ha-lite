@@ -264,6 +264,14 @@
   },
   "compat_modules": {
     "automation": "automations_with_entity/automations_with_device return no automations; integrations call them before deprecating an entity.",
+    "cloud": "async_active_subscription and async_is_connected are false, creating a cloudhook raises CloudNotConnected; integrations fall back to their local webhook URL.",
+    "counter": "DOMAIN only; helpers name it in entity selectors.",
+    "default_config": "DOMAIN only; go2rtc sets itself up when default_config is configured, which in ha-lite it never is.",
+    "input_boolean": "DOMAIN only; HomeKit and helpers name it among supported domains.",
+    "input_button": "DOMAIN and SERVICE_PRESS; HomeKit names it among supported domains.",
+    "input_number": "DOMAIN, ATTR_VALUE, CONF_MIN, CONF_MAX, CONF_STEP and SERVICE_SET_VALUE; HomeKit and helpers name it among supported domains.",
+    "input_select": "DOMAIN and SERVICE_SELECT_OPTION; HomeKit names it among supported domains.",
+    "input_text": "DOMAIN only; bayesian names it in an entity selector.",
     "onboarding": "async_is_onboarded is always true; config flows call it to auto-confirm discoveries during the browser wizard ha-lite does not have.",
     "script": "DOMAIN, CONF_MODE and scripts_with_entity, which returns no scripts."
   }

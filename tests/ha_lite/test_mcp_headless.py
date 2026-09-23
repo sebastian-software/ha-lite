@@ -36,7 +36,6 @@ REMOVED_PRODUCTS = (
     "ai_task",
     "assist_pipeline",
     "assist_satellite",
-    "cloud",
     "frontend",
     "lovelace",
     "stt",
