@@ -5,14 +5,8 @@ incorrect behavior, and are thus not wanted in the demo integration.
 """
 
 import datetime
-from functools import partial
 from random import random
 
-from homeassistant.components.labs import (
-    EventLabsUpdatedData,
-    async_is_preview_feature_enabled,
-    async_subscribe_preview_feature,
-)
 from homeassistant.components.recorder import DOMAIN as RECORDER_DOMAIN, get_instance
 from homeassistant.components.recorder.models import (
     StatisticData,
@@ -35,11 +29,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import AnyDeviceEntry
-from homeassistant.helpers.issue_registry import (
-    IssueSeverity,
-    async_create_issue,
-    async_delete_issue,
-)
+from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue
 from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 from homeassistant.util.unit_conversion import (
@@ -110,19 +100,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Reload config entry when subentries are added/removed/updated
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    # Subscribe to labs feature updates for kitchen_sink preview repair
-    entry.async_on_unload(
-        async_subscribe_preview_feature(
-            hass,
-            domain=DOMAIN,
-            preview_feature="special_repair",
-            listener=partial(_async_update_special_repair, hass),
-        )
-    )
-
-    # Check if lab feature is currently enabled and create repair if so
-    await _async_update_special_repair(hass)
-
     return True
 
 
@@ -153,34 +130,6 @@ async def async_remove_config_entry_device(
             return False
 
     return True
-
-
-async def _async_update_special_repair(
-    hass: HomeAssistant,
-    event_data: EventLabsUpdatedData | None = None,
-) -> None:
-    """Create or delete the special repair issue.
-
-    Creates a repair issue when the special_repair lab feature is enabled,
-    and deletes it when disabled. This demonstrates how lab features can interact
-    with Home Assistant's repair system.
-    """
-    enabled = (
-        event_data["enabled"]
-        if event_data is not None
-        else async_is_preview_feature_enabled(hass, DOMAIN, "special_repair")
-    )
-    if enabled:
-        async_create_issue(
-            hass,
-            DOMAIN,
-            "kitchen_sink_special_repair_issue",
-            is_fixable=False,
-            severity=IssueSeverity.WARNING,
-            translation_key="special_repair",
-        )
-    else:
-        async_delete_issue(hass, DOMAIN, "kitchen_sink_special_repair_issue")
 
 
 async def _notify_backup_listeners(hass: HomeAssistant) -> None:
