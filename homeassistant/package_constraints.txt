@@ -17,7 +17,6 @@ async-upnp-client==0.48.1
 atomicwrites-homeassistant==1.4.1
 attrs==26.1.0
 audioop-lts==0.2.2
-av==17.0.1
 awesomeversion==25.8.0
 bcrypt==5.0.0
 bleak-retry-connector==4.7.0
@@ -31,10 +30,8 @@ ciso8601==2.3.3
 cronsim==2.7
 cryptography==48.0.1
 dbus-fast==5.0.22
-file-read-backwards==2.0.0
 fnv-hash-fast==2.0.3
 gazetteer-matcher==1.1.0
-go2rtc-client==0.4.0
 habluetooth==6.26.11
 hass-nabucasa==2.7.0
 hassil==3.12.1
@@ -42,6 +39,7 @@ home-assistant-bluetooth==2.0.0
 home-assistant-intents==2026.8.28
 httpx==0.28.1
 ifaddr==0.2.0
+infrared-protocols==9.0.0
 Jinja2==3.1.6
 lru-dict==1.4.1
 orjson==3.11.9
@@ -52,12 +50,12 @@ probatio==0.11.4
 propcache==0.5.2
 psutil-home-assistant==0.0.1
 PyJWT==2.13.0
-PyNaCl==1.6.2
 pyOpenSSL==26.2.0
 python-slugify==8.0.4
 PyTurboJPEG==1.8.3
 PyYAML==6.0.3
 requests==2.34.2
+rf-protocols==4.3.0
 securetar==2026.4.1
 serialx==1.10.0
 SQLAlchemy==2.0.52

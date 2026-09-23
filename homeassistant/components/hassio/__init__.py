@@ -6,7 +6,7 @@ import logging
 import os
 import struct
 
-from aiohasupervisor import SupervisorBadRequestError, SupervisorError
+from aiohasupervisor import SupervisorError
 from aiohasupervisor.models import (
     GreenOptions,
     HomeAssistantOptions,
@@ -17,7 +17,6 @@ from aiohasupervisor.models import (
 from homeassistant.auth.const import GROUP_ID_ADMIN
 from homeassistant.auth.models import User
 from homeassistant.components.homeassistant import async_set_stop_handler
-from homeassistant.components.onboarding import async_is_onboarded
 from homeassistant.config_entries import SOURCE_SYSTEM, ConfigEntry
 from homeassistant.const import EVENT_CORE_CONFIG_UPDATE, HASSIO_USER_NAME, Platform
 from homeassistant.core import Event, HomeAssistant, callback
@@ -386,28 +385,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             translation_domain=DOMAIN,
             translation_key="supervisor_not_connected",
         ) from err
-
-    # During onboarding, Supervisor may be out of date. Attempt an update now
-    # so that core loads against an up-to-date Supervisor. A
-    # SupervisorBadRequestError means there is no update available, proceed
-    # normally. No exception means an update was triggered and we must wait for
-    # it to complete. Any other SupervisorError means something unexpected went
-    # wrong and we cannot proceed right now.
-    if not async_is_onboarded(hass):
-        try:
-            await supervisor_client.supervisor.update()
-        except SupervisorBadRequestError:
-            pass  # No update available, proceed normally.
-        except SupervisorError as err:
-            raise ConfigEntryNotReady(
-                translation_domain=DOMAIN,
-                translation_key="supervisor_not_connected",
-            ) from err
-        else:
-            raise ConfigEntryNotReady(
-                translation_domain=DOMAIN,
-                translation_key="supervisor_update_pending",
-            )
 
     # Supervisor authenticates through its dedicated Unix socket.
     for refresh_token in list(user.refresh_tokens.values()):

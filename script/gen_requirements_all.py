@@ -11,6 +11,8 @@ import sys
 import tomllib
 from typing import Any
 
+from homeassistant.bootstrap import DEFAULT_INTEGRATIONS
+from homeassistant.config import DEFAULT_CONFIG
 from homeassistant.util.yaml.loader import load_yaml
 from script.hassfest.model import Config, Integration
 
@@ -538,6 +540,13 @@ def requirements_pre_commit_output() -> str:
     return "\n".join(output) + "\n"
 
 
+def fresh_install_domains() -> set[str]:
+    """Return the domains a fresh ha-lite install sets up."""
+    return DEFAULT_INTEGRATIONS | set(
+        re.findall(r"^(\w+):", DEFAULT_CONFIG, re.MULTILINE)
+    )
+
+
 def gather_constraints() -> str:
     """Construct output for constraint file."""
     return (
@@ -547,7 +556,13 @@ def gather_constraints() -> str:
                 *sorted(
                     {
                         *core_requirements(),
-                        *gather_recursive_requirements("default_config"),
+                        # ha-lite has no default_config; constrain what a
+                        # fresh install sets up instead.
+                        *(
+                            req
+                            for domain in sorted(fresh_install_domains())
+                            for req in gather_recursive_requirements(domain)
+                        ),
                         *gather_recursive_requirements("mqtt"),
                     },
                     key=str.lower,

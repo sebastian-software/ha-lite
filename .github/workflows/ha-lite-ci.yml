@@ -118,7 +118,9 @@ jobs:
             tests/helpers/test_storage.py \
             tests/helpers/test_system_info.py \
             tests/helpers/test_translation.py \
-            tests/helpers/test_update_coordinator.py
+            tests/helpers/test_update_coordinator.py \
+            tests/scripts/test_auth.py \
+            tests/scripts/test_owner.py
 
   headless-infrastructure:
     name: Headless infrastructure tests
@@ -171,6 +173,7 @@ jobs:
             tests/components/diagnostics \
             tests/components/conversation \
             tests/components/mcp_server \
+            tests/components/recovery_mode \
             tests/ha_lite
 
   entity-domain-substrate:

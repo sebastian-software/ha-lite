@@ -19,6 +19,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | Area/floor/label registries | INVESTIGATE | Useful metadata; may belong above core. |
 | Integration loader / setup / requirements | KEEP | Required while executing HA integrations. Simplify in #29. |
 | Repairs/issues infrastructure | KEEP / REDUCE | Failures must remain machine-readable; UI presentation goes. |
+| recovery_mode | **KEEP (root)** | Set up by name when configuration fails; with it, recovery serves the API and reports why it started (ADR 0016). |
 | Diagnostics | KEEP / REDUCE | Operationally useful; remove presentation assumptions. |
 | Auth | KEEP / REDUCE | Network API requires explicit security. |
 | HTTP server | KEEP initially | Required by integrations/config flows and practical API transport. |
@@ -27,7 +28,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | frontend | **REMOVED** | Outside headless core; physically removed in Wave 1 after bootstrap/config decoupling. |
 | lovelace | **REMOVED** | Dashboard product surface; physically removed in Wave 1. |
 | UI panels / panel registration | **REMOVED** | Registration lived in `frontend` and left with it in Wave 1; `config` no longer registers a panel. `panel_custom` and the integrations that still call it are outside the closure and leave in Wave 4 (#27). |
-| onboarding | DELETE / REPLACE | Replace product onboarding with API/CLI bootstrap (#22, #30). Still reached at module level from `auth/login_flow.py`, `helpers/config_entry_flow.py` and the Bluetooth and Matter config flows. |
+| onboarding | **REMOVED** | Replaced by `hass --script owner` for the first user and tokens, and the existing config APIs for everything else (#22, #30, ADR 0016). |
 | automation | **REMOVED** | Decision engine belongs outside core; physically removed in Wave 2. |
 | script | **REMOVED** | Behavioral orchestration belongs outside core; physically removed in Wave 2. |
 | blueprint | **REMOVED** | Automation authoring/distribution; physically removed in Wave 3 together with Template, its only importer. |
@@ -46,11 +47,11 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | person | **KEEP (root)** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
 | zone | **KEEP** | Declared dependency in `device_tracker/manifest.json` and imported from its `entity.py` and `legacy.py`. Cannot leave while `device_tracker` stays. |
 | sun | **KEEP (root)** | Solar position from the configured coordinates and the clock: elevation, azimuth, and the next dawn/dusk/noon/midnight/rising/setting. `astral` and `helpers/sun.py` are core already, so this only exposes what the core computes anyway. Fronius makes it device-relevant — a PV site's yield follows solar elevation. Nothing imports it, so it is a root. |
-| default_config | DELETE | Product bundle conflicts with explicit minimal composition. `bootstrap.py` still pre-imports it (#22). |
+| default_config | **REMOVED** | Bootstrap's defaults are the always-on runtime; discovery is listed in the generated `configuration.yaml` instead (ADR 0016). |
 | config | KEEP / REDUCE | Backend configuration useful; remove frontend/panel coupling. |
 | system_health | KEEP / REDUCE | Headless operations need health data. |
-| analytics, labs | DELETE | Usage reporting to Home Assistant and its preview-feature flags. Both are still bootstrap defaults; `analytics` is there "for onboarding" (#22). |
-| brands, hardware | DELETE | Brand-image proxy and hardware-status panel for the frontend. Still bootstrap defaults (#22). |
+| analytics, labs | **REMOVED** | Usage reporting to Home Assistant and its preview-feature flags (#22). |
+| brands, hardware | **REMOVED** | Brand-image proxy and hardware-status panel for the frontend (#22). |
 | logger | KEEP | Operational infrastructure. |
 | logbook | **REMOVED** | Human-facing historical narrative; physically removed in Wave 3 together with its per-integration describe platforms. |
 | history | **REMOVED** | Human-facing history product; physically removed in Wave 3. Raw state history stays a Recorder concern (#28). |
@@ -58,9 +59,9 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | long-term statistics | DELETE initially | Product analytics/history concern (#28). |
 | energy | **REMOVED** | Product/domain aggregation; physically removed in Wave 3 after decoupling Analytics reporting. |
 | map | **ABSENT** | Not present in the imported 2026.9.3 tree; the map view is a frontend dashboard. |
-| map_tiles, my, search | DELETE | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). While `my` is loaded, the OAuth2 flow helper uses its redirect instead of the instance's own callback URL, so removing it changes the redirect URI OAuth integrations register (#26). |
-| file_upload | DELETE | MQTT takes certificate material as PEM text since #25, so only the `bootstrap.py` pre-import holds it now (#22). |
-| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. Outside the closure since #25, but still a bootstrap default (#28, #30). |
+| map_tiles, my, search | **REMOVED** | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). Without `my`, the OAuth2 flow helper redirects to the instance's own callback URL, which is what OAuth applications register (#26). |
+| file_upload | **REMOVED** | MQTT takes certificate material as PEM text since #25 (#22). |
+| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. Outside the closure since #25 and no longer a default or a recovery-mode member (#28). |
 | cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
@@ -85,7 +86,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
 | YAML configuration | INVESTIGATE | Config entries likely primary target. Modbus is configured by YAML only (#29). |
 | Dynamic pip requirement installation | INVESTIGATE / REPLACE | Controlled distribution may prefer pre-resolved dependencies (#29). |
-| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25 removed the Matter and MQTT add-on paths and `usb`'s app lookup; it leaves with the integration long tail (#27). |
+| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); it leaves with the integration long tail (#27). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |
 

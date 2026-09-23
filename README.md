@@ -52,7 +52,7 @@ This table describes the architectural target. **Removed** means physically abse
 | Automation, scripts | **Removed — Wave 2** | Decision/orchestration layer belongs outside the runtime |
 | Blueprints, templates, automation helpers, cloud, Alexa, Google Assistant | **Removed — Wave 3** | Automation authoring and cloud products (#19) |
 | Logbook, history, energy | **Removed — Wave 3** | Human-facing history and aggregation products (#21) |
-| Onboarding, default bundle, browser upload and link helpers | **Remove — Wave 3** | Product bootstrap and UI support (#22) |
+| Onboarding, default bundle, browser upload and link helpers | **Removed — Wave 3** | Replaced by a first-run command and explicit defaults (#22, #30, ADR 0016) |
 | Assist / voice presentation, media browser, AI tasks | **Removed — Wave 3** | Outside the MCP closure; a headless MCP test guards the gap (#23) |
 | Unselected integrations | **Remove — Wave 4** | Keep the computed retained closure rather than all of Home Assistant (#27) |
 | Recorder, persistence implementation | **Decide — Wave 5** | Define the persistence contract first (#28) |
@@ -65,16 +65,16 @@ A useful measurement needs to distinguish **Home Assistant Core source** from th
 
 | Metric | Before Wave 1 | Current |
 | --- | ---: | ---: |
-| Tracked files in repository | 27,507 | 26,894 |
-| Tracked Python files | 18,497 | 18,039 |
-| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 9,792 files / 49.26 MB |
-| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 9,578 files / 46.42 MB |
-| Top-level component domains | 1,509 | 1,458 |
-| Python tests under `tests/` | 8,269 files / 67.45 MB | 8,047 files / 63.58 MB |
+| Tracked files in repository | 27,507 | 26,824 |
+| Tracked Python files | 18,497 | 17,985 |
+| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 9,764 files / 49.09 MB |
+| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 9,549 files / 46.24 MB |
+| Top-level component domains | 1,509 | 1,448 |
+| Python tests under `tests/` | 8,269 files / 67.45 MB | 8,021 files / 63.20 MB |
 
 "Before Wave 1" is the upstream 2026.9.3 tree immediately before the frontend and Lovelace deletion. "Current" is this checkout; the [roadmap](docs/architecture/roadmap.md#size-checkpoints) keeps the intermediate checkpoints.
 
-Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 90 of the 1,480 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
+Waves 1–3 barely move these numbers, and that is expected. The striking figure is that roughly **94% of the Python bytes under `homeassistant/` are component code**, and the [retained closure](docs/architecture/retained-closure.md) reaches 87 of the 1,470 component domains. The size reduction arrives with Wave 4, when the integrations outside that closure are deleted.
 
 For that reason the final reduction percentage is intentionally **not predicted yet**. Every wave updates the measured checkpoint instead, so the README can eventually say exactly how much production code, tests, components and dependencies were removed.
 
@@ -86,11 +86,29 @@ For that reason the final reduction percentage is intentionally **not predicted 
 | --- | --- | --- |
 | 1 | Frontend, Lovelace and browser-product bootstrap | Done |
 | 2 | Automation and Script | Done |
-| 3 | Remaining product layers ([#16](https://github.com/sebastian-software/ha-lite/issues/16)) | In progress |
+| 3 | Remaining product layers ([#16](https://github.com/sebastian-software/ha-lite/issues/16)) | Done |
 | 4 | Explicit retained integration closure ([#17](https://github.com/sebastian-software/ha-lite/issues/17)) | In progress |
-| 5 | Persistence, configuration and runtime composition ([#18](https://github.com/sebastian-software/ha-lite/issues/18)) | Not started |
+| 5 | Persistence, configuration and runtime composition ([#18](https://github.com/sebastian-software/ha-lite/issues/18)) | In progress |
 
 [docs/architecture/roadmap.md](docs/architecture/roadmap.md) states each wave's entry and exit criteria and links the issue behind every open block. The architecture documents are the design source of truth; GitHub issues track execution.
+
+## First run
+
+There is no onboarding UI. Create the owner and a token for your client, then
+start the runtime:
+
+```bash
+hass --script owner -c config create --name "Admin" --username admin
+hass --script owner -c config token --client-name "mcp agent"
+hass -c config
+```
+
+The generated `configuration.yaml` lists the discovery integrations it enables;
+remove a line to turn one off. Everything else is configured through config
+flows over the WebSocket or REST API. If the configuration cannot be loaded,
+ha-lite starts in recovery mode with the API up and the reason in
+`/api/error_log`. [ADR 0016](docs/adr/0016-headless-first-run-and-recovery.md)
+has the details.
 
 ## What success looks like
 

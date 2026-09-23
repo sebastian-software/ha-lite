@@ -364,7 +364,8 @@ async def test_create_default_config(hass: HomeAssistant) -> None:
     assert os.path.isfile(YAML_PATH)
     assert os.path.isfile(SECRET_PATH)
     assert os.path.isfile(VERSION_PATH)
-    assert os.path.isfile(AUTOMATIONS_PATH)
+    # ha-lite has no automation integration to read it.
+    assert not os.path.isfile(AUTOMATIONS_PATH)
 
 
 async def test_ensure_config_exists_creates_config(hass: HomeAssistant) -> None:

@@ -76,7 +76,6 @@ import voluptuous as vol
 from homeassistant import data_entry_flow
 from homeassistant.auth import AuthManagerFlowManager, InvalidAuthError
 from homeassistant.auth.models import AuthFlowContext, AuthFlowResult, Credentials
-from homeassistant.components import onboarding
 from homeassistant.components.http import KEY_HASS
 from homeassistant.components.http.auth import async_user_not_allowed_do_auth
 from homeassistant.components.http.ban import (
@@ -192,13 +191,6 @@ class AuthProvidersView(HomeAssistantView):
     async def get(self, request: web.Request) -> web.Response:
         """Get available auth providers."""
         hass = request.app[KEY_HASS]
-        if not onboarding.async_is_user_onboarded(hass):
-            return self.json_message(
-                message="Onboarding not finished",
-                status_code=HTTPStatus.BAD_REQUEST,
-                message_code="onboarding_required",
-            )
-
         try:
             remote_address = ip_address(request.remote)  # type: ignore[arg-type]
         except ValueError:

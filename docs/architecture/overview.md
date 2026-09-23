@@ -2,7 +2,7 @@
 
 ## Status
 
-Based on Home Assistant Core 2026.9.3. Waves 1 and 2 are done and Wave 3 is under way; [roadmap.md](roadmap.md) says what each wave still owes. Classifications in the [scope matrix](scope-matrix.md) are design intent, validated against the dependency graph that `script/ha_lite_closure.py` computes before anything is deleted.
+Based on Home Assistant Core 2026.9.3. Waves 1 to 3 are done; [roadmap.md](roadmap.md) says what each wave still owes. Classifications in the [scope matrix](scope-matrix.md) are design intent, validated against the dependency graph that `script/ha_lite_closure.py` computes before anything is deleted.
 
 ## Boundary
 

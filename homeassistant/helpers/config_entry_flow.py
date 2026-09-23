@@ -5,7 +5,6 @@ import logging
 from typing import TYPE_CHECKING, Any, cast, override
 
 from homeassistant import config_entries
-from homeassistant.components import onboarding
 from homeassistant.core import HomeAssistant
 
 from .typing import DiscoveryInfoType
@@ -57,7 +56,7 @@ class DiscoveryFlowHandler[_R: Awaitable[bool] | bool](config_entries.ConfigFlow
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
         """Confirm setup."""
-        if user_input is None and onboarding.async_is_onboarded(self.hass):
+        if user_input is None:
             self._set_confirm_only()
             return self.async_show_form(step_id="confirm")
 

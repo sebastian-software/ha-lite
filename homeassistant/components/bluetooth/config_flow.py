@@ -15,7 +15,6 @@ from bluetooth_adapters import (
 from habluetooth import BluetoothScanningMode, get_manager
 import voluptuous as vol
 
-from homeassistant.components import onboarding
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -143,7 +142,7 @@ class BluetoothConfigFlow(ConfigFlow, domain=DOMAIN):
 
         address = details[ADAPTER_ADDRESS]
 
-        if user_input is not None or not onboarding.async_is_onboarded(self.hass):
+        if user_input is not None:
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
             return self.async_create_entry(

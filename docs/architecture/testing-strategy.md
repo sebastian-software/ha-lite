@@ -57,7 +57,8 @@ Protected as directories:
 - `tests/components/diagnostics`
 - `tests/components/conversation`
 - `tests/components/mcp_server`
-- `tests/ha_lite`, contracts ha-lite adds on top of the upstream suite
+- `tests/components/recovery_mode`
+- `tests/ha_lite`, contracts ha-lite adds on top of the upstream suite: the headless MCP round-trip and headless recovery mode
 
 Tests inside these directories may later be split into retained runtime behavior versus Home Assistant product/UI behavior. Until that split is explicit, they remain a safety net.
 

@@ -150,7 +150,7 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 |---|---|
 | Entity-domain substrate | 32 |
 | Retained integrations | 6 |
-| Runtime infrastructure | 22 |
+| Runtime infrastructure | 23 |
 | Device-class semantics | 15 |
 | Aggregation | 2 |
 | Environment | 1 |
@@ -174,16 +174,16 @@ build failure rather than a discovery made months later.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,480 |
-| Declared roots | 78 |
-| Retained closure | 88 |
-| Deletion candidates | 1,392 |
+| Component domains in tree | 1,470 |
+| Declared roots | 79 |
+| Retained closure | 87 |
+| Deletion candidates | 1,383 |
 
-Of the 10 transitively required domains, 6 are `retained`, 1 is an `adapter` and 3 are `patch_required`.
+Of the 8 transitively required domains, 6 are `retained`, 1 is an `adapter` and 1 is `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 6% of the tree. The 1,392 candidates outside it are
+The closure is small — 6% of the tree. The 1,383 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 
@@ -199,17 +199,19 @@ target leaves with it. #19 confirmed the pattern by removing the five
 `input_*` helpers this way, and #23 by removing `media_source`: deleting the
 `camera` and `image` `media_source.py` adapters was all it took.
 
-The three `patch_required` members are the real blockers:
+One `patch_required` member is left:
 
-- `file_upload` ← only `bootstrap.py`'s pre-import now; MQTT takes certificate
-  material as PEM text since #25 (#22)
-- `onboarding` ← `auth/login_flow.py`, `bluetooth/config_flow.py` and
-  `helpers/config_entry_flow.py` at module level, and `bootstrap.py`'s
-  pre-import (#22, #30)
 - `weather` ← the `temperature` and `humidity` triggers declare a `DomainSpec`
   over weather entities. No retained integration provides the weather
   platform, so the spec can never match; the upstream tests reference weather
   in 99 places, which is why it is deferred rather than patched (#27)
+
+#22 removed two more. `file_upload` was held only by `bootstrap.py`'s
+pre-import once #25 moved MQTT to PEM text, and `onboarding` by checks in
+`auth/login_flow.py`, `bluetooth/config_flow.py` and
+`helpers/config_entry_flow.py` that all read "already onboarded" whenever
+onboarding was not set up — which in ha-lite was always. Both are deleted, and
+ADR 0016 records what replaced onboarding.
 
 #25 resolved two more. `hassio` was held in by the Matter Server and Mosquitto
 add-on paths in Matter and MQTT, and by `usb` listing the serial ports

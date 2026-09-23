@@ -101,23 +101,6 @@ async def test_fetch_auth_providers_trusted_network(
     assert (await resp.json())["providers"] == expected
 
 
-async def test_fetch_auth_providers_onboarding(
-    hass: HomeAssistant, aiohttp_client: ClientSessionGenerator
-) -> None:
-    """Test fetching auth providers."""
-    client = await async_setup_auth(hass, aiohttp_client)
-    with patch(
-        "homeassistant.components.onboarding.async_is_user_onboarded",
-        return_value=False,
-    ):
-        resp = await client.get("/auth/providers")
-    assert resp.status == HTTPStatus.BAD_REQUEST
-    assert await resp.json() == {
-        "message": "Onboarding not finished",
-        "code": "onboarding_required",
-    }
-
-
 async def test_cannot_get_flows_in_progress(
     hass: HomeAssistant, aiohttp_client: ClientSessionGenerator
 ) -> None:

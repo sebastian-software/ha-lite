@@ -715,7 +715,6 @@ async def test_abort_discovered_existing_entries(
     ("additional_components", "expected_redirect_uri"),
     [
         ([], "https://example.com/auth/external/callback"),
-        (["my"], "https://my.home-assistant.io/redirect/oauth"),
     ],
 )
 @pytest.mark.usefixtures("current_request_with_host")
