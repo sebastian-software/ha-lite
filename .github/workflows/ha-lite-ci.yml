@@ -348,6 +348,7 @@ jobs:
           - hue
           - fronius
           - modbus
+          - miele
     steps:
       - uses: actions/checkout@v7
         with:

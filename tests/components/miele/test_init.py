@@ -236,8 +236,6 @@ async def test_oauth_implementation_not_available(
     hass: HomeAssistant, mock_config_entry: MockConfigEntry
 ) -> None:
     """Test that an unavailable OAuth implementation raises ConfigEntryNotReady."""
-    assert await async_setup_component(hass, "cloud", {})
-
     with patch(
         "homeassistant.components.miele.async_get_config_entry_implementation",
         side_effect=config_entry_oauth2_flow.ImplementationUnavailableError,

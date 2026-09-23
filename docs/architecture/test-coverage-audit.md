@@ -119,6 +119,7 @@ Full test directories remain required for:
 - Hue
 - Fronius
 - Modbus
+- Miele, the OAuth lifecycle anchor (ADR 0017)
 
 ## Still not claimed as retained
 

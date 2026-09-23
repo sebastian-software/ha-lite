@@ -75,7 +75,8 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | usb | KEEP | Discovery infrastructure for local adapters. |
 | network | KEEP / REDUCE | Shared integration infrastructure. |
 | webhook | KEEP / INVESTIGATE | Some integrations require inbound events. |
-| OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. A retained OAuth integration is to exercise them in CI (#26). |
+| OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. Miele exercises them in CI as the OAuth lifecycle anchor (#26, ADR 0017). |
+| Miele | KEEP (anchor) | Application credentials, OAuth2 authorize/callback/token, reauth and reconfigure against a real integration. Kept for what its tests exercise, not as a promise to retain cloud integrations (ADR 0017). |
 | MQTT | KEEP | Representative protocol/integration substrate. |
 | Shelly | KEEP | Primary representative local-device integration. |
 | Matter + Matter server boundary | KEEP | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
@@ -92,7 +93,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 
 ## First dependency closure
 
-The transitive runtime requirements of Shelly, MQTT, Matter, Hue, Fronius and Modbus are computed by `script/ha_lite_closure.py` and gated in CI (#24). One OAuth/cloud integration still has to be added to exercise generic configuration and reauthentication machinery (#26).
+The transitive runtime requirements of Shelly, MQTT, Matter, Hue, Fronius and Modbus are computed by `script/ha_lite_closure.py` and gated in CI (#24). Miele is the seventh root: an OAuth integration that exercises the generic authorization and reauthentication machinery (#26, ADR 0017).
 
 ## Deletion waves
 
