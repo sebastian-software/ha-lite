@@ -142,7 +142,6 @@ Their tests disappear with the production behavior they protect. Scenes were on 
 A few areas remain INVESTIGATE rather than fully committed:
 
 - area/floor/label/category registries;
-- YAML configuration (#29);
 
 Frigate was listed here as a representative higher-level integration. It is a custom integration that Home Assistant Core does not ship, so it cannot be retained in-tree; at most it becomes an external compatibility canary.
 

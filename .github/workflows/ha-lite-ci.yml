@@ -98,6 +98,7 @@ jobs:
             tests/test_core.py \
             tests/test_config_entries.py \
             tests/test_core_config.py \
+            tests/test_config.py \
             tests/test_loader.py \
             tests/test_setup.py \
             tests/helpers/test_aiohttp_client.py \
@@ -456,6 +457,21 @@ jobs:
         run: |
           . venv/bin/activate
           python script/ha_lite_closure.py --check
+
+      - name: Validate manifests and generated files
+        run: |
+          . venv/bin/activate
+          python -m script.hassfest --action validate
+
+      - name: Verify the requirement files match the manifests
+        run: |
+          . venv/bin/activate
+          python -m script.gen_requirements_all validate
+
+      - name: Type-check the runtime
+        run: |
+          . venv/bin/activate
+          mypy homeassistant pylint
 
       - name: Verify the committed closure is current
         run: |
