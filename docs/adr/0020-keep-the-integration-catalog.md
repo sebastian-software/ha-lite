@@ -61,15 +61,31 @@ on:
   #25 decoupled MQTT and Matter from the Supervisor (ADR 0006).
 
 **A removed layer can leave a compat module behind.** Many integrations
-import a removed layer only to ask it one question: which automations and
-scripts use this entity, before they deprecate it; has the browser wizard
-finished, before a config flow adds a discovered device without asking.
+import a removed layer only to ask it one question:
+- which automations and scripts use this entity, before they deprecate it;
+- has the browser wizard finished, before a config flow adds a discovered
+  device without asking;
+- can Home Assistant Cloud give me a public webhook URL;
+- what is the helper domain called that I list among the ones I support.
+
 ha-lite answers such a question with a compat module: a single file directly
 under `homeassistant/components/`, with no manifest, so it is not an
 integration and cannot be set up. It gives the answer upstream gives when the
-product integration is not loaded. `automation.py` and `script.py` find no
-automations or scripts, and `onboarding.py` reports the instance as onboarded.
-An import of a compat module is not dangling. Each module must be listed
+product integration is not loaded:
+- `automation.py` and `script.py` find no automations or scripts;
+- `onboarding.py` reports the instance as onboarded;
+- `cloud.py` reports no subscription and no connection, so integrations use
+  their local webhook URL;
+- `counter.py`, `default_config.py` and the `input_*` modules only name their
+  domain and its constants.
+
+An import of a compat module is not dangling. A manifest never names one,
+because a compat module is no integration: with pip allowed, setting up a
+built-in integration resolves its `after_dependencies` too, and one that does
+not resolve fails the setup. The gate therefore counts a manifest entry on a
+missing domain or on a compat module as dangling. hassfest, which otherwise
+wants every imported component declared in the manifest, accepts imports of
+compat modules without that. Each module must be listed
 under `compat_modules` in the closure config, with what it provides. A module
 that is not listed there, or a listed module that is gone, is a finding.
 That makes each compat module a reviewed decision rather than a way around
@@ -111,12 +127,18 @@ removed with the voice stack although it serves camera, image and media
 player entities. `trace` loaded too, but it records and debugs automations and
 scripts, so it joined the excluded layers instead.
 
-The compat modules brought back 35 more. Among them are Sonos, Google Cast,
-TP-Link, UniFi Protect, Ring, SmartThings, Roborock, Yeelight, WiZ, WLED,
-Elgato, BTHome and HomeKit Device. The tree holds 1,344 components: 98 in the
-closure and 1,246 in the catalog.
+The compat modules brought back 57 more in two rounds:
+- the first, with `automation`, `script` and `onboarding`, brought Sonos,
+  Google Cast, TP-Link, UniFi Protect, Ring, SmartThings, Roborock, Yeelight,
+  WiZ, WLED, Elgato, BTHome and HomeKit Device;
+- the second, with `cloud`, `default_config`, `counter` and the `input_*`
+  modules, brought HomeKit Bridge, go2rtc, Netatmo, Withings, OwnTracks,
+  Rachio, the `derivative`, `integration`, `min_max`, `trend` and `bayesian`
+  helpers, six more integrations and five virtual ones.
 
-90 integrations and 33 virtual integrations pointing at them are still out.
+The tree holds 1,366 components: 98 in the closure and 1,268 in the catalog.
+
+73 integrations and 28 virtual integrations pointing at them are still out.
 `retained-closure.md` lists them in two groups:
 
 - **Out by design** (56). Their purpose is a layer ha-lite removed:
@@ -127,14 +149,15 @@ closure and 1,246 in the catalog.
   - `intent_script`, which runs actions the way automations do.
 
   They leave with that layer.
-- **Waiting for a decoupling** (34). They serve devices, and a coupling holds
-  them back, not their purpose. Among them are ESPHome, ZHA, Z-Wave JS, KNX,
-  Netatmo and HomeKit Bridge. Each needs a change of the #25 kind, or a compat
-  module where the coupling is only a question.
+- **Waiting for a decoupling** (17). They serve devices, and a coupling holds
+  them back, not their purpose. Among them are ESPHome, ZHA, Z-Wave JS and
+  KNX, and August and Yale, which sign in through Nabu Casa's account
+  linking. Each needs a change of the #25 kind, or a compat module where the
+  coupling is only a question.
 
 The reduction is now in the product layers, not in the catalog. Product
-Python goes from 8 MB back to 42 MB, and `requirements_all.txt` from 40
-packages to 1,067; upstream's full catalog is 51 MB and 1,146. ADR 0019 records what that means for installation.
+Python goes from 8 MB back to 43 MB, and `requirements_all.txt` from 40
+packages to 1,082; upstream's full catalog is 51 MB and 1,146. ADR 0019 records what that means for installation.
 
 Upstream updates get cheaper. A curated update (ADR 0003) no longer has to
 skip 1,379 deleted directories; it has to carry the excluded layers and the

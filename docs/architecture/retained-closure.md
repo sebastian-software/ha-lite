@@ -74,13 +74,16 @@ The walk only follows edges into domains that exist, so an import of a
 removed component is invisible to it — and a deferred one fails only when its
 function runs. Any code in the tree — core, closure or catalog — importing a
 component that is not in the tree is therefore a finding of its own,
-**dangling**, whatever the edge's strength. Only `after_dependencies` is
-exempt: the loader ignores an ordering hint on a missing domain.
+**dangling**, whatever the edge's strength. That includes a manifest's
+`after_dependencies`, although it is only an ordering hint. With pip allowed,
+setting up a built-in integration resolves its after dependencies as well, and
+one that is not there fails the setup with `IntegrationNotFound`.
 
 For the catalog this is the entry condition. An integration that still imports
 a removed product layer cannot load, so it stays out of the tree until it is
 decoupled. An import of a declared compat module is satisfied: the module is
-there, it is just not an integration.
+there, it is just not an integration. For the same reason a manifest entry on a
+compat module is not: the loader cannot resolve it.
 
 ### What these rules found
 
@@ -211,16 +214,16 @@ the `catalog` CI job runs its suite.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,344 |
+| Component domains in tree | 1,366 |
 | Declared roots | 90 |
 | Retained closure | 98 |
-| Catalog | 1,246 |
+| Catalog | 1,268 |
 
 Of the 8 transitively required domains, 7 are `retained` and 1 is an `adapter`.
 `recorder` was one more until #28 removed it (ADR 0018). The tree count
-includes 106 virtual integrations, which are a manifest pointing at another
-integration and carry no code. Three compat modules — `automation.py`,
-`onboarding.py` and `script.py` — are files, not domains, and not counted.
+includes 111 virtual integrations, which are a manifest pointing at another
+integration and carry no code. The eleven compat modules are files, not
+domains, and are not counted.
 
 ### Wave 4
 
@@ -340,10 +343,10 @@ returned (`shell_command`, `mjpeg`, `browser`, `shopping_list`, `todo`,
 `calendar`), and kept ha-lite's version where it did not (`intent_script`,
 `plant`, the Supervisor fixtures).
 
-Four restored manifests listed a missing domain in `after_dependencies`, which
-hassfest rejects: `bluetooth_adapters` (`esphome`) and `litellm`, `llama_cpp`
-and `ovhcloud_ai_endpoints` (`assist_pipeline`). Those entries are removed;
-the loader ignored them anyway. Brand files keep only the integrations in
+Four restored manifests listed a missing domain in `after_dependencies`:
+`bluetooth_adapters` (`esphome`) and `litellm`, `llama_cpp` and
+`ovhcloud_ai_endpoints` (`assist_pipeline`). hassfest rejects such entries,
+and with pip allowed they would fail the setup. Those entries are removed. Brand files keep only the integrations in
 the tree, and a brand left with fewer than two is removed, as hassfest
 requires.
 
@@ -359,9 +362,10 @@ it one question:
 - eleven config flows asked `onboarding` whether the browser wizard is still
   running, to add a discovered device without asking.
 
-Three compat modules answer those questions. Each is a single file directly
-under `homeassistant/components/`, without a manifest, so it is not an
-integration and cannot be set up (ADR 0020):
+Three compat modules answer those questions; a second round below added
+eight more. Each is a single file directly under `homeassistant/components/`,
+without a manifest, so it is not an integration and cannot be set up
+(ADR 0020):
 
 | Module | Provides | Answer in ha-lite |
 |---|---|---|
@@ -414,9 +418,79 @@ These upstream tests changed:
 - Cast's test of the Home Assistant Cloud URL is removed.
 - UniFi Protect's `test_recorder.py` is removed.
 
+#### The second round
+
+The same kind of question held back 17 more integrations:
+
+- ten ask `cloud` whether Home Assistant Cloud can give them a public webhook
+  URL: `loqed`, `monzo`, `netatmo`, `overseerr`, `owntracks`, `plaato`,
+  `rachio`, `switchbot_cloud`, `toon` and `withings`;
+- HomeKit Bridge and five helpers — `bayesian`, `derivative`, `integration`,
+  `min_max` and `trend` — name the `input_*` and `counter` domains among the
+  ones they support, and HomeKit also uses their attribute and service names;
+- go2rtc checks whether `default_config:` is configured.
+
+| Module | Provides | Answer in ha-lite |
+|---|---|---|
+| `cloud.py` | `DOMAIN`, the `CloudNotAvailable`/`CloudNotConnected` errors, `CloudConnectionState` and its signal, the subscription and connection checks, the cloudhook functions and the change listeners | No subscription, no connection; creating a cloudhook raises `CloudNotConnected` |
+| `default_config.py` | `DOMAIN` | Never configured, so go2rtc starts only when `go2rtc:` is |
+| `counter.py`, `input_boolean.py`, `input_text.py` | `DOMAIN` | Selectors that name them find nothing |
+| `input_button.py` | `DOMAIN`, `SERVICE_PRESS` | As above |
+| `input_number.py` | `DOMAIN`, `ATTR_VALUE`, `CONF_MIN`, `CONF_MAX`, `CONF_STEP`, `SERVICE_SET_VALUE` | As above |
+| `input_select.py` | `DOMAIN`, `SERVICE_SELECT_OPTION` | As above |
+
+The integrations behave as they do on a Home Assistant without a Nabu Casa
+subscription. Netatmo, Withings, OwnTracks and the others register their local
+webhook URL, which the device or service must be able to reach. Netatmo signs in
+with the user's own application credentials. go2rtc, which gives camera
+streams WebRTC, starts when `go2rtc:` is configured. In the container image,
+which ships the go2rtc binary, that is all it needs; elsewhere it needs a `url:`
+of a running go2rtc server.
+
+The restore brought back those 17 integrations and Netatmo's five virtual
+integrations, `bticino`, `bubendorff`, `home_plus_control`, `legrand` and
+`smarther`.
+
+Around them, these files changed:
+
+- Thirteen manifests drop `cloud` or `counter` from `after_dependencies`:
+  - ten drop `cloud`;
+  - `derivative`, `integration` and `trend` drop `counter`.
+
+  A compat module is not an integration, so the entry would fail their setup.
+- hassfest's import check (`script/hassfest/dependencies.py`) accepts imports
+  of compat modules without a manifest entry, which it otherwise requires.
+- The closure gate reports a manifest entry on a missing domain or on a compat
+  module as dangling. It used to let `after_dependencies` pass, on the wrong
+  assumption that the loader ignores them.
+- `tests/components/cloud/__init__.py` stands in for upstream's `mock_cloud`
+  helper. Catalog tests call it before they patch the cloud functions to reach
+  their cloudhook code.
+- `tests/helpers/helper_harness.py` drops its stand-ins for the domain names of
+  `input_number`, `input_select` and `counter`, which the compat modules now
+  provide.
+- `tests/ha_lite/test_mcp_headless.py` no longer lists `cloud` among the
+  products that cannot be imported. `tests/ha_lite/test_compat_modules.py`
+  checks every compat module instead: a plain module, without a manifest, that
+  the loader does not resolve to an integration.
+
+These upstream tests changed:
+
+- OwnTracks' two tests and Plaato's two tests that set up the real cloud
+  integration and patch `hass_nabucasa` are removed. The tests of the local
+  webhook path remain.
+- `test_todo_add_item_fr` in `conversation` waits for `todo`'s intent
+  platform, which loads in the background, before it speaks to it. It failed
+  when that import was slow.
+
+Synology DSM stays out after all. Besides its backup-agent platform, its config
+flow asks for a backup share, and it raises a repair when none is set, for a
+feature ha-lite does not have. Removing that takes edits in several of its
+files.
+
 ### What is still out
 
-90 integrations are still out, and 33 virtual integrations point at them. They
+73 integrations are still out, and 28 virtual integrations point at them. They
 fall into two groups.
 
 **Out by design (56).** Their purpose is a product layer ha-lite removed, so
@@ -435,33 +509,31 @@ feature:
 
 - Mill, SolarEdge, Tibber and WaterFurnace import their history into Recorder's
   statistics.
-- Synology DSM reaches `backup` only through its backup-agent platform.
+- Synology DSM has a backup-agent platform, and its config flow and a repair
+  ask for a backup share (see the second round above).
 
-Each could come back without that part, as WLED did.
+Each could come back without that part, as WLED did, at the cost of edits to
+its own files.
 
 `utility_meter` imports `reset_detected` from `sensor/recorder.py`, which left
 with Recorder (#28). The domain-level walk cannot see a removed module inside
 a retained component; the import check of the restore did.
 
-**Waiting for a decoupling (34).** These serve devices, and a coupling holds
+**Waiting for a decoupling (17).** These serve devices, and a coupling holds
 them back, not their purpose:
 
 | Needs | Integrations | What for |
 |---|---|---|
-| `cloud` | `august`, `loqed`, `mobile_app`, `monzo`, `netatmo`, `overseerr`, `owntracks`, `plaato`, `rachio`, `switchbot_cloud`, `toon`, `watts`, `withings`, `yale` | A public webhook URL through Home Assistant Cloud, with the local webhook URL as the fallback. August, Yale and Watts sign in through Nabu Casa's account linking |
+| `cloud` as a dependency | `august`, `watts`, `yale` | Signing in through Nabu Casa's account linking, which holds the vendor's OAuth credentials. The compat module cannot provide it |
+| `frontend`, `analytics`, `cloud` | `mobile_app` | The companion apps' panel and analytics; the cloud part alone would be answered |
 | `hassio`, Home Assistant hardware | `esphome`, `otbr`, `zha`, `zwave_js` | Managing the add-on that runs the server, firmware for Home Assistant's own radios. ESPHome also brings the voice satellite |
 | `file_upload` | `influxdb`, `knx`, `local_calendar`, `velbus` | Uploading a certificate, keyring or file in a config flow |
 | `frontend`, `panel_custom` | `dynalite`, `insteon`, `knx`, `lcn`, `panel_custom` | A configuration panel in the web UI |
-| `input_*`, `counter` | `bayesian`, `derivative`, `homekit`, `integration`, `min_max`, `trend` | Domain names |
-| `default_config` | `go2rtc` | Its domain name: go2rtc sets itself up when `default_config` is configured |
 | `tts` | `smtp` | Attaching generated speech to a mail |
 
-`mobile_app` also needs `frontend` and `analytics`.
-
-The 33 virtual integrations wait for their target:
+The 28 virtual integrations wait for their target:
 
 - `esphome`: `apollo_automation`, `iotorero`, `konnected_esphome`
-- `netatmo`: `bticino`, `bubendorff`, `home_plus_control`, `legrand`, `smarther`
 - `opower`: `aep_ohio`, `aep_texas`, `appalachianpower`, `atlanticcityelectric`, `bge`, `burbank_water_and_power`, `coautilities`, `comed`, `coned`, `delmarva`, `duquesne_light`, `evergy`, `indianamichiganpower`, `kentuckypower`, `oru_opower`, `peco_opower`, `pepco`, `pge`, `pse`, `psoklahoma`, `scl`, `smud`, `swepco`
 - `wyoming`: `piper`, `whisper`
 

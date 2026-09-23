@@ -38,10 +38,10 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | scene | **KEEP** | Entity domain implemented by `hue/scene.py` and `mqtt/scene.py`. A Hue scene lives on the bridge, so this is device state, not automation semantics. |
 | schedule | **REMOVED** | External decision/scheduling layer; physically removed in Wave 3. |
 | timer | **REMOVED** | Automation state; physically removed in Wave 3. Runtime scheduling primitives such as `async_track_time_interval` are retained. |
-| counter | **REMOVED** | Automation helper state; physically removed in Wave 3. |
-| input_boolean / input_button | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the switch/button trigger and condition platforms. |
-| input_datetime / input_number | **REMOVED** | Virtual helpers; physically removed in Wave 3. The time trigger now accepts timestamp sensors only. |
-| input_select / input_text | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the select/text trigger and condition platforms. |
+| counter | **REMOVED** | Automation helper state; physically removed in Wave 3. `counter.py` stays as a compat module that names the domain for helpers' entity selectors (ADR 0020). |
+| input_boolean / input_button | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the switch/button trigger and condition platforms. Both stay as compat modules that name the domain, and `input_button.py` its press action, for HomeKit and helpers (ADR 0020). |
+| input_datetime / input_number | **REMOVED** | Virtual helpers; physically removed in Wave 3. The time trigger now accepts timestamp sensors only. `input_number.py` stays as a compat module with the domain, attribute and action names HomeKit and helpers use (ADR 0020). |
+| input_select / input_text | **REMOVED** | Virtual helpers; physically removed in Wave 3 after decoupling the select/text trigger and condition platforms. Both stay as compat modules that name the domain, and `input_select.py` its select action (ADR 0020). |
 | group | **KEEP (root)** | Folds several entities of one domain into one — several lamps, several blinds, the mean of several sensors. All twelve of its platforms target retained entity domains. Nothing imports it, so it is a root. Its `config_flow` is backend setup, which this matrix already keeps. |
 | Device-class trigger/condition providers | **KEEP (roots)** | `air_quality`, `battery`, `door`, `doorbell`, `garage_door`, `gate`, `humidity`, `illuminance`, `moisture`, `motion`, `occupancy`, `power`, `temperature`, `vibration`, `window`. The named vocabulary over entity device classes; `binary_sensor` and `sensor` ship none of their own. ADR 0012. |
 | device_tracker | **KEEP** | Entity domain implemented by `mqtt/device_tracker.py`. DHCP discovery also watches it, but that is not what holds it. |
@@ -50,7 +50,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | person | **KEEP (root)** | The aggregation layer over `device_tracker`: several trackers per human folded into one presence answer with source selection, plus `in_zones`. Logical grouping over retained substrate, not a product surface. Its `image_upload` dependency was only the avatar and is gone. |
 | zone | **KEEP** | Declared dependency in `device_tracker/manifest.json` and imported from its `entity.py` and `legacy.py`. Cannot leave while `device_tracker` stays. |
 | sun | **KEEP (root)** | Solar position from the configured coordinates and the clock: elevation, azimuth, and the next dawn/dusk/noon/midnight/rising/setting. `astral` and `helpers/sun.py` are core already, so this only exposes what the core computes anyway. Fronius makes it device-relevant — a PV site's yield follows solar elevation. Nothing imports it, so it is a root. |
-| default_config | **REMOVED** | Bootstrap's defaults are the always-on runtime; discovery is listed in the generated `configuration.yaml` instead (ADR 0016). |
+| default_config | **REMOVED** | Bootstrap's defaults are the always-on runtime; discovery is listed in the generated `configuration.yaml` instead (ADR 0016). `default_config.py` stays as a compat module with only the domain name, which go2rtc checks (ADR 0020). |
 | config | KEEP / REDUCE | Backend configuration useful; remove frontend/panel coupling. |
 | system_health | KEEP / REDUCE | Headless operations need health data. |
 | analytics, labs | **REMOVED** | Usage reporting to Home Assistant and its preview-feature flags (#22). |
@@ -65,7 +65,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | map_tiles, my, search | **REMOVED** | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). Without `my`, the OAuth2 flow helper redirects to the instance's own callback URL, which is what OAuth applications register (#26). |
 | file_upload | **REMOVED** | MQTT takes certificate material as PEM text since #25 (#22). |
 | backup | **REMOVED** | Deleted with its storage agents in Wave 4 (#27). A backup of ha-lite is a copy of the configuration directory taken while it is stopped (ADR 0018). |
-| cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
+| cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. `cloud.py` stays as a compat module that answers as upstream does without a login: no subscription, no connection, no cloudhook, so integrations use their local webhook URL (ADR 0020). Account linking, which August, Yale and Watts sign in through, is not provided. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
 | STT / TTS / voice presentation | **REMOVED** | `assist_pipeline`, `assist_satellite`, `stt`, `tts` and `wake_word` were outside the `mcp_server` closure; physically removed in Wave 3 (#23). `tests/ha_lite/test_mcp_headless.py` keeps MCP working without them. |
@@ -80,18 +80,18 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | webhook | KEEP / INVESTIGATE | Some integrations require inbound events. |
 | OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. Miele exercises them in CI as the OAuth lifecycle anchor (#26, ADR 0017). |
 | Miele | KEEP (anchor) | Application credentials, OAuth2 authorize/callback/token, reauth and reconfigure against a real integration. Kept for what its tests exercise, not as a promise to retain cloud integrations (ADR 0017). |
-| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,246 catalog members, run by the `catalog` CI job (ADR 0020). 90 are still out, listed in [retained-closure.md](retained-closure.md#what-is-still-out): 56 by design and 34 waiting for a decoupling change. |
+| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,268 catalog members, run by the `catalog` CI job (ADR 0020). 73 are still out, listed in [retained-closure.md](retained-closure.md#what-is-still-out): 56 by design and 17 waiting for a decoupling change. |
 | MQTT | KEEP (anchor) | Representative protocol/integration substrate. |
 | Shelly | KEEP (anchor) | Primary representative local-device integration. |
 | Matter + Matter server boundary | KEEP (anchor) | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
 | Hue | KEEP (anchor) | Representative bridge-based local integration. |
 | Fronius | KEEP (anchor) | Representative local energy-device integration; energy UI not needed. |
 | HomeKit controller/device | **KEEP** | Useful protocol. Deleted by reachability in Wave 4 (#27); back in the catalog since `thread` came back with the `onboarding` compat module (ADR 0020). |
-| HomeKit bridge/export | WAITING | Exposes ha-lite's entities to Apple Home. Deleted in Wave 4 (#27) and not yet back: besides `automation` and `script`, which the compat modules now answer, it imports the `input_*` helpers' domain names. |
+| HomeKit bridge/export | **KEEP** | Exposes ha-lite's entities to Apple Home. Deleted in Wave 4 (#27); back in the catalog since the `automation`, `script` and `input_*` compat modules answer what it imports (ADR 0020). |
 | demo, kitchen_sink | **KEEP (test fixtures)** | Simulated devices that retained upstream test suites set up by name — `demo` behind the `media_player`, `camera`, `group` and config-entry tests, `kitchen_sink` behind `group`'s lock tests. Wave 4 pruned their platforms for the domains it deleted; they came back with the catalog. Roots with a CI job, not runtime (#27). |
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
 | YAML configuration | **KEEP** | Instance settings (`homeassistant:`, `http:`, `logger:`, discovery) and declarative integration configuration with no config flow — Modbus register maps, MQTT YAML entities, `group`/`person`/`zone`/`scene`. Config entries stay primary; `tests/test_config.py` is in CI (#29, ADR 0019). |
-| Dynamic pip requirement installation | **KEEP** | `requirements_all.txt` lists every integration's requirements (1,067 packages, validated in CI). A deployment that installs it installs nothing at runtime; one that does not gets an integration's requirements on first setup, as upstream. `--skip-pip` forbids it entirely (#29, ADR 0019). |
+| Dynamic pip requirement installation | **KEEP** | `requirements_all.txt` lists every integration's requirements (1,082 packages, validated in CI). A deployment that installs it installs nothing at runtime; one that does not gets an integration's requirements on first setup, as upstream. `--skip-pip` forbids it entirely (#29, ADR 0019). |
 | Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); deleted in Wave 4 (#27) and excluded since (ADR 0020). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |

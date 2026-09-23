@@ -40,7 +40,7 @@ Home Assistant's device knowledge without the application.
 | **Broken configuration** | Recovery mode in the browser | Recovery mode serves the API and reports the cause |
 | **Cloud, add-ons, OS** | Nabu Casa, Supervisor, add-ons, Home Assistant OS | None |
 | **Backup** | Backup integration with cloud storage agents | Copy the configuration directory |
-| **Python source** | 51 MB in 10,000 files | 42 MB in 8,800 files |
+| **Python source** | 51 MB in 10,000 files | 43 MB in 9,000 files |
 
 ## What stays the same
 
@@ -63,13 +63,16 @@ integration behaves the way it does upstream:
 - **Derived state.** Scenes, groups, people and zones, and the sun's position.
 - **APIs.** The REST and WebSocket APIs, webhooks, OAuth2 application
   credentials, and the MCP server.
+- **Camera streams.** WebRTC through go2rtc, which starts when `go2rtc:` is in
+  `configuration.yaml`. The container image ships the go2rtc binary; elsewhere
+  `go2rtc:` needs the `url:` of a running go2rtc server.
 
 ### Integrations
 
 ha-lite ships Home Assistant's integration catalog: Philips Hue, Shelly and
-MQTT, Sonos, Google Cast, TP-Link, Tasmota, deCONZ, Tuya, AVM FRITZ!, tado°,
-UniFi Network and Protect, Home Connect, Nest, Reolink and about 1,200
-more. It is Home Assistant's own code, as
+MQTT, Sonos, Google Cast, TP-Link, HomeKit, Netatmo, Tasmota, deCONZ, Tuya,
+AVM FRITZ!, tado°, UniFi Network and Protect, Home Connect, Nest, Reolink and
+about 1,200 more. It is Home Assistant's own code, as
 upstream ships it, and each integration runs its upstream test suite in CI.
 
 Seven integrations are anchors. CI tests each on its own, as the reference for
@@ -92,9 +95,9 @@ Some integrations are not included:
   - integrations that write to or read from the Recorder's statistics;
   - backup agents;
   - Home Assistant's own hardware.
-- **Not included yet (34).** They still depend on a removed layer, among them
-  ESPHome, ZHA, Z-Wave JS, KNX, Netatmo and HomeKit Bridge. Each needs a small
-  decoupling change first.
+- **Not included yet (17).** They still depend on a removed layer, among them
+  ESPHome, ZHA, Z-Wave JS and KNX, and August and Yale, which sign in through
+  Nabu Casa. Each needs a small decoupling change first.
 
 [retained-closure.md](docs/architecture/retained-closure.md#what-is-still-out)
 lists each one and what it needs.
