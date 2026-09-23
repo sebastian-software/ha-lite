@@ -957,7 +957,6 @@ async def test_service_update_profile_media_source_not_supported(
     mock_config_entry: MockConfigEntry,
 ) -> None:
     """Test the update profile service with unsupported media source."""
-    assert await async_setup_component(hass, "tts", {})
     await setup_integration(hass, mock_config_entry)
 
     assert mock_config_entry.state is ConfigEntryState.LOADED

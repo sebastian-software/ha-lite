@@ -389,7 +389,6 @@ async def test_ntfy_publish_upload_media_source_not_supported(
 ) -> None:
     """Test ntfy.publish action with unsupported media source."""
 
-    assert await async_setup_component(hass, "tts", {})
     config_entry.add_to_hass(hass)
     await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()

@@ -139,7 +139,9 @@ def mock_portainer_client(mock_portainer_watcher: MagicMock) -> Generator[AsyncM
         yield client
 
 
-@pytest.fixture
+# ha-lite: autouse, because an unmocked listener spins on the autospecced
+# client's empty event stream without yielding and blocks the event loop.
+@pytest.fixture(autouse=True)
 def mock_portainer_event_listeners() -> Generator[dict[int, MagicMock]]:
     """Mock PortainerEventListener; one MagicMock instance per endpoint_id."""
     instances: dict[int, MagicMock] = {}

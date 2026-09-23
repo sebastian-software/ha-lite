@@ -12,7 +12,14 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant import config as conf_util
-from homeassistant.const import SERVICE_RELOAD, SERVICE_TURN_OFF, SERVICE_TURN_ON
+from homeassistant.const import (
+    SERVICE_RELOAD,
+    SERVICE_TURN_OFF,
+    SERVICE_TURN_ON,
+    STATE_OFF,
+    STATE_ON,
+    STATE_UNAVAILABLE,
+)
 from homeassistant.core import Context, HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import (
@@ -22,6 +29,7 @@ from homeassistant.helpers import (
     trigger as trigger_helper,
 )
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.util import slugify
 
 DOMAIN = "automation"
 SCRIPT_DOMAIN = "script"
@@ -39,6 +47,18 @@ def _log(level: int, message: str, **kwargs: Any) -> None:
 def async_mock_service(hass: HomeAssistant, service: str, handler: Any) -> None:
     """Register a test-owned automation service without product translations."""
     hass.services.async_register(DOMAIN, service, handler)
+
+
+def _publish(hass: HomeAssistant, name: str, item: ConfigType, state: str) -> None:
+    """Show the automation as an entity, as the removed integration did.
+
+    Upstream tests count automation entities and read their state: on once
+    armed, unavailable when the configuration failed validation.
+    """
+    entity_id = f"{DOMAIN}.{slugify(name)}"
+    attributes = {"friendly_name": name, "id": item.get("id")}
+    hass.states.async_set(entity_id, state, attributes)
+    hass.data[_DATA]["entities"].add(entity_id)
 
 
 async def _async_detach(hass: HomeAssistant) -> None:
@@ -69,7 +89,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         platform_config
         for _, platform_config in conf_util.config_per_platform(config, DOMAIN)
     ]
-    data = hass.data.setdefault(_DATA, {"removes": [], "scripts": [], "config": None})
+    data = hass.data.setdefault(
+        _DATA, {"removes": [], "scripts": [], "config": None, "entities": set()}
+    )
     # turn_on re-arms from the config the test passed in, which reload cannot
     # do: these tests never write a YAML file for it to re-read.
     data["config"] = config
@@ -78,6 +100,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
         async def async_turn_off(_call: ServiceCall) -> None:
             await _async_detach(hass)
+            for entity_id in hass.data[_DATA]["entities"]:
+                if (state := hass.states.get(entity_id)) is not None:
+                    hass.states.async_set(entity_id, STATE_OFF, state.attributes)
 
         async_mock_service(hass, SERVICE_TURN_OFF, async_turn_off)
 
@@ -136,6 +161,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 name,
                 err,
             )
+            _publish(hass, name, item, STATE_UNAVAILABLE)
+            continue
+        except Exception:
+            # A platform's own validation can raise anything; the removed
+            # Automation integration logged it with its traceback and went on.
+            _LOGGER.exception("Unexpected error validating automation %s", name)
+            _publish(hass, name, item, STATE_UNAVAILABLE)
             continue
 
         action_script = script_helper.Script(hass, action_config, name, DOMAIN)
@@ -146,7 +178,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
             context: Context | None = None,
             *,
             action_script: script_helper.Script = action_script,
-            conditions=conditions,
+            conditions=tuple(conditions),
         ) -> script_helper.ScriptRunResult | None:
             try:
                 for condition in conditions:
@@ -172,6 +204,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         )
         if remove is not None:
             data["removes"].append(remove)
+        _publish(hass, name, item, STATE_ON)
 
     return True
 

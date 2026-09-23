@@ -4,7 +4,6 @@ import pytest
 from pytest_unordered import unordered
 from pywemo.subscribe import EVENT_TYPE_LONG_PRESS
 
-from homeassistant.components.automation import DOMAIN as AUTOMATION_DOMAIN
 from homeassistant.components.device_automation import DeviceAutomationType
 from homeassistant.components.wemo.const import DOMAIN, WEMO_SUBSCRIPTION_EVENT
 from homeassistant.const import (
@@ -20,6 +19,7 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
 
 from tests.common import async_get_device_automations, async_mock_service
+from tests.helpers.automation_harness import DOMAIN as AUTOMATION_DOMAIN
 
 DATA_MESSAGE = {"message": "service-called"}
 

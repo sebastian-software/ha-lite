@@ -88,7 +88,6 @@ components: &components
   - homeassistant/components/sun/**
   - homeassistant/components/system_health/**
   - homeassistant/components/tag/**
-  - homeassistant/components/trace/**
   - homeassistant/components/usb/**
   - homeassistant/components/webhook/**
   - homeassistant/components/websocket_api/**
