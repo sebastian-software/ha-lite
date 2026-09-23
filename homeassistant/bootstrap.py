@@ -148,6 +148,7 @@ LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
     "network",
     # Error logging
     "system_log",
+    "sentry",
 }
 # Stage 0 is divided into substages. Each substage has a name,
 # a set of integrations and a timeout.
@@ -156,6 +157,8 @@ LOGGING_AND_HTTP_DEPS_INTEGRATIONS = {
 STAGE_0_INTEGRATIONS = (
     # Load logging and http deps as soon as possible
     ("logging, http deps", LOGGING_AND_HTTP_DEPS_INTEGRATIONS, None),
+    # Start up debuggers. Start these first in case they want to wait.
+    ("debugger", {"debugpy"}, STAGE_0_SUBSTAGE_TIMEOUT),
     # Zeroconf is used for mdns resolution in aiohttp client helper.
     ("zeroconf", {"zeroconf"}, STAGE_0_SUBSTAGE_TIMEOUT),
 )
@@ -169,6 +172,8 @@ STAGE_1_INTEGRATIONS = {
     # been updated which leads to using an old version
     # of the dep, or worse (import errors).
     *DISCOVERY_INTEGRATIONS,
+    # To make sure we forward data to other instances
+    "mqtt_eventstream",
 }
 
 DEFAULT_INTEGRATIONS = {
@@ -200,7 +205,9 @@ DEFAULT_INTEGRATIONS = {
     "zone",
     #
     # Base platforms:
-    *BASE_PLATFORMS,
+    # Note: Calendar and todo are not included to prevent them from registering
+    # their frontend panels when there are no calendar or todo integrations.
+    *(BASE_PLATFORMS - {"calendar", "todo"}),
     #
     # Integrations providing triggers and conditions for base platforms:
     "air_quality",

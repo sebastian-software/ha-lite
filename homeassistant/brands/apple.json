@@ -1,0 +1,5 @@
+{
+  "domain": "apple",
+  "name": "Apple",
+  "integrations": ["apple_tv", "ibeacon", "icloud", "itunes", "weatherkit"]
+}

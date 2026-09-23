@@ -1,6 +1,6 @@
 {
   "domain": "devolo",
   "name": "devolo",
-  "integrations": [],
+  "integrations": ["devolo_home_control", "devolo_home_network"],
   "iot_standards": ["zwave"]
 }

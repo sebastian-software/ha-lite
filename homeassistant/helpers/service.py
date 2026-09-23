@@ -83,6 +83,7 @@ def _base_components() -> dict[str, ModuleType]:
     """Return a cached lookup of base components."""
     from homeassistant.components import (  # noqa: PLC0415
         alarm_control_panel,
+        calendar,
         camera,
         climate,
         cover,
@@ -92,7 +93,9 @@ def _base_components() -> dict[str, ModuleType]:
         lock,
         media_player,
         notify,
+        remote,
         siren,
+        todo,
         update,
         vacuum,
         water_heater,
@@ -100,6 +103,7 @@ def _base_components() -> dict[str, ModuleType]:
 
     return {
         "alarm_control_panel": alarm_control_panel,
+        "calendar": calendar,
         "camera": camera,
         "climate": climate,
         "cover": cover,
@@ -109,7 +113,9 @@ def _base_components() -> dict[str, ModuleType]:
         "lock": lock,
         "media_player": media_player,
         "notify": notify,
+        "remote": remote,
         "siren": siren,
+        "todo": todo,
         "update": update,
         "vacuum": vacuum,
         "water_heater": water_heater,

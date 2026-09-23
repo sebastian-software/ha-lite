@@ -25,6 +25,7 @@ COMPONENTS_WITH_DEMO_PLATFORM = [
     Platform.LAWN_MOWER,
     Platform.LOCK,
     Platform.NOTIFY,
+    Platform.RADIO_FREQUENCY,
     Platform.SENSOR,
     Platform.SWITCH,
     Platform.WEATHER,

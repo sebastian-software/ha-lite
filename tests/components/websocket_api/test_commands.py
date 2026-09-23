@@ -1076,7 +1076,7 @@ async def test_subscribe_conditions(
     old_cache = hass.data[ALL_CONDITION_DESCRIPTIONS_JSON_CACHE]
 
     # Test we receive an event when a new platform is loaded, if it has descriptions
-    assert await async_setup_component(hass, "light", {})
+    assert await async_setup_component(hass, "calendar", {})
     assert await async_setup_component(hass, "device_automation", {})
     await hass.async_block_till_done()
     msg = await websocket_client.receive_json()
@@ -1161,7 +1161,7 @@ async def test_subscribe_triggers(
     old_cache = hass.data[ALL_TRIGGER_DESCRIPTIONS_JSON_CACHE]
 
     # Test we receive an event when a new platform is loaded, if it has descriptions
-    assert await async_setup_component(hass, "light", {})
+    assert await async_setup_component(hass, "calendar", {})
     assert await async_setup_component(hass, "tag", {})
     await hass.async_block_till_done()
     msg = await websocket_client.receive_json()
@@ -3361,25 +3361,10 @@ async def test_execute_script_err_localization(
 async def test_execute_script_complex_response(
     hass: HomeAssistant, hass_ws_client: WebSocketGenerator
 ) -> None:
-    """Test a script returning a nested action response."""
+    """Test testing a condition."""
     await async_setup_component(hass, "homeassistant", {})
-    response = {
-        "calendar.calendar_1": {
-            "events": [
-                {
-                    "summary": "Future Event",
-                    "description": "Future Description",
-                    "location": "Future Location",
-                }
-            ]
-        }
-    }
-    hass.services.async_register(
-        "test",
-        "get_events",
-        lambda call: response,
-        supports_response=SupportsResponse.ONLY,
-    )
+    await async_setup_component(hass, "calendar", {"calendar": {"platform": "demo"}})
+    await hass.async_block_till_done()
     ws_client = await hass_ws_client(hass)
 
     await ws_client.send_json_auto_id(
@@ -3387,7 +3372,9 @@ async def test_execute_script_complex_response(
             "type": "execute_script",
             "sequence": [
                 {
-                    "service": "test.get_events",
+                    "service": "calendar.get_events",
+                    "data": {"duration": {"hours": 24, "minutes": 0, "seconds": 0}},
+                    "target": {"entity_id": "calendar.calendar_1"},
                     "response_variable": "service_result",
                 },
                 {"stop": "done", "response_variable": "service_result"},
@@ -3398,7 +3385,19 @@ async def test_execute_script_complex_response(
     msg_no_var = await ws_client.receive_json()
     assert msg_no_var["type"] == const.TYPE_RESULT
     assert msg_no_var["success"]
-    assert msg_no_var["result"]["response"] == response
+    assert msg_no_var["result"]["response"] == {
+        "calendar.calendar_1": {
+            "events": [
+                {
+                    "start": ANY,
+                    "end": ANY,
+                    "summary": "Future Event",
+                    "description": "Future Description",
+                    "location": "Future Location",
+                }
+            ]
+        }
+    }
 
 
 async def test_execute_script_with_dynamically_validated_action(

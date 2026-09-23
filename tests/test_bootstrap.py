@@ -418,7 +418,7 @@ async def test_setup_after_deps_all_present(hass: HomeAssistant) -> None:
 async def test_setup_after_deps_in_stage_1(hass: HomeAssistant) -> None:
     """Test after_dependencies are promoted in stage 1."""
     # This test relies on this
-    assert "dhcp" in bootstrap.STAGE_1_INTEGRATIONS
+    assert "mqtt_eventstream" in bootstrap.STAGE_1_INTEGRATIONS
     order = []
 
     def gen_domain_setup(domain):
@@ -446,20 +446,20 @@ async def test_setup_after_deps_in_stage_1(hass: HomeAssistant) -> None:
     mock_integration(
         hass,
         MockModule(
-            domain="dhcp",
-            async_setup=gen_domain_setup("dhcp"),
+            domain="mqtt_eventstream",
+            async_setup=gen_domain_setup("mqtt_eventstream"),
             partial_manifest={"after_dependencies": ["normal_integration"]},
         ),
     )
 
     await bootstrap._async_set_up_integrations(
         hass,
-        {"dhcp": {}, "normal_integration": {}, "an_after_dep": {}},
+        {"mqtt_eventstream": {}, "normal_integration": {}, "an_after_dep": {}},
     )
 
     assert "normal_integration" in hass.config.components
-    assert "dhcp" in hass.config.components
-    assert order == ["an_after_dep", "normal_integration", "dhcp"]
+    assert "mqtt_eventstream" in hass.config.components
+    assert order == ["an_after_dep", "normal_integration", "mqtt_eventstream"]
 
 
 @pytest.mark.parametrize("load_registries", [False])
@@ -474,7 +474,7 @@ async def test_setup_after_deps_manifests_are_loaded_even_if_not_setup(
     up to date before the after dep can be imported.
     """
     # This test relies on this
-    assert "dhcp" in bootstrap.STAGE_1_INTEGRATIONS
+    assert "mqtt_eventstream" in bootstrap.STAGE_1_INTEGRATIONS
     order = []
 
     def gen_domain_setup(domain):
@@ -520,22 +520,22 @@ async def test_setup_after_deps_manifests_are_loaded_even_if_not_setup(
     mock_integration(
         hass,
         MockModule(
-            domain="dhcp",
-            async_setup=gen_domain_setup("dhcp"),
+            domain="mqtt_eventstream",
+            async_setup=gen_domain_setup("mqtt_eventstream"),
             partial_manifest={"after_dependencies": ["normal_integration"]},
         ),
     )
 
     await bootstrap._async_set_up_integrations(
-        hass, {"dhcp": {}, "normal_integration": {}}
+        hass, {"mqtt_eventstream": {}, "normal_integration": {}}
     )
 
     assert "normal_integration" in hass.config.components
-    assert "dhcp" in hass.config.components
+    assert "mqtt_eventstream" in hass.config.components
     assert "an_after_dep" not in hass.config.components
     assert "an_after_dep_of_after_dep" not in hass.config.components
     assert "an_after_dep_of_after_dep_of_after_dep" not in hass.config.components
-    assert order == ["normal_integration", "dhcp"]
+    assert order == ["normal_integration", "mqtt_eventstream"]
     assert loader.async_get_loaded_integration(hass, "an_after_dep") is not None
     assert (
         loader.async_get_loaded_integration(hass, "an_after_dep_of_after_dep")
@@ -789,7 +789,7 @@ def mock_ensure_config_exists() -> Generator[AsyncMock]:
         yield ensure_config_exists
 
 
-@pytest.mark.parametrize("hass_config", [{"group": {}, "frontend": {}}])
+@pytest.mark.parametrize("hass_config", [{"browser": {}, "frontend": {}}])
 @pytest.mark.usefixtures("mock_hass_config")
 async def test_setup_hass(
     mock_enable_logging: AsyncMock,
@@ -821,7 +821,7 @@ async def test_setup_hass(
 
     assert "Waiting for integrations to complete setup" not in caplog.text
 
-    assert "group" in hass.config.components
+    assert "browser" in hass.config.components
     assert "recovery_mode" not in hass.config.components
 
     assert len(mock_enable_logging.mock_calls) == 1
@@ -842,7 +842,7 @@ async def test_setup_hass(
     assert hass == async_get_hass()
 
 
-@pytest.mark.parametrize("hass_config", [{"group": {}, "light": {}}])
+@pytest.mark.parametrize("hass_config", [{"browser": {}, "light": {}}])
 @pytest.mark.usefixtures("mock_hass_config")
 async def test_setup_hass_takes_longer_than_log_slow_startup(
     mock_enable_logging: AsyncMock,
@@ -955,10 +955,10 @@ async def test_setup_hass_recovery_mode(
         patch(
             "homeassistant.core.HomeAssistant", wraps=core.HomeAssistant
         ) as mock_hass,
-        patch("homeassistant.components.group.async_setup") as group_setup,
+        patch("homeassistant.components.browser.setup") as browser_setup,
         patch(
             "homeassistant.config_entries.ConfigEntries.async_domains",
-            return_value=["group"],
+            return_value=["browser"],
         ),
     ):
         hass = await bootstrap.async_setup_hass(
@@ -979,8 +979,8 @@ async def test_setup_hass_recovery_mode(
     assert len(mock_mount_local_lib_path.mock_calls) == 0
 
     # Validate we didn't try to set up config entry.
-    assert "group" not in hass.config.components
-    assert len(group_setup.mock_calls) == 0
+    assert "browser" not in hass.config.components
+    assert len(browser_setup.mock_calls) == 0
 
 
 @pytest.mark.parametrize("domain", ["diagnostics"])
@@ -1024,10 +1024,10 @@ async def test_setup_hass_safe_mode(
 ) -> None:
     """Test it works."""
     with (
-        patch("homeassistant.components.group.async_setup"),
+        patch("homeassistant.components.browser.setup"),
         patch(
             "homeassistant.config_entries.ConfigEntries.async_domains",
-            return_value=["group"],
+            return_value=["browser"],
         ),
     ):
         hass = await bootstrap.async_setup_hass(
@@ -1059,10 +1059,10 @@ async def test_setup_hass_recovery_mode_and_safe_mode(
 ) -> None:
     """Test it works."""
     with (
-        patch("homeassistant.components.group.async_setup"),
+        patch("homeassistant.components.browser.setup"),
         patch(
             "homeassistant.config_entries.ConfigEntries.async_domains",
-            return_value=["group"],
+            return_value=["browser"],
         ),
     ):
         hass = await bootstrap.async_setup_hass(
