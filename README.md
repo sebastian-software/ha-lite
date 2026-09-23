@@ -1,118 +1,203 @@
 # ha-lite
 
-A headless, deliberately reduced device runtime exploring how much of Home Assistant's integration knowledge can be retained without carrying the complete Home Assistant product.
+**Home Assistant's device layer as a small, headless server.**
 
-> Early architecture and reduction experiment. Not yet a usable Home Assistant distribution.
+ha-lite connects to your devices the way Home Assistant does: the same
+integrations, the same discovery and the same device and entity model. It then
+hands them to software rather than to people, over REST, WebSocket and the
+Model Context Protocol (MCP). It has no user interface, no automation engine
+and no history database. What should happen in your home is decided by
+whatever you connect to it: an AI agent, your own service, or a rules engine
+of your choice.
 
-## Why this exists
+> **Status:** experimental. ha-lite is derived from Home Assistant Core
+> 2026.9.3 and is not a drop-in replacement for it. There is no migration path
+> from an existing Home Assistant installation.
 
-Home Assistant Core contains two things that are valuable for very different reasons:
+## Is it for you?
 
-1. an unusually broad, battle-tested integration runtime for real devices and services;
-2. the backend of a complete end-user home-automation product.
+**Use Home Assistant** if you want a smart-home application: dashboards, the
+mobile apps, an automation editor, a voice assistant, history graphs, add-ons,
+cloud access and thousands of integrations. That is what Home Assistant is
+built for, and ha-lite removes all of it.
 
-ha-lite explores how small and understandable the first can become when the second is deliberately removed.
+**Consider ha-lite** if you already have the brain and need the hands: a
+dependable way to discover, configure, observe and control real devices, with
+a small codebase you can read and a dependency list you can audit. It is
+built for AI agents over MCP, custom control services, and anyone who wants
+Home Assistant's device knowledge without the product around it.
 
-The goal is **not** to run normal Home Assistant with its UI disabled. Code outside the target runtime is physically removed when practical, so it no longer contributes dependencies, coupling, maintenance surface, searches, or agent context.
+## How it differs from Home Assistant
 
-One important accounting detail: the browser application itself lives primarily in the separate `home-assistant-frontend` project/package. Removing Core's `frontend` and `lovelace` components therefore removes product coupling but does **not** by itself delete the enormous JavaScript/TypeScript frontend from this repository — that code was never here. The large Core reduction comes from the combination of product subsystems and, eventually, the long tail of integrations that ha-lite does not choose to carry.
-
-## Direction
-
-ha-lite treats Home Assistant Core as high-value source material rather than an architectural constraint. The target runtime is responsible for the physical-world boundary:
-
-- discover and configure devices and services;
-- maintain stable device and entity identities;
-- observe and normalize state;
-- expose capabilities and actions;
-- publish events and state changes;
-- persist the minimum state and configuration required for reliable operation;
-- provide machine-oriented HTTP/WebSocket/webhook APIs;
-- provide MCP as a first-class agent-control surface.
-
-Decision making belongs outside the core. Automations, schedules, dashboards, scenes, voice presentation, and other product-level features are not intended to be part of the runtime unless a retained machine-facing contract proves that a smaller underlying primitive is required.
-
-## Scope at a glance
-
-This table describes the architectural target. **Removed** means physically absent from the tree; **Keep** means part of the retained runtime contract and protected by CI.
-
-| Area | Direction | Current status / rationale |
+| | Home Assistant | ha-lite |
 | --- | --- | --- |
-| Core state machine, event bus, service dispatch | **Keep** | Fundamental runtime primitives |
-| Config entries and config flows | **Keep** | Headless device/integration lifecycle |
-| Device/entity registries | **Keep** | Stable physical-world identity |
-| Integration loader and requirements machinery | **Keep** | The closure's requirements ship with the distribution and are validated in CI; runtime installation remains for custom integrations (#29, ADR 0019) |
-| HTTP, auth, WebSocket API, webhooks | **Keep / reduce** | Machine-facing control and integration infrastructure |
-| MCP server | **Keep** | First-class agent-control surface; protected by protocol-level CI |
-| Conversation / intent / LLM substrate | **Keep / reduce** | Retain the subset required by MCP, not the voice product |
-| Representative integrations (Shelly, MQTT, Matter, Hue, Fronius, Modbus) | **Keep** | Compatibility anchors while reducing the runtime |
-| Miele | **Keep** | OAuth anchor: application credentials, authorization and reauth against a real integration (ADR 0017) |
-| Entity-domain substrate, device-class trigger vocabulary | **Keep** | What the retained integrations implement, and the named triggers/conditions over it (ADR 0012) |
-| Scenes, `person`, `group`, `zone`, `sun` | **Keep** | Device-stored state, aggregation over retained entities and solar position; none of it decides anything (ADR 0002) |
-| Frontend, Lovelace, panel registration, browser launch | **Removed — Wave 1** | Backend boots and operates with the packages physically absent |
-| Automation, scripts | **Removed — Wave 2** | Decision/orchestration layer belongs outside the runtime |
-| Blueprints, templates, automation helpers, cloud, Alexa, Google Assistant | **Removed — Wave 3** | Automation authoring and cloud products (#19) |
-| Logbook, history, energy | **Removed — Wave 3** | Human-facing history and aggregation products (#21) |
-| Onboarding, default bundle, browser upload and link helpers | **Removed — Wave 3** | Replaced by a first-run command and explicit defaults (#22, #30, ADR 0016) |
-| Assist / voice presentation, media browser, AI tasks | **Removed — Wave 3** | Outside the MCP closure; a headless MCP test guards the gap (#23) |
-| Unselected integrations | **Removed — Wave 4** | The tree is the computed retained closure; a component outside it fails CI (#27) |
-| Recorder, long-term statistics | **Removed — Wave 5** | Persistence is the versioned JSON stores; history is the client's concern, and backup is a copy of the configuration directory (#28, ADR 0018) |
+| **Interface** | Web app, dashboards, mobile apps | None — REST, WebSocket and MCP |
+| **Automations and scripts** | Built in, with an editor, blueprints and templates | Not included. Your client subscribes to events and calls services |
+| **AI agents** | Assist and conversation agents; MCP server as an option | MCP server as a primary interface |
+| **Integrations** | About 1,500 | 90: seven device integrations and what they build on |
+| **History and statistics** | Recorder database, history graphs, energy dashboard | None. State changes are streamed, and clients keep what they need |
+| **First run** | Onboarding wizard in the browser | Two commands create the owner and an access token |
+| **Broken configuration** | Recovery mode in the browser | Recovery mode serves the API and reports the cause |
+| **Cloud, add-ons, OS** | Nabu Casa, Supervisor, add-ons, Home Assistant OS | None |
+| **Backup** | Backup integration with cloud storage agents | Copy the configuration directory |
+| **Python source** | 51 MB in 10,000 files | 8 MB in 925 files |
+| **Integration dependencies** | Over 1,100 pinned packages | 40 pinned packages |
 
-The detailed classification lives in [the scope matrix](docs/architecture/scope-matrix.md). The [roadmap](docs/architecture/roadmap.md) lists every open block with its GitHub issue.
+## What stays the same
 
-## How large is the reduction?
+ha-lite keeps Home Assistant's runtime and integration code as it is, so an
+integration behaves the way it does upstream:
 
-A useful measurement needs to distinguish **Home Assistant Core source** from the separately distributed browser frontend.
+- **Integrations and config flows.** Devices are added through the same
+  config flows, with reauthentication, reconfiguration and options.
+- **Discovery.** Zeroconf/mDNS, SSDP, DHCP, Bluetooth and USB find devices
+  and start their config flows.
+- **Devices and entities.** The device and entity registries, the state
+  machine, the event bus and service calls are unchanged. So are areas,
+  floors and labels.
+- **Entity domains.** Lights, switches, covers, climate, fans, locks, sensors,
+  binary sensors, media players, vacuums, valves, water heaters, cameras,
+  weather and the other domains the retained integrations provide.
+- **Triggers and conditions.** Named vocabulary such as `motion.detected`,
+  `door.opened` or `temperature.crossed_threshold`, subscribable over the
+  WebSocket API.
+- **Derived state.** Scenes, groups, people and zones, and the sun's position.
+- **APIs.** The REST and WebSocket APIs, webhooks, OAuth2 application
+  credentials, and the MCP server.
 
-| Metric | Before Wave 1 | Current |
-| --- | ---: | ---: |
-| Tracked files in repository | 27,507 | 3,069 |
-| Tracked Python files | 18,497 | 2,140 |
-| Product Python under `homeassistant/` | 10,028 files / 51.36 MB | 925 files / 8.06 MB |
-| Python under `homeassistant/components/` | 9,814 files / 48.51 MB | 714 files / 5.36 MB |
-| Top-level component domains | 1,509 | 90 |
-| Python tests under `tests/` | 8,269 files / 67.45 MB | 1,019 files / 15.60 MB |
+### Included integrations
 
-"Before Wave 1" is the upstream 2026.9.3 tree immediately before the frontend and Lovelace deletion. "Current" is this checkout; the [roadmap](docs/architecture/roadmap.md#size-checkpoints) keeps the intermediate checkpoints.
+| Integration | Kind |
+| --- | --- |
+| [Shelly](https://www.home-assistant.io/integrations/shelly) | Local devices over HTTP/CoAP/RPC and Bluetooth |
+| [MQTT](https://www.home-assistant.io/integrations/mqtt) | Any device that speaks MQTT, including MQTT discovery |
+| [Matter](https://www.home-assistant.io/integrations/matter) | Matter devices through an external Matter Server |
+| [Philips Hue](https://www.home-assistant.io/integrations/hue) | Hue bridges |
+| [Fronius](https://www.home-assistant.io/integrations/fronius) | Fronius solar inverters |
+| [Modbus](https://www.home-assistant.io/integrations/modbus) | Modbus TCP/RTU devices, configured in YAML |
+| [Miele](https://www.home-assistant.io/integrations/miele) | Miele appliances through Miele's cloud (OAuth) |
 
-Waves 1–3 barely moved these numbers: roughly 94% of the Python bytes under `homeassistant/` were component code, and the product layers are a small part of it. Wave 4 is where the size went. The [retained closure](docs/architecture/retained-closure.md) reached 88 of 1,470 component domains, and deleting everything outside it left ha-lite with 17% of the upstream product Python (8.75 of 51.36 MB) and 43 pinned packages in `requirements_all.txt` where there were 1,146.
+Each one runs its full upstream test suite in CI. Custom integrations in the
+configuration directory's `custom_components/` folder load as they do in Home
+Assistant.
 
-Wave 5 removed Recorder, and with it SQLAlchemy and the statistics machinery. ha-lite now carries **16% of the upstream product Python** (8.06 of 51.36 MB), 6% of the component domains, under a quarter of the test code, and 40 pinned integration packages. Each wave records its checkpoint in the roadmap.
+## What is gone, and why
 
-`script/ha_lite_size_report.py` produces reproducible file/line/byte counts from a checkout, so the same measurement can be repeated before and after each deletion wave.
+Everything that makes Home Assistant a product for people is removed from the
+code base, not just switched off: the frontend and dashboards, automations and
+scripts, blueprints and templates, history, logbook and energy, the Recorder
+database, the voice pipeline, onboarding, Home Assistant Cloud, Alexa and
+Google Assistant, the Supervisor and add-ons, and backups. In all, roughly
+1,400 of Home Assistant's 1,500 integrations are gone.
 
-## Roadmap
+The principle behind the cut: ha-lite describes and controls the physical
+world, and deciding what should happen belongs to its clients. Whatever is not
+in the tree cannot add dependencies, coupling, attack surface or noise for the
+next person or agent reading the code.
 
-| Wave | Scope | Status |
-| --- | --- | --- |
-| 1 | Frontend, Lovelace and browser-product bootstrap | Done |
-| 2 | Automation and Script | Done |
-| 3 | Remaining product layers ([#16](https://github.com/sebastian-software/ha-lite/issues/16)) | Done |
-| 4 | Explicit retained integration closure ([#17](https://github.com/sebastian-software/ha-lite/issues/17)) | Done |
-| 5 | Persistence, configuration and runtime composition ([#18](https://github.com/sebastian-software/ha-lite/issues/18)) | Done |
+## Getting started
 
-[docs/architecture/roadmap.md](docs/architecture/roadmap.md) states each wave's entry and exit criteria and links the issue behind every open block. The architecture documents are the design source of truth; GitHub issues track execution.
+You need Python 3.14 and [uv](https://docs.astral.sh/uv/).
 
-## First run
+```bash
+git clone https://github.com/sebastian-software/ha-lite.git
+cd ha-lite
+uv venv --python 3.14
+source .venv/bin/activate
+uv pip install -e . -r requirements_all.txt
+```
 
-There is no onboarding UI. Create the owner and a token for your client, then
-start the runtime:
+`requirements_all.txt` holds every dependency of the included integrations,
+so ha-lite installs nothing at runtime unless you add custom integrations.
+
+### First run
+
+There is no onboarding UI. Create the owner and an access token, then start
+the server:
 
 ```bash
 hass --script owner -c config create --name "Admin" --username admin
-hass --script owner -c config token --client-name "mcp agent"
+hass --script owner -c config token --client-name "my agent"
 hass -c config
 ```
 
-The generated `configuration.yaml` lists the discovery integrations it enables;
-remove a line to turn one off. Everything else is configured through config
-flows over the WebSocket or REST API. If the configuration cannot be loaded,
-ha-lite starts in recovery mode with the API up and the reason in
-`/api/error_log`. [ADR 0016](docs/adr/0016-headless-first-run-and-recovery.md)
-has the details.
+`create` asks for the password, and `token` prints a long-lived access token
+once; keep it. The server listens on port 8123. The generated
+`config/configuration.yaml` switches on device discovery, one line per
+protocol. Delete a line to turn that protocol off.
 
-## What success looks like
+### Connect an MCP client
 
-ha-lite should remain able to discover, configure, observe and control retained devices while being substantially smaller and conceptually narrower than Home Assistant Core. In particular, headless operation is a contract rather than a launch option: frontend/Lovelace must be physically absent, while HTTP/WebSocket APIs, representative integrations and MCP continue to work.
+The MCP server is set up like any integration, through its config flow:
 
-See [the architecture overview](docs/architecture/overview.md), [scope matrix](docs/architecture/scope-matrix.md), [testing strategy](docs/architecture/testing-strategy.md), and [ADRs](docs/adr/).
+```bash
+TOKEN="<the printed token>"
+API=http://localhost:8123/api
+
+curl -s -X POST "$API/config/config_entries/flow" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"handler": "mcp_server"}'
+
+# Use the flow_id from the response:
+curl -s -X POST "$API/config/config_entries/flow/<flow_id>" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"llm_hass_api": ["assist"]}'
+```
+
+Then point your MCP client at `http://<host>:8123/api/mcp` (Streamable HTTP),
+with the token as a bearer token. Devices are added the same way: start the
+config flow of an integration, such as `"handler": "shelly"`, or finish one
+that discovery has already started.
+
+### When something is broken
+
+If `configuration.yaml` cannot be loaded, ha-lite starts in recovery mode.
+The API stays up, the cause is at `/api/error_log`, and config entries can be
+inspected and repaired through the same API.
+
+### Backup
+
+Stop ha-lite and copy the configuration directory. To restore, copy it back
+before starting. The directory holds credentials and secrets, so protect the
+copy accordingly.
+
+## Project documentation
+
+The design decisions are written down as architecture decision records in
+[`docs/adr/`](docs/adr/). A few starting points:
+
+- [ADR 0001](docs/adr/0001-headless-device-core.md): why ha-lite is a
+  headless device core;
+- [ADR 0002](docs/adr/0002-externalize-automation.md): why decision making
+  lives outside it;
+- [ADR 0016](docs/adr/0016-headless-first-run-and-recovery.md): first run,
+  recovery and administration without a browser;
+- [ADR 0018](docs/adr/0018-persistence-contract.md): what ha-lite persists,
+  and why it keeps no history;
+- [ADR 0019](docs/adr/0019-configuration-and-dependencies.md): configuration
+  and dependencies.
+
+What is kept, and why, is listed per component in the
+[scope matrix](docs/architecture/scope-matrix.md). The
+[retained closure](docs/architecture/retained-closure.md) explains how the
+kept set is computed from the import graph and enforced in CI. The
+[roadmap](docs/architecture/roadmap.md) records how the reduction was carried
+out, with size measurements at each step.
+
+## Development
+
+```bash
+script/setup                        # virtual environment with dev tools
+uv run --no-sync pytest tests/...   # tests
+uv run --no-sync prek run --all-files
+```
+
+An integration becomes part of ha-lite by being declared in
+`script/ha_lite_closure_config.json` and given a job in
+`.github/workflows/ha-lite-ci.yml`. CI rejects any component that is in the
+tree but not part of the declared set. [`CLAUDE.md`](CLAUDE.md) has the
+project conventions.
+
+## License
+
+Apache License 2.0, like Home Assistant. See [LICENSE.md](LICENSE.md).
