@@ -62,6 +62,7 @@ Records are written in English, like everything else in the repository
 | [0016](0016-headless-first-run-and-recovery.md) | Initialize, recover and administer ha-lite without a browser | Accepted |
 | [0017](0017-oauth-lifecycle-anchor.md) | Keep one OAuth integration as the anchor for authorization | Accepted |
 | [0018](0018-persistence-contract.md) | Persist configuration and identity in versioned stores, keep no history | Accepted |
+| [0019](0019-configuration-and-dependencies.md) | Keep YAML as input, ship the closure's dependencies, gate both in CI | Accepted |
 
 ## How these relate to the rest of the documentation
 

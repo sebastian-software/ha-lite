@@ -588,9 +588,9 @@ async def test_check_ha_config_file_wrong(mock_check, hass: HomeAssistant) -> No
     [
         {
             HOMEASSISTANT_DOMAIN: {
-                CONF_PACKAGES: {"pack_dict": {"input_boolean": {"ib1": None}}}
+                CONF_PACKAGES: {"pack_dict": {"group": {"g1": None}}}
             },
-            "input_boolean": {"ib2": None},
+            "group": {"g2": None},
             "light": {"platform": "test"},
         }
     ],
@@ -605,7 +605,7 @@ async def test_async_hass_config_yaml_merge(
     assert merge_log_err.call_count == 0
     assert conf[HOMEASSISTANT_DOMAIN].get(CONF_PACKAGES) is not None
     assert len(conf) == 3
-    assert len(conf["input_boolean"]) == 2
+    assert len(conf["group"]) == 2
     assert len(conf["light"]) == 1
 
 
@@ -619,54 +619,54 @@ def merge_log_err() -> Generator[MagicMock]:
 async def test_merge(merge_log_err: MagicMock, hass: HomeAssistant) -> None:
     """Test if we can merge packages."""
     packages = {
-        "pack_dict": {"input_boolean": {"ib1": None}},
-        "pack_11": {"input_select": {"is1": None}},
+        "pack_dict": {"group": {"g1": None}},
+        "pack_11": {"system_log": {"fire_event": True}},
         "pack_list": {"light": {"platform": "test"}},
         "pack_list2": {"light": [{"platform": "test"}]},
-        "pack_none": {"wake_on_lan": None},
-        "pack_special": {
-            "automation": [{"some": "yay"}],
-            "script": {"a_script": "yay"},
-            "template": [{"some": "yay"}],
+        "pack_none": {"stream": None},
+        "pack_lists": {
+            "person": [{"some": "yay"}],
+            "zone": [{"some": "yay"}],
+            "modbus": [{"some": "yay"}],
         },
     }
     config = {
         HOMEASSISTANT_DOMAIN: {CONF_PACKAGES: packages},
-        "input_boolean": {"ib2": None},
+        "group": {"g2": None},
         "light": {"platform": "test"},
-        "automation": [],
-        "script": {},
-        "template": [],
+        "person": [],
+        "zone": [],
+        "modbus": [],
     }
     await config_util.merge_packages_config(hass, config, packages)
 
     assert merge_log_err.call_count == 0
     assert len(config) == 8
-    assert len(config["input_boolean"]) == 2
-    assert len(config["input_select"]) == 1
+    assert len(config["group"]) == 2
+    assert len(config["system_log"]) == 1
     assert len(config["light"]) == 3
-    assert len(config["automation"]) == 1
-    assert len(config["script"]) == 1
-    assert len(config["template"]) == 1
-    assert isinstance(config["wake_on_lan"], OrderedDict)
+    assert len(config["person"]) == 1
+    assert len(config["zone"]) == 1
+    assert len(config["modbus"]) == 1
+    assert isinstance(config["stream"], OrderedDict)
 
 
 async def test_merge_try_falsy(merge_log_err: MagicMock, hass: HomeAssistant) -> None:
     """Ensure we don't add falsy items like empty OrderedDict() to list."""
     packages = {
-        "pack_falsy_to_lst": {"automation": OrderedDict()},
+        "pack_falsy_to_lst": {"person": OrderedDict()},
         "pack_list2": {"light": OrderedDict()},
     }
     config = {
         HOMEASSISTANT_DOMAIN: {CONF_PACKAGES: packages},
-        "automation": {"do": "something"},
+        "person": {"do": "something"},
         "light": {"some": "light"},
     }
     await config_util.merge_packages_config(hass, config, packages)
 
     assert merge_log_err.call_count == 0
     assert len(config) == 3
-    assert len(config["automation"]) == 1
+    assert len(config["person"]) == 1
     assert len(config["light"]) == 1
 
 
@@ -674,10 +674,10 @@ async def test_merge_new(merge_log_err: MagicMock, hass: HomeAssistant) -> None:
     """Test adding new components to outer scope."""
     packages = {
         "pack_1": {"light": [{"platform": "one"}]},
-        "pack_11": {"input_select": {"ib1": None}},
+        "pack_11": {"group": {"g1": None}},
         "pack_2": {
             "light": {"platform": "one"},
-            "panel_custom": {"pan1": None},
+            "zone": {"z1": None},
             "api": {},
         },
     }
@@ -688,7 +688,7 @@ async def test_merge_new(merge_log_err: MagicMock, hass: HomeAssistant) -> None:
     assert "api" in config
     assert len(config) == 5
     assert len(config["light"]) == 2
-    assert len(config["panel_custom"]) == 1
+    assert len(config["zone"]) == 1
 
 
 async def test_merge_type_mismatch(
@@ -696,21 +696,21 @@ async def test_merge_type_mismatch(
 ) -> None:
     """Test if we have a type mismatch for packages."""
     packages = {
-        "pack_1": {"input_boolean": [{"ib1": None}]},
-        "pack_11": {"input_select": {"ib1": None}},
+        "pack_1": {"group": [{"g1": None}]},
+        "pack_11": {"system_log": {"fire_event": True}},
         "pack_2": {"light": {"ib1": None}},  # light gets merged - ensure_list
     }
     config = {
         HOMEASSISTANT_DOMAIN: {CONF_PACKAGES: packages},
-        "input_boolean": {"ib2": None},
-        "input_select": [{"ib2": None}],
+        "group": {"g2": None},
+        "system_log": [{"fire_event": False}],
         "light": [{"platform": "two"}],
     }
     await config_util.merge_packages_config(hass, config, packages)
 
     assert merge_log_err.call_count == 2
     assert len(config) == 4
-    assert len(config["input_boolean"]) == 1
+    assert len(config["group"]) == 1
     assert len(config["light"]) == 2
 
 
@@ -789,11 +789,11 @@ async def test_merge_once_only_dictionaries(hass: HomeAssistant) -> None:
 async def test_merge_id_schema(hass: HomeAssistant) -> None:
     """Test if we identify the config schemas correctly."""
     types = {
-        "panel_custom": "list",
+        "modbus": "list",
+        "person": "list",
         "group": "dict",
-        "input_boolean": "dict",
-        "shell_command": "dict",
-        "qwikswitch": "dict",
+        "logger": "dict",
+        "system_log": "dict",
     }
     for domain, expected_type in types.items():
         integration = await async_get_integration(hass, domain)
@@ -806,16 +806,16 @@ async def test_merge_duplicate_keys(
     merge_log_err: MagicMock, hass: HomeAssistant
 ) -> None:
     """Test if keys in dicts are duplicates."""
-    packages = {"pack_1": {"input_select": {"ib1": None}}}
+    packages = {"pack_1": {"group": {"g1": None}}}
     config = {
         HOMEASSISTANT_DOMAIN: {CONF_PACKAGES: packages},
-        "input_select": {"ib1": 1},
+        "group": {"g1": 1},
     }
     await config_util.merge_packages_config(hass, config, packages)
 
     assert merge_log_err.call_count == 1
     assert len(config) == 2
-    assert len(config["input_select"]) == 1
+    assert len(config["group"]) == 1
 
 
 async def test_merge_split_component_definition(hass: HomeAssistant) -> None:

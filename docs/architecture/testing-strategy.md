@@ -22,6 +22,7 @@ These tests protect lifecycle and integration-host behavior:
 
 - `tests/test_bootstrap.py`
 - `tests/test_core.py`
+- `tests/test_config.py`
 - `tests/test_config_entries.py`
 - `tests/test_loader.py`
 - `tests/test_setup.py`
@@ -108,7 +109,9 @@ prepare environment
        +--> device-class semantics (matrix)
        +--> derived state (matrix)
        +--> retained integrations (matrix)
-       +--> static sanity (prek, the gates' own tests, trigger targets, closure gate)
+       +--> test fixtures (demo, kitchen_sink)
+       +--> static sanity (prek, the gates' own tests, trigger targets, closure gate,
+                           hassfest, requirement files, mypy)
 ```
 
 The dependency environment is built once and cached. Matrix suites run separately so a failure in Matter does not obscure a Shelly regression.
@@ -117,7 +120,7 @@ The dependency environment is built once and cached. Matrix suites run separatel
 
 Running all ~Home Assistant tests on every ha-lite change is not a useful long-term goal because thousands of tests protect integrations and product features we intend to remove.
 
-However, while the source tree is still largely intact, occasional full-suite runs are useful as a reference. Before large deletion waves, the focused ha-lite suite is the required gate. A full upstream-style run may be added as a manually triggered/nightly diagnostic until enough code has been removed that it stops being meaningful.
+Wave 4 settled that question for components: the tree holds only the retained closure, and every root has a CI job running its tests. What does not run yet is most of `tests/helpers` and `tests/util`, and the own suites of the transitive members (`device_automation`, `intent`, `llm`, `stream`, `web_rtc`, `zone`). Adding them is ordinary coverage work, not a separate full-suite run.
 
 ## Adding integrations
 

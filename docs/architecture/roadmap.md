@@ -17,7 +17,7 @@ what is still to do.
 | 2 | Automation and Script | — | Done |
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
 | 4 | Explicit retained integration closure | [#17] | Done |
-| 5 | Persistence, configuration and runtime composition | [#18] | 2 of 3 blocks done |
+| 5 | Persistence, configuration and runtime composition | [#18] | Done |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -108,6 +108,8 @@ was not promoted: Matter covers the same local-device ground.
 actually ships. Wave 5 does not block Waves 3 and 4, and #30 landed early
 because removing onboarding in #22 needed its replacement.
 
+**Done.** Every exit criterion below holds.
+
 **Exit:**
 
 - a documented persistence contract, with Recorder removed or reduced to what
@@ -120,7 +122,7 @@ because removing onboarding in #22 needed its replacement.
 | Block | Issue | Status |
 |---|---|---|
 | Minimal persistence contract; retire Recorder product semantics | [#28] | Done — Recorder removed; ADR 0018 supersedes ADR 0004 |
-| Configuration, YAML loading and dependency installation | [#29] | Open |
+| Configuration, YAML loading and dependency installation | [#29] | Done — YAML kept as input, the closure's requirements ship with the distribution, hassfest, requirements and mypy gated in CI; ADR 0019 |
 | Headless bootstrap, recovery and administrative control | [#30] | Done — `hass --script owner`, recovery as an API path; ADR 0016 |
 
 ## Open questions without an issue
@@ -143,6 +145,7 @@ checkpoint. The README carries the current numbers.
 | After #23 (voice, media browser, AI tasks) | 26,894 | 9,792 files / 49.26 MB | 8,047 files / 63.58 MB | 1,458 |
 | After Wave 3 (#22, #25, #30) | 26,824 | 9,764 files / 49.09 MB | 8,021 files / 63.20 MB | 1,448 |
 | After Wave 4 (#26, #27) | 3,202 | 979 files / 8.75 MB | 1,094 files / 17.31 MB | 91 |
+| After Wave 5 (#28, #29) | 3,069 | 925 files / 8.06 MB | 1,019 files / 15.60 MB | 90 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot

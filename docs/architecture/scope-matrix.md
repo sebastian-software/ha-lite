@@ -86,8 +86,8 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | HomeKit bridge/export | **REMOVED** | Output/product compatibility. Deleted in Wave 4 (#27). |
 | demo, kitchen_sink | **KEEP (test fixtures)** | Simulated devices that retained upstream test suites set up by name — `demo` behind the `media_player`, `camera`, `group` and config-entry tests, `kitchen_sink` behind `group`'s lock tests. Their platforms for domains ha-lite does not retain are pruned. Roots with a CI job, not runtime (#27). |
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
-| YAML configuration | INVESTIGATE | Config entries likely primary target. Modbus is configured by YAML only (#29). |
-| Dynamic pip requirement installation | INVESTIGATE / REPLACE | Controlled distribution may prefer pre-resolved dependencies (#29). |
+| YAML configuration | **KEEP** | Instance settings (`homeassistant:`, `http:`, `logger:`, discovery) and declarative integration configuration with no config flow — Modbus register maps, MQTT YAML entities, `group`/`person`/`zone`/`scene`. Config entries stay primary; `tests/test_config.py` is in CI (#29, ADR 0019). |
+| Dynamic pip requirement installation | **KEEP** for custom integrations | The closure's requirements ship with the distribution (`requirements_all.txt`, 40 packages, validated in CI), so retained integrations install nothing at runtime. `--skip-pip` forbids it entirely (#29, ADR 0019). |
 | Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); deleted with the integration long tail in Wave 4 (#27). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |
