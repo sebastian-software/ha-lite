@@ -435,16 +435,27 @@ def test_catalog_import_of_a_missing_component_is_a_finding(
     ]
 
 
-def test_after_dependency_on_a_missing_component_is_not_a_finding(
-    tree: Path, tmp_path: Path
+@pytest.mark.parametrize(
+    ("files", "compat"),
+    [
+        pytest.param([], {}, id="missing"),
+        pytest.param(["gone.py"], {"gone": "answers DOMAIN"}, id="compat_module"),
+    ],
+)
+def test_after_dependency_on_a_non_integration_is_dangling(
+    tree: Path, tmp_path: Path, files: list[str], compat: dict[str, str]
 ) -> None:
-    """The loader ignores an ordering hint on a domain that is not there."""
+    """With pip allowed, setup resolves after dependencies, and a missing one fails it."""
+    for name in files:
+        (tree / name).write_text("DOMAIN = 'gone'\n", encoding="utf-8")
     write_component(tree, "alpha", manifest={"after_dependencies": ["gone"]})
 
-    write_config(tmp_path, roots=["alpha"])
+    write_config(tmp_path, roots=["alpha"], compat=compat)
     result = ha_lite_closure.analyze()
 
-    assert result["dangling"] == []
+    assert [(e.target, e.kind) for e in result["dangling"]] == [
+        ("gone", "after_dependencies")
+    ]
 
 
 def test_compat_module_satisfies_an_import(tree: Path, tmp_path: Path) -> None:
