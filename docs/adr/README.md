@@ -64,6 +64,7 @@ Records are written in English, like everything else in the repository
 | [0018](0018-persistence-contract.md) | Persist configuration and identity in versioned stores, keep no history | Accepted |
 | [0019](0019-configuration-and-dependencies.md) | Keep YAML as input, ship the tree's dependencies, gate both in CI | Accepted |
 | [0020](0020-keep-the-integration-catalog.md) | Keep Home Assistant's integration catalog, remove only product layers | Accepted |
+| [0021](0021-ship-core-and-integrations-separately.md) | Ship the core and the integrations as separate, version-locked packages | Proposed |
 
 ## How these relate to the rest of the documentation
 
