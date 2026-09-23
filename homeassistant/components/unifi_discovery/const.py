@@ -10,5 +10,6 @@ DOMAIN = "unifi_discovery"
 CONSUMER_MAPPING: dict[UnifiService, str] = {
     UnifiService.Access: "unifi_access",
     UnifiService.Network: "unifi",
-    UnifiService.Protect: "unifiprotect",
+    # ha-lite: unifiprotect is not in the tree until it is decoupled from the
+    # Automation integration (ADR 0020), so Protect consoles start no flow.
 }

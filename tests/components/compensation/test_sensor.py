@@ -1,11 +1,9 @@
 """The tests for the integration sensor platform."""
 
 from typing import Any
-from unittest.mock import patch
 
 import pytest
 
-from homeassistant import config as hass_config
 from homeassistant.components.compensation.const import CONF_PRECISION, DOMAIN
 from homeassistant.components.compensation.sensor import ATTR_COEFFICIENTS
 from homeassistant.components.sensor import (
@@ -19,7 +17,6 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     EVENT_HOMEASSISTANT_START,
     EVENT_STATE_CHANGED,
-    SERVICE_RELOAD,
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
     UnitOfTemperature,
@@ -28,11 +25,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 from homeassistant.setup import async_setup_component
 
-from tests.common import (
-    assert_platform_setup_creates_issue,
-    assert_setup_component,
-    get_fixture_path,
-)
+from tests.common import assert_platform_setup_creates_issue, assert_setup_component
 
 TEST_OBJECT_ID = "test_compensation"
 TEST_ENTITY_ID = "sensor.test_compensation"
@@ -374,42 +367,19 @@ async def test_non_numerical_states_from_source_entity(
 
 async def test_source_state_none(hass: HomeAssistant) -> None:
     """Test is source sensor state is null and sets state to STATE_UNKNOWN."""
-    await async_setup_component(
-        hass,
-        "template",
-        {
-            "template": {
-                "sensor": {
-                    "name": "uncompensated",
-                    "state": "{{ states.sensor.test_state.state }}",
-                },
-            }
-        },
-    )
     await async_setup_compensation(hass, TEST_CONFIG)
 
-    hass.states.async_set("sensor.test_state", 4)
-
+    hass.states.async_set(TEST_SOURCE, 4)
     await hass.async_block_till_done()
-    state = hass.states.get(TEST_SOURCE)
-    assert state.state == "4"
 
-    await hass.async_block_till_done()
     state = hass.states.get(TEST_ENTITY_ID)
     assert state.state == "5.0"
 
-    # Force Template Reload
-    yaml_path = get_fixture_path("sensor_configuration.yaml", "template")
-    with patch.object(hass_config, "YAML_CONFIG_FILE", yaml_path):
-        await hass.services.async_call(
-            "template",
-            SERVICE_RELOAD,
-            {},
-            blocking=True,
-        )
-        await hass.async_block_till_done()
+    # Upstream reloads a template sensor out of existence; removing the state
+    # is the same event without the Template integration.
+    hass.states.async_remove(TEST_SOURCE)
+    await hass.async_block_till_done()
 
-    # Template state gets to None
     state = hass.states.get(TEST_SOURCE)
     assert state is None
 

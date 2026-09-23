@@ -236,7 +236,8 @@
       "schedule",
       "script",
       "template",
-      "timer"
+      "timer",
+      "trace"
     ],
     "history": ["energy", "history", "logbook", "recorder"],
     "voice_and_ai": [
