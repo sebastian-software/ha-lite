@@ -39,6 +39,10 @@
     "still imports one of them is kept out of the catalog by the dangling-import",
     "finding until it is decoupled.",
     "",
+    "'compat_modules' lists the single files directly under components/ that",
+    "answer what integrations ask a removed layer, without being an",
+    "integration: no manifest, no setup. Importing one is not dangling.",
+    "",
     "'accepted_transitive' records every domain the closure pulls in that is not",
     "itself a root, with a reviewed reason. A domain reaching the closure without",
     "an entry here fails the check, so new coupling from retained code into an",
@@ -257,5 +261,10 @@
       "hassio",
       "labs"
     ]
+  },
+  "compat_modules": {
+    "automation": "automations_with_entity/automations_with_device return no automations; integrations call them before deprecating an entity.",
+    "onboarding": "async_is_onboarded is always true; config flows call it to auto-confirm discoveries during the browser wizard ha-lite does not have.",
+    "script": "DOMAIN, CONF_MODE and scripts_with_entity, which returns no scripts."
   }
 }

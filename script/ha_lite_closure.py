@@ -27,6 +27,11 @@ when it is loaded. That is also what keeps an integration that still needs a
 removed product layer out of the catalog until it is decoupled. And so is an
 excluded product layer that appears in the tree again.
 
+A compatibility module is a single file directly under `components/`, such as
+`automation.py`: no manifest, no setup, only the few names integrations import
+from a removed layer. Importing one is not dangling. Each must be declared under
+`compat_modules` in the config, so a new one is a reviewed change.
+
     python3 script/ha_lite_closure.py            # human-readable report
     python3 script/ha_lite_closure.py --check    # CI gate, non-zero on findings
     python3 script/ha_lite_closure.py --json     # machine-readable closure
@@ -308,13 +313,17 @@ def analyze() -> dict:
     excluded: set[str] = set()
     for members in config["excluded"].values():
         excluded.update(members)
+    declared_compat: dict[str, str] = config["compat_modules"]
 
     domains, edges = collect_edges()
+    compat = {path.stem for path in COMPONENTS.glob("*.py") if path.stem != "__init__"}
     closure, reason = build_closure(roots, domains, edges)
 
     missing_roots = sorted(roots - domains)
     catalog = sorted(domains - closure)
     excluded_in_tree = sorted(domains & excluded)
+    undeclared_compat = sorted(compat - set(declared_compat))
+    stale_compat = sorted(set(declared_compat) - compat)
     unreviewed = sorted(closure - roots - set(accepted))
     stale_accepted = sorted(set(accepted) - closure)
 
@@ -340,7 +349,9 @@ def analyze() -> dict:
         (
             edge
             for edge in edges
-            if edge.kind != "after_dependencies" and edge.target not in domains
+            if edge.kind != "after_dependencies"
+            and edge.target not in domains
+            and edge.target not in compat
         ),
         key=lambda edge: (edge.target, edge.via),
     )
@@ -371,6 +382,9 @@ def analyze() -> dict:
         "catalog": catalog,
         "excluded": excluded,
         "excluded_in_tree": excluded_in_tree,
+        "compat": compat,
+        "undeclared_compat": undeclared_compat,
+        "stale_compat": stale_compat,
         "unreviewed": unreviewed,
         "stale_accepted": stale_accepted,
         "latent": latent,
@@ -389,6 +403,16 @@ def as_json(result: dict) -> dict:
         "accepted_transitive": sorted(set(result["accepted"]) & result["closure"]),
         "catalog": result["catalog"],
         "excluded": sorted(result["excluded"]),
+        "compat_modules": {
+            module: sorted(
+                {
+                    edge.source
+                    for edge in result["edges"]
+                    if edge.target == module and edge.source != CORE
+                }
+            )
+            for module in sorted(result["compat"])
+        },
         "pulled_in_by": {
             domain: {
                 "source": reason[domain].source,
@@ -402,6 +426,8 @@ def as_json(result: dict) -> dict:
             "stale_accepted_entries": result["stale_accepted"],
             "missing_roots": result["missing_roots"],
             "excluded_in_tree": result["excluded_in_tree"],
+            "undeclared_compat_modules": result["undeclared_compat"],
+            "stale_compat_modules": result["stale_compat"],
             "dangling_imports": [
                 {"target": edge.target, "kind": edge.kind, "via": edge.via}
                 for edge in result["dangling"]
@@ -483,6 +509,8 @@ def print_report(result: dict) -> None:
         *result["stale_accepted"],
         *result["missing_roots"],
         *result["excluded_in_tree"],
+        *result["undeclared_compat"],
+        *result["stale_compat"],
         *result["dangling"],
     ]
     print("\n## Findings\n")
@@ -507,6 +535,16 @@ def print_report(result: dict) -> None:
         print(
             f"- **excluded**: `{domain}` is a product layer ha-lite removed. "
             "Delete it, or record why it comes back and drop it from `excluded`."
+        )
+    for module in result["undeclared_compat"]:
+        print(
+            f"- **undeclared compat**: `components/{module}.py` is not listed "
+            "under `compat_modules`. Declare it with a reason, or delete it."
+        )
+    for module in result["stale_compat"]:
+        print(
+            f"- **stale compat**: `{module}` is listed under `compat_modules` "
+            "but has no module. Drop the entry."
         )
     for edge in result["dangling"]:
         print(
@@ -553,6 +591,8 @@ def main() -> int:
             *result["stale_accepted"],
             *result["missing_roots"],
             *result["excluded_in_tree"],
+            *result["undeclared_compat"],
+            *result["stale_compat"],
             *result["dangling"],
         ]
         if findings:

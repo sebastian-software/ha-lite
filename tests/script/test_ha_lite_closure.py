@@ -48,6 +48,7 @@ def write_config(
     accepted: dict[str, dict] | None = None,
     platforms: list[str] | None = None,
     excluded: list[str] | None = None,
+    compat: dict[str, str] | None = None,
 ) -> None:
     """Write the checked-in-style config the tool reads."""
     (tmp_path / "config.json").write_text(
@@ -57,6 +58,7 @@ def write_config(
                 "cross_cutting_platforms": platforms or [],
                 "accepted_transitive": accepted or {},
                 "excluded": {"test": excluded or []},
+                "compat_modules": compat or {},
             }
         ),
         encoding="utf-8",
@@ -443,3 +445,44 @@ def test_after_dependency_on_a_missing_component_is_not_a_finding(
     result = ha_lite_closure.analyze()
 
     assert result["dangling"] == []
+
+
+def test_compat_module_satisfies_an_import(tree: Path, tmp_path: Path) -> None:
+    """A declared compat module answers imports of a removed layer."""
+    (tree / "gone.py").write_text("DOMAIN = 'gone'\n", encoding="utf-8")
+    write_component(
+        tree,
+        "catalogued",
+        files={"__init__.py": "from homeassistant.components.gone import DOMAIN\n"},
+    )
+
+    write_config(tmp_path, roots=[], compat={"gone": "answers DOMAIN"})
+    result = ha_lite_closure.analyze()
+
+    assert result["dangling"] == []
+    assert result["undeclared_compat"] == []
+    assert ha_lite_closure.as_json(result)["compat_modules"] == {"gone": ["catalogued"]}
+
+
+@pytest.mark.parametrize(
+    ("files", "declared", "finding"),
+    [
+        pytest.param(["gone.py"], {}, "undeclared_compat", id="undeclared"),
+        pytest.param([], {"gone": "reason"}, "stale_compat", id="stale"),
+    ],
+)
+def test_compat_module_must_match_the_config(
+    tree: Path,
+    tmp_path: Path,
+    files: list[str],
+    declared: dict[str, str],
+    finding: str,
+) -> None:
+    """A compat module is a reviewed change, and a dropped one leaves no entry."""
+    for name in files:
+        (tree / name).write_text("DOMAIN = 'gone'\n", encoding="utf-8")
+
+    write_config(tmp_path, roots=[], compat=declared)
+    result = ha_lite_closure.analyze()
+
+    assert result[finding] == ["gone"]
