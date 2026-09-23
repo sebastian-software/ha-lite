@@ -32,6 +32,7 @@ APPLICATION_CREDENTIALS = [
     "overkiz",
     "point",
     "senz",
+    "smartthings",
     "spotify",
     "tesla_fleet",
     "teslemetry",

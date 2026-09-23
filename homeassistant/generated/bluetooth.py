@@ -79,6 +79,21 @@ BLUETOOTH: Final[list[dict[str, bool | str | int | list[int]]]] = [
         "manufacturer_id": 307,
     },
     {
+        "connectable": False,
+        "domain": "bthome",
+        "service_data_uuid": "0000181c-0000-1000-8000-00805f9b34fb",
+    },
+    {
+        "connectable": False,
+        "domain": "bthome",
+        "service_data_uuid": "0000181e-0000-1000-8000-00805f9b34fb",
+    },
+    {
+        "connectable": False,
+        "domain": "bthome",
+        "service_data_uuid": "0000fcd2-0000-1000-8000-00805f9b34fb",
+    },
+    {
         "connectable": True,
         "domain": "casper_glow",
         "local_name": "Jar*",
@@ -333,6 +348,13 @@ BLUETOOTH: Final[list[dict[str, bool | str | int | list[int]]]] = [
             1,
         ],
         "manufacturer_id": 34819,
+    },
+    {
+        "domain": "homekit_controller",
+        "manufacturer_data_start": [
+            6,
+        ],
+        "manufacturer_id": 76,
     },
     {
         "connectable": True,
@@ -1208,6 +1230,26 @@ BLUETOOTH: Final[list[dict[str, bool | str | int | list[int]]]] = [
             16,
         ],
         "manufacturer_id": 737,
+    },
+    {
+        "connectable": False,
+        "domain": "xiaomi_ble",
+        "service_data_uuid": "0000181b-0000-1000-8000-00805f9b34fb",
+    },
+    {
+        "connectable": False,
+        "domain": "xiaomi_ble",
+        "service_data_uuid": "0000181d-0000-1000-8000-00805f9b34fb",
+    },
+    {
+        "connectable": False,
+        "domain": "xiaomi_ble",
+        "service_data_uuid": "0000fd50-0000-1000-8000-00805f9b34fb",
+    },
+    {
+        "connectable": False,
+        "domain": "xiaomi_ble",
+        "service_data_uuid": "0000fe95-0000-1000-8000-00805f9b34fb",
     },
     {
         "domain": "yalexs_ble",

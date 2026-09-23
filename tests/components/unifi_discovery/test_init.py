@@ -18,8 +18,8 @@ async def test_setup_starts_discovery(hass: HomeAssistant) -> None:
         assert await async_setup_component(hass, DOMAIN, {})
         await hass.async_block_till_done(wait_background_tasks=True)
 
-    # The scanner should have dispatched a discovery flow for the Network consumer
-    flows = hass.config_entries.flow.async_progress_by_handler("unifi")
+    # The scanner should have dispatched a discovery flow for the Protect consumer
+    flows = hass.config_entries.flow.async_progress_by_handler("unifiprotect")
     assert len(flows) == 1
     assert flows[0]["context"]["source"] == config_entries.SOURCE_INTEGRATION_DISCOVERY
 
@@ -30,7 +30,7 @@ async def test_setup_no_devices(hass: HomeAssistant) -> None:
         assert await async_setup_component(hass, DOMAIN, {})
         await hass.async_block_till_done(wait_background_tasks=True)
 
-    flows = hass.config_entries.flow.async_progress_by_handler("unifi")
+    flows = hass.config_entries.flow.async_progress_by_handler("unifiprotect")
     assert len(flows) == 0
 
 
@@ -40,20 +40,20 @@ async def test_setup_device_without_mac(hass: HomeAssistant) -> None:
         assert await async_setup_component(hass, DOMAIN, {})
         await hass.async_block_till_done(wait_background_tasks=True)
 
-    flows = hass.config_entries.flow.async_progress_by_handler("unifi")
+    flows = hass.config_entries.flow.async_progress_by_handler("unifiprotect")
     assert len(flows) == 0
 
 
 async def test_dependency_loads_discovery(
     hass: HomeAssistant,
 ) -> None:
-    """Test that loading unifi triggers unifi_discovery as dependency."""
+    """Test that loading unifiprotect triggers unifi_discovery as dependency."""
     with _patch_discovery():
-        assert await async_setup_component(hass, "unifi", {})
+        assert await async_setup_component(hass, "unifiprotect", {})
         await hass.async_block_till_done(wait_background_tasks=True)
 
     # unifi_discovery should have been loaded as a dependency and started scanning
-    flows = hass.config_entries.flow.async_progress_by_handler("unifi")
+    flows = hass.config_entries.flow.async_progress_by_handler("unifiprotect")
     assert len(flows) == 1
     assert flows[0]["context"]["source"] == config_entries.SOURCE_INTEGRATION_DISCOVERY
 
@@ -70,6 +70,6 @@ async def test_discovery_does_not_deepcopy_device(hass: HomeAssistant) -> None:
         assert await async_setup_component(hass, DOMAIN, {})
         await hass.async_block_till_done(wait_background_tasks=True)
 
-    flows = hass.config_entries.flow.async_progress_by_handler("unifi")
+    flows = hass.config_entries.flow.async_progress_by_handler("unifiprotect")
     assert len(flows) == 1
     assert flows[0]["context"]["source"] == config_entries.SOURCE_INTEGRATION_DISCOVERY

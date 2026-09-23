@@ -1,5 +1,12 @@
 {
   "domain": "apple",
   "name": "Apple",
-  "integrations": ["apple_tv", "ibeacon", "icloud", "itunes", "weatherkit"]
+  "integrations": [
+    "apple_tv",
+    "homekit_controller",
+    "ibeacon",
+    "icloud",
+    "itunes",
+    "weatherkit"
+  ]
 }
