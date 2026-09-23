@@ -88,7 +88,7 @@ The whole integration directory is tested rather than a hand-picked test subset.
 
 ### Catalog
 
-Every other integration in the tree is a catalog member (ADR 0020), and the `catalog` job runs its full test directory as upstream ships it. The job is split into ten shards; `script/ha_lite_catalog_shard.py` weighs each directory by the size of its test modules and hands them out so the shards take similar time. Device-trigger tests keep working without the Automation product because `tests/components/__init__.py` routes `automation` and `script` setups to the retained trigger, condition and action primitives in `tests/helpers/automation_harness.py`.
+Every other integration in the tree is a catalog member (ADR 0020), and the `catalog` job runs its full test directory as upstream ships it. The job is split into ten shards; `script/ha_lite_catalog_shard.py` weighs each directory by the size of its test modules and hands them out so the shards take similar time. Device-trigger tests keep working without the Automation product because `tests/components/__init__.py` routes `automation` and `script` setups to the retained trigger, condition and action primitives in `tests/helpers/automation_harness.py`. `tests/helpers/helper_harness.py` does the same for the removed helpers catalog tests use as tools: `input_boolean`, `intent_script`, and the domain names of `input_number`, `input_select` and `counter`.
 
 ## Classification of test failures during reduction
 
