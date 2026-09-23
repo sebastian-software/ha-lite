@@ -162,6 +162,10 @@ No issue carries this yet.
 
 ## Open questions without an issue
 
+Shipping the core and the integrations as separate, version-locked packages
+is proposed in ADR 0021; [split-distribution.md](split-distribution.md) has the
+plan. It gets an issue when the proposal is accepted.
+
 The scope matrix still marks the area, floor and label registries and the REST
 API as INVESTIGATE. Both are core code rather than components, so the closure
 cannot delete them and no wave is blocked on them. They get an issue when a
@@ -181,10 +185,15 @@ checkpoint. The README carries the current numbers.
 | After Wave 3 (#22, #25, #30) | 26,824 | 9,764 files / 49.09 MB | 8,021 files / 63.20 MB | 1,448 |
 | After Wave 4 (#26, #27) | 3,202 | 979 files / 8.75 MB | 1,094 files / 17.31 MB | 91 |
 | After Wave 5 (#28, #29) | 3,069 | 925 files / 8.06 MB | 1,019 files / 15.60 MB | 90 |
+| After the catalog restore (#49, #50) | 22,729 | 8,395 files / 38.92 MB | 6,779 files / 46.89 MB | 1,289 |
+| After the compat modules (#51) | 24,216 | 8,799 files / 41.97 MB | 7,138 files / 50.84 MB | 1,324 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot
 be regenerated from this repository. Every later row can.
+
+The component-domain column counts directories that contain Python. The
+closure counts every directory with a manifest, which is 20 more today.
 
 The numbers barely moved until Wave 4. Product layers are a small part of
 the tree; roughly 94% of the Python under `homeassistant/` was component code,
