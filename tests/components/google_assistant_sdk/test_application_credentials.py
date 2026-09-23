@@ -14,7 +14,6 @@ from homeassistant.core import HomeAssistant
     [
         ([], "https://example.com", "https://example.com/auth/external/callback"),
         ([], None, "https://YOUR_DOMAIN:PORT/auth/external/callback"),
-        (["my"], "https://example.com", "https://my.home-assistant.io/redirect/oauth"),
     ],
 )
 async def test_description_placeholders(

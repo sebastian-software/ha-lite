@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-from arrow import utcnow
 from miio.integrations.airpurifier.dmaker.airfresh_t2017 import (
     DisplayOrientation,
     PtcLevel,
@@ -32,6 +31,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.util.dt import utcnow
 
 from . import TEST_MAC
 
