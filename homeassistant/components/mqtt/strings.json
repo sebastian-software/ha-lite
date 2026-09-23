@@ -1,10 +1,6 @@
 {
   "config": {
     "abort": {
-      "addon_connection_failed": "Failed to connect to the {addon} app. Check the app status and try again later.",
-      "addon_info_failed": "Failed get info for the {addon} app.",
-      "addon_install_failed": "Failed to install the {addon} app.",
-      "addon_start_failed": "Failed to start the {addon} app.",
       "already_configured": "[%key:common::config_flow::abort::already_configured_service%]",
       "reauth_successful": "[%key:common::config_flow::abort::reauth_successful%]",
       "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]",
@@ -43,10 +39,10 @@
         "sections": {
           "other_settings": {
             "data": {
-              "certificate": "Upload custom CA certificate file",
-              "client_cert": "Upload client certificate file",
+              "certificate": "Custom CA certificate (PEM)",
+              "client_cert": "Client certificate (PEM)",
               "client_id": "Client ID (leave empty for a randomly generated one)",
-              "client_key": "Upload private key file",
+              "client_key": "Private key (PEM)",
               "client_key_password": "[%key:common::config_flow::data::password%]",
               "keepalive": "The time between sending keep alive messages",
               "set_ca_cert": "Broker certificate validation",
@@ -57,14 +53,14 @@
               "ws_path": "WebSocket path"
             },
             "data_description": {
-              "certificate": "The custom CA certificate file to validate your MQTT broker's certificate.",
-              "client_cert": "The client certificate to authenticate against your MQTT broker.",
+              "certificate": "The custom CA certificate, as PEM text, to validate your MQTT broker's certificate.",
+              "client_cert": "The client certificate, as PEM text, to authenticate against your MQTT broker.",
               "client_id": "The unique ID to identify the Home Assistant MQTT API as MQTT client. It is recommended to leave this option blank.",
-              "client_key": "The private key file that belongs to your client certificate.",
+              "client_key": "The private key that belongs to your client certificate, as PEM text.",
               "client_key_password": "The password for the private key file (if set).",
               "keepalive": "A value less than 90 seconds is advised. Defaults to 60 seconds.",
-              "set_ca_cert": "When already set to **Custom**, a custom CA validation certificate is configured. Select **Auto** for automatic CA validation, or upload a custom CA certificate, to allow validating your MQTT broker's certificate.",
-              "set_client_cert": "When already selected, client certificate authentication is enabled. Upload a client certificate and key to enable.",
+              "set_ca_cert": "When already set to **Custom**, a custom CA validation certificate is configured. Select **Auto** for automatic CA validation, or provide a custom CA certificate, to allow validating your MQTT broker's certificate.",
+              "set_client_cert": "When already selected, client certificate authentication is enabled. Provide a client certificate and key to enable.",
               "tls_insecure": "Option to ignore validation of your MQTT broker's certificate.",
               "transport": "The transport to be used for the connection to your MQTT broker.",
               "ws_headers": "The WebSocket headers to pass through the WebSocket-based connection to your MQTT broker.",
@@ -73,13 +69,6 @@
             "name": "Other settings"
           }
         }
-      },
-      "hassio_confirm": {
-        "description": "Do you want to configure Home Assistant to connect to the MQTT broker provided by the {addon} app?",
-        "title": "MQTT broker via Home Assistant app"
-      },
-      "install_addon": {
-        "title": "Installing app"
       },
       "reauth_confirm": {
         "data": {
@@ -92,16 +81,6 @@
         },
         "description": "The MQTT broker reported an authentication error. Please confirm the broker's correct username and password.",
         "title": "Re-authentication required with the MQTT broker"
-      },
-      "start_addon": {
-        "title": "Starting app"
-      },
-      "user": {
-        "description": "Please choose how you want to connect to the MQTT broker:",
-        "menu_options": {
-          "addon": "Use the official {addon} app.",
-          "broker": "Manually enter the MQTT broker connection details"
-        }
       }
     }
   },
@@ -1095,9 +1074,6 @@
     }
   },
   "exceptions": {
-    "addon_start_failed": {
-      "message": "Failed to correctly start {addon} app."
-    },
     "command_template_error": {
       "message": "Parsing template `{command_template}` for entity `{entity_id}` failed with error: {error}."
     },

@@ -11,9 +11,9 @@ What has become of each finding:
 |---|---|
 | `shelly/logbook.py` depends on `logbook` | Removed with `logbook` (#21) |
 | `shelly/device_trigger.py` depends on `device_automation` | Still present; `device_automation` is an `adapter` entry in the closure |
-| MQTT → `file_upload` for certificate upload | Open (#25, then #22) |
-| MQTT → `hassio` add-on convenience | Open (#25) |
-| Matter → `hassio` add-on lifecycle and `onboarding` | Open (#25) |
+| MQTT → `file_upload` for certificate upload | Patched: certificates are PEM text in the flow (#25) |
+| MQTT → `hassio` add-on convenience | Removed: no add-on install, discovery or reauth recovery (#25) |
+| Matter → `hassio` add-on lifecycle and `onboarding` | Removed: the Matter Server is external and configured by URL (#25) |
 | `frontend`, `lovelace`, `automation`, `script`, `blueprint`, `logbook`, `energy`, `cloud` deletion candidates | All removed |
 | `map` deletion candidate | Not present in the imported tree |
 | Fronius periodic rescan shows runtime scheduling must stay | Recorded in ADR 0005; `schedule` and `timer` removed, `async_track_time_interval` kept |

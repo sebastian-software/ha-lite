@@ -141,11 +141,6 @@
     "trigger"
   ],
   "accepted_transitive": {
-    "backup": {
-      "status": "patch_required",
-      "reason": "Reached only through hassio. Leaves with the hassio patch unless headless backup semantics keep it.",
-      "issue": 30
-    },
     "device_automation": {
       "status": "adapter",
       "reason": "Entity domains ship device_action.py/device_trigger.py adapters for Home Assistant device automation.",
@@ -153,13 +148,8 @@
     },
     "file_upload": {
       "status": "patch_required",
-      "reason": "MQTT certificate configuration UX. The dependency findings call for accepting certificate material through the API instead.",
+      "reason": "Pre-imported by bootstrap.py. MQTT, which used it for certificate upload, takes PEM text since #25; the pre-import leaves with the default bundle.",
       "issue": 22
-    },
-    "hassio": {
-      "status": "patch_required",
-      "reason": "Matter imports Home Assistant OS add-on lifecycle directly. Needs the portability patch that configures an external Matter Server endpoint.",
-      "issue": 25
     },
     "intent": {
       "status": "retained",
@@ -173,7 +163,7 @@
     },
     "onboarding": {
       "status": "patch_required",
-      "reason": "The Matter config flow reads onboarding state. Needs the same portability patch as hassio.",
+      "reason": "Imported at module level by auth/login_flow.py, bluetooth/config_flow.py and helpers/config_entry_flow.py, and pre-imported by bootstrap.py. Matter stopped reading it in #25. Replaced by the headless first-run path.",
       "issue": 22
     },
     "recorder": {

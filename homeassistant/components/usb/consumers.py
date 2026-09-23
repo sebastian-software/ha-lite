@@ -1,14 +1,12 @@
 """Attribution of serial ports to the integrations and apps using them."""
 
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 import os
 import re
 from typing import Any
 
-from homeassistant.components.hassio import HassioNotReadyError, get_addons_info
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.hassio import is_hassio
+from homeassistant.core import HomeAssistant
 from homeassistant.loader import async_get_integrations
 
 from .const import DOMAIN
@@ -60,7 +58,6 @@ UNSCANNABLE_PORT_SCHEMES = (
 BAUD_SUFFIX_RE = re.compile(r":\d+$")
 
 # Supervisor app state, mirrors `aiohasupervisor.models.AddonState.STARTED`
-APP_STATE_STARTED = "started"
 
 
 def _resolve_key_path(data: Mapping[str, Any], key_path: tuple[str, ...]) -> Any:
@@ -156,57 +153,6 @@ async def _async_get_config_entry_consumers(
     return consumers
 
 
-def _iter_option_device_paths(value: Any) -> Iterator[str]:
-    """Yield device paths configured anywhere in the options of an app."""
-    if isinstance(value, str):
-        if value.startswith("/dev/"):
-            yield value
-    elif isinstance(value, Mapping):
-        for item in value.values():
-            yield from _iter_option_device_paths(item)
-    elif isinstance(value, list):
-        for item in value:
-            yield from _iter_option_device_paths(item)
-
-
-@callback
-def _async_get_app_consumers(
-    hass: HomeAssistant,
-) -> dict[str, list[SerialPortConsumer]]:
-    """Return devices configured in the options of apps.
-
-    The `devices` field of an app also lists the static devices of its manifest,
-    which are mapped into the container whether the app uses them or not, so only
-    options are evidence of a device being used. Options can refer to devices
-    that no longer exist or are not serial ports.
-    """
-    if not is_hassio(hass):
-        return {}
-
-    try:
-        apps_info = get_addons_info(hass)
-    except HassioNotReadyError:
-        return {}
-
-    consumers: dict[str, list[SerialPortConsumer]] = {}
-
-    for slug, info in apps_info.items():
-        if info is None:
-            continue
-
-        for device in _iter_option_device_paths(info["options"]):
-            consumers.setdefault(device, []).append(
-                SerialPortConsumer(
-                    kind="app",
-                    title=info["name"],
-                    active=info["state"] == APP_STATE_STARTED,
-                    slug=slug,
-                )
-            )
-
-    return consumers
-
-
 async def async_get_serial_port_consumers(
     hass: HomeAssistant, ports: Sequence[USBDevice | SerialDevice]
 ) -> dict[str, list[SerialPortConsumer]]:
@@ -218,10 +164,9 @@ async def async_get_serial_port_consumers(
     known_devices = {port.device for port in ports}
 
     entry_consumers = await _async_get_config_entry_consumers(hass, known_devices)
-    app_consumers = _async_get_app_consumers(hass)
 
     resolved = await hass.async_add_executor_job(
-        _resolve_paths, known_devices | set(entry_consumers) | set(app_consumers)
+        _resolve_paths, known_devices | set(entry_consumers)
     )
 
     # A port can be referred to by any of its symlinks, e.g. `/dev/serial/by-id`
@@ -237,15 +182,6 @@ async def async_get_serial_port_consumers(
         # Ports that are configured but missing are kept and shown as absent
         device = aliases.get(resolved[path], path)
         consumers.setdefault(device, []).extend(path_consumers)
-
-    for path, path_consumers in app_consumers.items():
-        # Options can name non-serial devices, only scanned ports are of interest
-        resolved_path = resolved[path]
-
-        if resolved_path not in aliases:
-            continue
-
-        consumers.setdefault(aliases[resolved_path], []).extend(path_consumers)
 
     return {
         device: list(dict.fromkeys(device_consumers))
