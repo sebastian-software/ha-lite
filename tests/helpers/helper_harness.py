@@ -1,13 +1,12 @@
 """Test-only stand-ins for removed helper integrations.
 
-`input_boolean`, `input_number`, `input_select`, `counter` and `intent_script`
-are absent from ha-lite. Catalog tests still use them as tools: an
-input_boolean as the switch a thermostat drives, an intent_script as the
-handler behind a voice webhook, the others as entity-id domains. These
-stand-ins give those tests what they use, and nothing more.
+`input_boolean` and `intent_script` are absent from ha-lite; `input_boolean`
+is only a compat module that names its domain. Catalog tests still set them up
+as tools: an input_boolean as the switch a thermostat drives, an intent_script
+as the handler behind a voice webhook. These stand-ins give those tests what
+they use, and nothing more.
 """
 
-from types import SimpleNamespace
 from typing import Any
 
 from homeassistant.const import (
@@ -130,9 +129,6 @@ class _IntentScript:
 
 input_boolean = _InputBoolean
 intent_script = _IntentScript
-input_number = SimpleNamespace(DOMAIN="input_number")
-input_select = SimpleNamespace(DOMAIN="input_select")
-counter = SimpleNamespace(DOMAIN="counter")
 
 SETUP = {
     input_boolean.DOMAIN: input_boolean.async_setup,

@@ -2,6 +2,7 @@
 
 import homeassistant.components as homeassistant_components
 import homeassistant.components.automation as automation_compat
+import homeassistant.components.input_boolean  # noqa: F401
 import homeassistant.components.script as script_compat
 import homeassistant.setup as homeassistant_setup
 
@@ -23,12 +24,10 @@ async def _async_setup_component(hass, domain, config):
 
 # Keep production imports honest: expose the harnesses only as attributes used
 # by component tests. We intentionally do not register their modules in
-# sys.modules, where production code finds the compat modules instead.
+# sys.modules, where production code finds the compat modules instead. Those
+# are imported above, so importing them later cannot replace these attributes.
 homeassistant_components.automation = automation_harness
 homeassistant_components.input_boolean = helper_harness.input_boolean
-homeassistant_components.input_number = helper_harness.input_number
-homeassistant_components.input_select = helper_harness.input_select
-homeassistant_components.counter = helper_harness.counter
 homeassistant_components.intent_script = helper_harness.intent_script
 homeassistant_setup.async_setup_component = _async_setup_component
 
