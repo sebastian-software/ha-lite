@@ -64,20 +64,32 @@ on:
 into ten shards by `script/ha_lite_catalog_shard.py`. Roots keep their own
 jobs.
 
-**Catalog tests are upstream tests.** They run as upstream ships them. The
-test harness in `tests/helpers/automation_harness.py` already answers setups
-of `automation` and `script` with the retained trigger, condition and action
-primitives, so device-trigger tests keep working without the products. A
-test that exercises a removed layer itself goes with the layer, as the
-entity domains' `test_recorder.py` files went in Wave 5.
+**Catalog tests are upstream tests.** They run as upstream ships them, and a
+removed layer they lean on is replaced in ha-lite's own test support rather
+than in each test (ADR 0014):
+
+- `tests/helpers/automation_harness.py` answers setups of `automation` and
+  `script` with the retained trigger, condition and action primitives, and
+  shows each automation as an entity the way the removed integration did, so
+  device-trigger tests keep working without the product;
+- `tests/helpers/helper_harness.py` stands in for `input_boolean` (a toggle
+  that restores its state), `intent_script` (speech and an action per intent)
+  and the domain names of `input_number`, `input_select` and `counter`.
+
+A test that only uses a removed layer as a tool the stand-ins do not cover is
+adapted to a retained equivalent: a template sensor that disappears becomes a
+state that is removed, a constant moves to the domain that defines it too. A
+test that exercises a removed layer itself goes with the layer, as the entity
+domains' `test_recorder.py` files went in Wave 5.
 
 ## Consequences
 
-The restore brought back 1,220 components: the 1,219 that Wave 4 deleted and
+The restore brought back 1,219 components: the 1,218 that Wave 4 deleted and
 whose code imports nothing that is gone, plus `media_source`, which Wave 3 had
 removed with the voice stack although it serves camera, image and media
-player entities. The tree holds 1,310 components: 98 in the closure and 1,212
-in the catalog.
+player entities. `trace` loaded too, but it records and debugs automations and
+scripts, so it joined the excluded layers instead. The tree holds 1,309
+components: 98 in the closure and 1,211 in the catalog.
 
 158 integrations are still out, and `retained-closure.md` lists them
 with what holds each back:
