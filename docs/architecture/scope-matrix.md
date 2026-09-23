@@ -66,7 +66,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
 | STT / TTS / voice presentation | **REMOVED** | `assist_pipeline`, `assist_satellite`, `stt`, `tts` and `wake_word` were outside the `mcp_server` closure; physically removed in Wave 3 (#23). `tests/ha_lite/test_mcp_headless.py` keeps MCP working without them. |
-| media source/browser | **REMOVED** | Product feature; device media controls remain in `media_player`. Reached only through the `camera` and `image` `media_source.py` adapters, which left with it (#23). |
+| media source/browser (`media_source`) | KEEP | Browses and resolves media for camera, image and media player entities: camera snapshots and streams, NVR recordings, media for speakers. Removed with the voice stack in #23 and restored, since it serves devices rather than voice. |
 | ai_task | **REMOVED** | LLM product surface, set up only because bootstrap defaults to every entity platform. No retained integration provides it; agents use MCP (#23). |
 | bluetooth | KEEP | Discovery/transport for physical integrations. |
 | dhcp | KEEP | Discovery infrastructure. |

@@ -59,6 +59,7 @@ Protected as directories:
 - `tests/components/diagnostics`
 - `tests/components/conversation`
 - `tests/components/mcp_server`
+- `tests/components/media_source`
 - `tests/components/recovery_mode`
 - `tests/ha_lite`, contracts ha-lite adds on top of the upstream suite: the headless MCP round-trip and headless recovery mode
 

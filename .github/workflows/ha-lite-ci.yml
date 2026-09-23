@@ -176,6 +176,7 @@ jobs:
             tests/components/diagnostics \
             tests/components/conversation \
             tests/components/mcp_server \
+            tests/components/media_source \
             tests/components/recovery_mode \
             tests/ha_lite
 

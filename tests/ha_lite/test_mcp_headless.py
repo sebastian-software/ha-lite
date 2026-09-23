@@ -39,7 +39,6 @@ REMOVED_PRODUCTS = (
     "cloud",
     "frontend",
     "lovelace",
-    "media_source",
     "stt",
     "tts",
     "wake_word",

@@ -588,38 +588,58 @@ async def test_grouping(hass: HomeAssistant) -> None:
     assert state.attributes.get(ATTR_GROUP_MEMBERS) == []
 
 
-@pytest.mark.parametrize(
-    ("command", "message"),
-    [
-        pytest.param(
-            {"type": "media_player/browse_media"},
-            "The demo player has no media to browse",
-            id="browse",
-        ),
-        pytest.param(
-            {"type": "media_player/search_media", "search_query": "test"},
-            "The demo player has no media to search",
-            id="search",
-        ),
-    ],
-)
-async def test_browse_and_search_without_media_source(
+async def test_browse(
     hass: HomeAssistant,
     hass_ws_client: WebSocketGenerator,
-    command: dict[str, str],
-    message: str,
 ) -> None:
-    """Test the browse player reports it has no media without media_source."""
+    """Test the media player browse."""
+    entity = "media_player.browse"
+
+    await async_setup_component(hass, "media_source", {"media_source": {}})
     assert await async_setup_component(
         hass, MP_DOMAIN, {"media_player": {"platform": "demo"}}
     )
     await hass.async_block_till_done()
 
     websocket_client = await hass_ws_client(hass)
-    await websocket_client.send_json_auto_id(
-        {**command, "entity_id": "media_player.browse"}
+    await websocket_client.send_json(
+        {
+            "id": 1,
+            "type": "media_player/browse_media",
+            "entity_id": entity,
+        }
     )
 
     msg = await websocket_client.receive_json()
-    assert not msg["success"]
-    assert msg["error"] == {"code": "unknown_error", "message": message}
+    assert msg["success"]
+    assert msg["result"]["title"] == "media"
+    assert msg["result"]["media_class"] == "directory"
+    assert len(msg["result"]["children"])
+
+
+async def test_search(
+    hass: HomeAssistant,
+    hass_ws_client: WebSocketGenerator,
+) -> None:
+    """Test the media player search delegates to media source."""
+    entity = "media_player.browse"
+
+    await async_setup_component(hass, "media_source", {"media_source": {}})
+    assert await async_setup_component(
+        hass, MP_DOMAIN, {"media_player": {"platform": "demo"}}
+    )
+    await hass.async_block_till_done()
+
+    websocket_client = await hass_ws_client(hass)
+    await websocket_client.send_json(
+        {
+            "id": 1,
+            "type": "media_player/search_media",
+            "entity_id": entity,
+            "search_query": "test",
+        }
+    )
+
+    msg = await websocket_client.receive_json()
+    assert msg["success"]
+    assert [item["title"] for item in msg["result"]["result"]] == ["test.mp3"]

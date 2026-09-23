@@ -63,7 +63,7 @@ closed.
 | Scenes, groups and the derived location domains (`person`, `zone`, `device_tracker`, `sun`) | [#20] | Done — all kept; ADR 0002, ADR 0010 |
 | History, logbook and energy | [#21] | Done |
 | `onboarding`, `default_config`, `file_upload`, `my`, `map_tiles`, `search`, and the bootstrap defaults `analytics`, `labs`, `brands`, `hardware` | [#22] | Done — ADR 0016 |
-| Assist and voice presentation, `media_source`, `ai_task` | [#23] | Done — MCP guarded by `tests/ha_lite/test_mcp_headless.py` |
+| Assist and voice presentation, `media_source`, `ai_task` | [#23] | Done — MCP guarded by `tests/ha_lite/test_mcp_headless.py`; `media_source` later restored |
 
 ## Wave 4 — explicit integration closure ([#17])
 

@@ -64,6 +64,7 @@ components: &components
   - homeassistant/components/image/**
   - homeassistant/components/llm/**
   - homeassistant/components/logger/**
+  - homeassistant/components/media_source/**
   - homeassistant/components/modbus/**
   - homeassistant/components/mqtt/**
   - homeassistant/components/network/**
