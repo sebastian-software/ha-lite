@@ -54,6 +54,7 @@ if TYPE_CHECKING:
     from .device_tracker.common import MockScanner
     from .infrared.common import MockInfraredEmitterEntity, MockInfraredReceiverEntity
     from .light.common import MockLight
+    from .radio_frequency.common import MockRadioFrequencyEntity
     from .sensor.common import MockSensor
     from .switch.common import MockSwitch
 
@@ -108,6 +109,27 @@ def mock_conversation_agent_fixture(hass: HomeAssistant) -> MockAgent:
     return mock_conversation_agent_fixture_helper(hass)
 
 
+# Radio frequency test fixtures
+@pytest.fixture(name="init_radio_frequency")
+async def init_radio_frequency_fixture(hass: HomeAssistant) -> None:
+    """Set up the Radio Frequency integration for testing."""
+    from .radio_frequency.common import (  # noqa: PLC0415
+        init_radio_frequency_fixture_helper,
+    )
+
+    await init_radio_frequency_fixture_helper(hass)
+
+
+@pytest.fixture(name="mock_rf_entity")
+async def mock_rf_entity_fixture(
+    hass: HomeAssistant, init_radio_frequency: None
+) -> MockRadioFrequencyEntity:
+    """Return a mock radio frequency entity."""
+    from .radio_frequency.common import mock_rf_entity_fixture_helper  # noqa: PLC0415
+
+    return await mock_rf_entity_fixture_helper(hass)
+
+
 # Infrared test fixtures
 @pytest.fixture(name="init_infrared")
 async def init_infrared_fixture(hass: HomeAssistant) -> None:
@@ -139,6 +161,15 @@ async def mock_infrared_receiver_entity_fixture(
     )
 
     return await mock_infrared_receiver_entity_fixture_helper(hass)
+
+
+@pytest.fixture(scope="session", autouse=find_spec("haffmpeg") is not None)
+def prevent_ffmpeg_subprocess() -> Generator[None]:
+    """If installed, prevent ffmpeg from creating a subprocess."""
+    with patch(
+        "homeassistant.components.ffmpeg.FFVersion.get_version", return_value="6.0"
+    ):
+        yield
 
 
 @pytest.fixture

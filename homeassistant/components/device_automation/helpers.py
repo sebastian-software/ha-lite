@@ -34,6 +34,7 @@ ENTITY_PLATFORMS = {
     Platform.LIGHT.value,
     Platform.LOCK.value,
     Platform.NUMBER.value,
+    Platform.REMOTE.value,
     Platform.SELECT.value,
     Platform.SWITCH.value,
     Platform.TEXT.value,

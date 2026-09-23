@@ -1,6 +1,6 @@
 {
   "domain": "tplink",
   "name": "TP-Link",
-  "integrations": [],
+  "integrations": ["tplink_omada", "tplink_lte"],
   "iot_standards": ["matter"]
 }

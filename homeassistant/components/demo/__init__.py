@@ -15,9 +15,11 @@ DOMAIN = "demo"
 
 COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
     Platform.AIR_QUALITY,
+    Platform.ALARM_CONTROL_PANEL,
     Platform.BINARY_SENSOR,
     Platform.BUTTON,
     Platform.CAMERA,
+    Platform.CALENDAR,
     Platform.CLIMATE,
     Platform.COVER,
     Platform.DATE,
@@ -30,6 +32,7 @@ COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
     Platform.MEDIA_PLAYER,
     Platform.NOTIFY,
     Platform.NUMBER,
+    Platform.REMOTE,
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SIREN,
@@ -44,6 +47,8 @@ COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
 ]
 
 COMPONENTS_WITH_DEMO_PLATFORM = [
+    Platform.GEO_LOCATION,
+    Platform.IMAGE_PROCESSING,
     Platform.DEVICE_TRACKER,
 ]
 

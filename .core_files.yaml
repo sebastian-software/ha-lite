@@ -17,6 +17,7 @@ base_platforms: &base_platforms
   - homeassistant/components/alarm_control_panel/**
   - homeassistant/components/binary_sensor/**
   - homeassistant/components/button/**
+  - homeassistant/components/calendar/**
   - homeassistant/components/camera/**
   - homeassistant/components/climate/**
   - homeassistant/components/conversation/**
@@ -27,15 +28,19 @@ base_platforms: &base_platforms
   - homeassistant/components/diagnostics/**
   - homeassistant/components/event/**
   - homeassistant/components/fan/**
+  - homeassistant/components/geo_location/**
   - homeassistant/components/humidifier/**
   - homeassistant/components/image/**
+  - homeassistant/components/image_processing/**
   - homeassistant/components/infrared/**
   - homeassistant/components/lawn_mower/**
+  - homeassistant/components/radio_frequency/**
   - homeassistant/components/light/**
   - homeassistant/components/lock/**
   - homeassistant/components/media_player/**
   - homeassistant/components/notify/**
   - homeassistant/components/number/**
+  - homeassistant/components/remote/**
   - homeassistant/components/scene/**
   - homeassistant/components/select/**
   - homeassistant/components/sensor/**
@@ -43,6 +48,7 @@ base_platforms: &base_platforms
   - homeassistant/components/switch/**
   - homeassistant/components/text/**
   - homeassistant/components/time/**
+  - homeassistant/components/todo/**
   - homeassistant/components/update/**
   - homeassistant/components/vacuum/**
   - homeassistant/components/valve/**
@@ -55,9 +61,11 @@ components: &components
   - homeassistant/components/auth/**
   - homeassistant/components/bluetooth/**
   - homeassistant/components/config/**
+  - homeassistant/components/configurator/**
   - homeassistant/components/demo/**
   - homeassistant/components/device_automation/**
   - homeassistant/components/dhcp/**
+  - homeassistant/components/ffmpeg/**
   - homeassistant/components/group/**
   - homeassistant/components/homeassistant/**
   - homeassistant/components/http/**
@@ -65,18 +73,22 @@ components: &components
   - homeassistant/components/llm/**
   - homeassistant/components/logger/**
   - homeassistant/components/media_source/**
+  - homeassistant/components/mjpeg/**
   - homeassistant/components/modbus/**
   - homeassistant/components/mqtt/**
   - homeassistant/components/network/**
+  - homeassistant/components/otp/**
   - homeassistant/components/persistent_notification/**
   - homeassistant/components/person/**
   - homeassistant/components/recovery_mode/**
   - homeassistant/components/repairs/**
+  - homeassistant/components/shopping_list/**
   - homeassistant/components/ssdp/**
   - homeassistant/components/stream/**
   - homeassistant/components/sun/**
   - homeassistant/components/system_health/**
   - homeassistant/components/tag/**
+  - homeassistant/components/trace/**
   - homeassistant/components/usb/**
   - homeassistant/components/webhook/**
   - homeassistant/components/websocket_api/**
