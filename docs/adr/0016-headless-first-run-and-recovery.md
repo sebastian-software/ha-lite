@@ -80,7 +80,8 @@ tokens. Services and admin-only commands keep their admin requirement.
 
 **Supervisor is not a runtime mode.** Bootstrap no longer adds `hassio` when
 the `SUPERVISOR` variable is set, and `hassio` is not a stage-1 integration.
-The component was deleted with the integration long tail (#27).
+The component was deleted in Wave 4 (#27) and is an excluded product layer
+(ADR 0020).
 
 ## Consequences
 
@@ -96,10 +97,11 @@ the closure with its own tests in CI: bootstrap sets it up by name, which the
 import graph cannot see, and nothing else would have kept Wave 4 from deleting
 it.
 
-Bootstrap sets up every `Platform` member by default. The enum is generated
-from the entity domains in the tree, so when Wave 4 deleted `geo_location`,
-`image_processing`, `radio_frequency` and `remote`, they left the defaults with
-it, and the exclusion bootstrap kept for `calendar` and `todo` went with those
-two. `tests/ha_lite/test_bootstrap_domains.py`
-checks that every domain bootstrap and the generated `configuration.yaml`
-name is in the closure, so the next deletion cannot leave a default behind.
+Bootstrap sets up every `Platform` member by default except `calendar` and
+`todo`, as upstream does. The enum is generated from the entity domains in the
+tree; Wave 4 deleted `calendar`, `geo_location`, `image_processing`,
+`radio_frequency`, `remote` and `todo`, and ADR 0020 brought them back as
+entity-domain roots. `tests/ha_lite/test_bootstrap_domains.py` checks that
+every domain bootstrap sets up on every start, and every domain the generated
+`configuration.yaml` names, is in the closure, and that the domains its stages
+set up only when configured, such as `debugpy` and `sentry`, are in the tree.

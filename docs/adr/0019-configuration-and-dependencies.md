@@ -1,4 +1,4 @@
-# ADR 0019: Keep YAML as input, ship the closure's dependencies, gate both in CI
+# ADR 0019: Keep YAML as input, ship the tree's dependencies, gate both in CI
 
 - Status: Accepted
 
@@ -28,35 +28,42 @@ and `check_config` and recovery mode read it through the same code.
 
 **Dependencies.** `requirements_all.txt` is generated from the manifests in
 the tree. Over the full catalog it listed 1,146 packages; over the closure it
-lists 40, on top of the 50 core requirements in `requirements.txt`. The loader
+listed 40, on top of the 50 core requirements in `requirements.txt`. The loader
 installs a missing requirement at runtime unless `--skip-pip` is given, and
 that is the only way custom integrations get theirs.
 
 **Enforcement.** CI skipped hassfest, the requirements generator and mypy in
 its static job, because none of them passed over the full catalog. After
-Wave 4 all three pass.
+Wave 4 all three pass, and they still do over the restored catalog
+(ADR 0020).
 
 ## Decision
 
 **YAML stays as input, config entries stay primary.** Everything in the
 inventory above serves a retained integration or the instance itself, so
-nothing in the configuration stack is removed. What made it product-sized was
-the catalog of integrations reading it, and Wave 4 deleted them. New retained
-integrations are expected to configure through config flows, as upstream
-requires. YAML is for instance settings and for declarative device
+nothing in the configuration stack is removed. The catalog reads it the way
+upstream does. New integrations are expected to configure through config
+flows, as upstream requires. YAML is for instance settings and for declarative device
 definitions such as Modbus register maps.
 
-**The closure's dependencies are the distribution.** A deployment installs
-`requirements.txt` and `requirements_all.txt`, as CI does. Every retained
-integration then finds its requirements present at startup, so ha-lite
-installs nothing for its own integrations at runtime and starts offline.
-Runtime installation stays for custom integrations, whose contract ADR 0006
-preserves. A deployment that must not install anything runs with
-`--skip-pip` and pre-installs what its custom integrations need.
+**The tree's dependencies are the distribution.** This decision first read
+"the closure's dependencies", which made `requirements_all.txt` 40 packages.
+ADR 0020 brought the catalog back, and the file now lists 1,035. A deployment
+chooses between two installs:
+
+- `requirements.txt` and `requirements_all.txt`, as CI and upstream's
+  container image do. Every integration then finds its requirements present,
+  so ha-lite installs nothing at runtime and starts offline.
+- `requirements.txt` alone. The loader installs an integration's
+  requirements when it is first set up, as upstream Home Assistant does.
+
+Runtime installation stays, for the catalog and for custom integrations,
+whose contract ADR 0006 preserves. A deployment that must not install
+anything runs with `--skip-pip` and pre-installs what it needs.
 
 **The generators are enforced, not rewritten.** The "full catalog" assumption
 was never in the code of `gen_requirements_all` or hassfest. It was in their
-input, and their input is now the closure. They stay upstream code
+input, and their input is the tree: the closure and the catalog. They stay upstream code
 (ADR 0014). The static CI job now runs, over the whole tree:
 
 - `python -m script.hassfest --action validate`: manifests, generated
@@ -76,11 +83,10 @@ they expected. They now use retained integrations of each merge shape:
 
 ## Consequences
 
-Adding a retained integration is one change: a closure root, a CI job, and its
-requirements in the regenerated files. Leaving the regeneration out now fails
-CI instead of shipping an integration that installs packages on first start.
+Adding an integration means regenerating the requirement files with it;
+leaving that out fails CI. A root also needs its CI job (ADR 0020).
 
-A deployment that uses only retained integrations needs no package index at
+A deployment that installs `requirements_all.txt` needs no package index at
 runtime. One that adds custom integrations behaves like upstream Home
 Assistant.
 

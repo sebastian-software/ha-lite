@@ -46,7 +46,8 @@ are backup agents that pull in `backup`.
 ## Consequences
 
 Miele is an anchor, not a promise to retain cloud integrations in general.
-It is kept for what its tests exercise. If the generic OAuth machinery is ever
+It is kept for what its tests exercise. Since ADR 0020 the other OAuth
+integrations are back in the catalog; Miele is the one CI runs as a root. If the generic OAuth machinery is ever
 covered better by another retained integration, Miele can be replaced by
 editing this record.
 

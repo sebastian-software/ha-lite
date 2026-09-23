@@ -16,8 +16,9 @@ what is still to do.
 | 1 | Frontend, Lovelace and browser-product bootstrap | — | Done |
 | 2 | Automation and Script | — | Done |
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
-| 4 | Explicit retained integration closure | [#17] | Done |
+| 4 | Explicit retained integration closure | [#17] | Done, integration deletion reversed |
 | 5 | Persistence, configuration and runtime composition | [#18] | Done |
+| — | Integration catalog restored | — | Done; 158 integrations wait for decoupling |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -72,8 +73,11 @@ deletion additionally waits for the retained integrations to be decoupled from
 product conveniences ([#25], done) and for an OAuth/reauth lifecycle to be
 protected in CI ([#26], done).
 
-**Done.** The tree is the closure, and a component outside it is a CI
-finding.
+**Done, then reversed for the integrations.** #27 deleted every component the
+closure did not reach, which took Home Assistant's integration catalog with
+the product layers. That was never the goal, and ADR 0020 brought the catalog
+back; see [the catalog restored](#the-catalog-restored). The closure, its gate
+and the decoupling work of #25 and #26 stand.
 
 **Exit:**
 
@@ -122,8 +126,25 @@ because removing onboarding in #22 needed its replacement.
 | Block | Issue | Status |
 |---|---|---|
 | Minimal persistence contract; retire Recorder product semantics | [#28] | Done — Recorder removed; ADR 0018 supersedes ADR 0004 |
-| Configuration, YAML loading and dependency installation | [#29] | Done — YAML kept as input, the closure's requirements ship with the distribution, hassfest, requirements and mypy gated in CI; ADR 0019 |
+| Configuration, YAML loading and dependency installation | [#29] | Done — YAML kept as input, the tree's requirements ship with the distribution, hassfest, requirements and mypy gated in CI; ADR 0019 |
 | Headless bootstrap, recovery and administrative control | [#30] | Done — `hass --script owner`, recovery as an API path; ADR 0016 |
+
+## The catalog restored
+
+**Done.** ADR 0020 records the decision: the tree carries Home Assistant's
+integration catalog, and what ha-lite removes is a product layer. 1,219
+components deleted in Wave 4 came back, together with `media_source`. The
+closure gate now rejects an excluded product layer in the tree and an import,
+from anywhere, of a component that is gone. The `catalog` CI job runs every
+catalog suite in ten shards.
+
+**Still open:** 158 integrations wait for a decoupling change, because they
+import a removed layer or point at an integration that does.
+[retained-closure.md](retained-closure.md#the-catalog-restored) lists each with
+what it needs. The largest groups need `script` (17), `tts` (17),
+`recorder` (16), `automation` (15), `cloud` (14), `backup` (12) and
+`onboarding` (12), and the 38 virtual integrations wait for their target. No issue carries this
+yet.
 
 ## Open questions without an issue
 
@@ -153,7 +174,9 @@ be regenerated from this repository. Every later row can.
 
 The numbers barely moved until Wave 4. Product layers are a small part of
 the tree; roughly 94% of the Python under `homeassistant/` was component code,
-almost all of it integrations the closure did not reach. Wave 4 deleted them.
+almost all of it integrations the closure did not reach. Wave 4 deleted them,
+and the catalog restore brought them back: they are what ha-lite is for, not
+what it set out to remove.
 
 [#15]: https://github.com/sebastian-software/ha-lite/issues/15
 [#16]: https://github.com/sebastian-software/ha-lite/issues/16

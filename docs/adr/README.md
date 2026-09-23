@@ -53,7 +53,7 @@ Records are written in English, like everything else in the repository
 | [0007](0007-headless-bootstrap.md) | Make bootstrap headless rather than merely disabling frontend | Accepted |
 | [0008](0008-tests-define-retained-contract.md) | Use tests to define the retained runtime contract | Accepted |
 | [0009](0009-mcp-core-control-surface.md) | MCP is a core headless control surface | Accepted |
-| [0010](0010-closure-is-the-deletion-authority.md) | Let the computed closure decide what may be deleted | Accepted |
+| [0010](0010-closure-is-the-deletion-authority.md) | Let the computed closure decide what may be deleted | Superseded by 0020 |
 | [0011](0011-platforms-are-capabilities-not-dependencies.md) | Treat runtime-resolved platforms as capabilities, not dependencies | Accepted |
 | [0012](0012-retain-device-class-semantics.md) | Retain the device-class trigger and condition vocabulary | Accepted |
 | [0013](0013-english-is-the-project-language.md) | English is the project language | Accepted |
@@ -62,7 +62,8 @@ Records are written in English, like everything else in the repository
 | [0016](0016-headless-first-run-and-recovery.md) | Initialize, recover and administer ha-lite without a browser | Accepted |
 | [0017](0017-oauth-lifecycle-anchor.md) | Keep one OAuth integration as the anchor for authorization | Accepted |
 | [0018](0018-persistence-contract.md) | Persist configuration and identity in versioned stores, keep no history | Accepted |
-| [0019](0019-configuration-and-dependencies.md) | Keep YAML as input, ship the closure's dependencies, gate both in CI | Accepted |
+| [0019](0019-configuration-and-dependencies.md) | Keep YAML as input, ship the tree's dependencies, gate both in CI | Accepted |
+| [0020](0020-keep-the-integration-catalog.md) | Keep Home Assistant's integration catalog, remove only product layers | Accepted |
 
 ## How these relate to the rest of the documentation
 

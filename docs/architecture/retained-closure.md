@@ -6,10 +6,16 @@
 when deciding whether code can be removed. This document describes the tool
 that produces that graph and what its current output says.
 
-The closure answers one question: **which integration domains must survive so
-the retained runtime still works?** Wave 4 (#27) deleted everything outside
-it, identified by reachability rather than by directory name, so the tree and
-the closure are now the same set. A component outside the closure is a finding.
+The closure answers one question: **which integration domains does the
+protected core need?** The roots are what CI runs in full, and the closure is
+everything they pull in. Every other component in the tree is the **catalog**:
+Home Assistant's integrations, kept as upstream ships them and loaded only when
+a user sets them up (ADR 0020).
+
+Wave 4 (#27) used the closure as the authority for deletion and removed every
+component outside it, most device integrations among them. That was never the
+goal. The catalog is back, and the closure now draws the line between the core
+and the catalog instead of between the tree and the bin.
 
 ## Running it
 
@@ -21,7 +27,7 @@ python3 script/ha_lite_closure.py --write docs/architecture/retained-closure.jso
 ```
 
 The generated `retained-closure.json` is committed. CI regenerates it and fails
-on drift, so the checked-in allowlist always matches the tree.
+on drift, so the checked-in closure and catalog always match the tree.
 
 ## How the closure is built
 
@@ -64,12 +70,16 @@ and add nothing.
 
 ### Imports of components that are gone
 
-The walk only follows edges into domains that exist, so an import of a deleted
-component is invisible to it — and a deferred one fails only when its function
-runs. Retained code (closure members and core) importing a component that is
-not in the tree is therefore a finding of its own, **dangling**, whatever the
-edge's strength. Only `after_dependencies` is exempt: the loader ignores an
-ordering hint on a missing domain.
+The walk only follows edges into domains that exist, so an import of a
+removed component is invisible to it — and a deferred one fails only when its
+function runs. Any code in the tree — core, closure or catalog — importing a
+component that is not in the tree is therefore a finding of its own,
+**dangling**, whatever the edge's strength. Only `after_dependencies` is
+exempt: the loader ignores an ordering hint on a missing domain.
+
+For the catalog this is the entry condition. An integration that still imports
+a removed product layer cannot load, so it stays out of the tree until it is
+decoupled.
 
 ### What these rules found
 
@@ -92,7 +102,8 @@ The latent report used to cover closure members only, not core.
 closure, so deleting any of them would have broken service-description loading
 for every domain, and nothing reported it. #23 removed `ai_task` and
 `assist_satellite` from that import, and #27 removed `calendar`, `remote` and
-`todo` when it deleted them.
+`todo` when it deleted them. ADR 0020 brought all three back, and the import
+with them.
 
 ## What the import graph cannot see
 
@@ -114,7 +125,7 @@ never warn about.
 use it.
 
 The tool therefore reports **capability at risk** separately: providers of
-runtime-resolved platforms that sit outside the closure. The platforms it
+runtime-resolved platforms that sit in the catalog rather than the closure. The platforms it
 watches are listed in `cross_cutting_platforms` in the config. Self-scoped
 platforms are deliberately excluded — `config_flow`, `diagnostics` and
 `application_credentials` only extend their own integration, so they leave
@@ -149,7 +160,7 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 
 | Category | Count |
 |---|---|
-| Entity-domain substrate | 33 |
+| Entity-domain substrate | 39 |
 | Retained integrations | 7 |
 | Runtime infrastructure | 24 |
 | Device-class semantics | 15 |
@@ -161,9 +172,9 @@ promises to keep working, so a root without a job is a gap, not a shortcut.
 upstream suites set them up by name — `demo` as a stand-in domain in
 config-entry tests and as the platform behind the `media_player`, `camera` and
 `group` tests, `kitchen_sink` behind `group`'s lock tests — so deleting them by
-reachability would have broken retained CI. Their platforms for domains
-ha-lite does not retain are pruned, which keeps them from pulling anything into
-the closure but themselves.
+reachability would have broken retained CI. Wave 4 pruned their platforms for
+the domains it deleted; the platforms came back with those domains, and with
+them `manual`, which demo's alarm panel builds on.
 
 ## The gate
 
@@ -177,20 +188,34 @@ entry in `accepted_transitive`, with a status and a reason:
 
 A domain reaching the closure without an entry fails the check. So does an
 entry that is no longer reachable, which keeps the config from rotting. This
-is what makes new coupling from retained code into an unreviewed component a
+is what makes new coupling from core code into an unreviewed component a
 build failure rather than a discovery made months later.
+
+Two more findings guard the tree as a whole:
+
+- **excluded** — a product layer ha-lite removed on purpose is in the tree
+  again. The layers are listed under `excluded` in the config, grouped by what
+  they served: presentation, automation, history, voice and AI, cloud and
+  platform. The scope matrix gives each one's reason.
+- **dangling** — code anywhere in the tree imports a component that is not
+  there; see above.
+
+A catalog member is not a finding. It needs no root and no reviewed entry, and
+the `catalog` CI job runs its suite.
 
 ## Current state
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 90 |
-| Declared roots | 84 |
-| Retained closure | 90 |
-| Deletion candidates | 0 |
+| Component domains in tree | 1,310 |
+| Declared roots | 90 |
+| Retained closure | 98 |
+| Catalog | 1,212 |
 
-Of the 6 transitively required domains, 5 are `retained` and 1 is an `adapter`.
-`recorder` was the seventh until #28 removed it (ADR 0018).
+Of the 8 transitively required domains, 7 are `retained` and 1 is an `adapter`.
+`recorder` was one more until #28 removed it (ADR 0018). The tree count
+includes 20 virtual integrations, which are a manifest pointing at another
+integration and carry no code.
 
 ### Wave 4
 
@@ -201,9 +226,9 @@ entries, generated matchers and requirements. The tree has held only the
 closure since: the report lists no deletion candidates. `requirements_all.txt`
 went from 1,146 pinned packages to 43.
 
-From then on the relationship runs the other way. A component in the tree that
-the closure does not reach was added without being declared, and the gate
-reports it as **outside**: declare it a root and give it a CI job, or delete it.
+From then on the relationship ran the other way: a component in the tree that
+the closure did not reach was an **outside** finding. ADR 0020 retired that
+finding when the catalog came back; see below.
 
 The imports the deletion broke were the ones the latent-coupling report had
 already listed: `helpers/service.py` into `calendar`, `remote` and `todo`, and
@@ -285,3 +310,91 @@ reflected which importer the walk happened to reach first.
 
 All six are now roots with a job in the entity-domain matrix, alongside the two
 `aggregation` roots. Every declared root has CI coverage.
+
+### The catalog restored
+
+ADR 0020 reversed Wave 4 for every component that could load again. The
+candidates were the 1,377 components Wave 4 deleted, less `recorder`,
+`hassio` and `backup`, which are excluded product layers. A candidate came
+back when nothing it imports at module level or declares as a dependency is
+missing from the tree, counting the other candidates as present. That brought
+back 1,219 of them, and `media_source`, which Wave 3 had removed with the
+voice stack, came back beside them.
+
+Six restored components are entity domains — `calendar`, `geo_location`,
+`image_processing`, `radio_frequency`, `remote` and `todo` — and became
+entity-domain roots with CI jobs. `demo` and `kitchen_sink` got their
+platforms for them back, and `manual`, which demo's alarm panel builds on, is
+`accepted_transitive`. Bootstrap names `sentry` and `debugpy` in stage 0 and
+`mqtt_eventstream` in stage 1 again, and leaves `calendar` and `todo` out of
+its defaults as upstream does. Retained tests that Wave 4 had moved off a
+deleted stand-in went back to upstream's version wherever the stand-in
+returned (`shell_command`, `mjpeg`, `browser`, `shopping_list`, `todo`,
+`calendar`), and kept ha-lite's version where it did not (`intent_script`,
+`plant`, the Supervisor fixtures).
+
+Four restored manifests listed a missing domain in `after_dependencies`, which
+hassfest rejects: `bluetooth_adapters` (`esphome`) and `litellm`, `llama_cpp`
+and `ovhcloud_ai_endpoints` (`assist_pipeline`). Those entries are removed;
+the loader ignored them anyway. Brand files keep only the integrations in the
+tree, and a brand left with fewer than two is removed, as hassfest requires.
+
+158 integrations are still out. 120 import something that is gone, listed by
+what they need; an integration appears once for each thing it needs:
+
+| Needs | Kind | Integrations |
+|---|---|---|
+| `script` | removed layer | `elkm1`, `emulated_hue`, `homekit`, `intent_script`, `jvc_projector`, `lg_thinq`, `opensensemap`, `ring`, `roborock`, `smartthings`, `telegram_bot`, `tplink`, `unifiprotect`, `v2c`, `victron_gx`, `whirlpool`, `zwave_js` |
+| `tts` | removed layer | `amazon_polly`, `baidu`, `elevenlabs`, `esphome`, `fish_audio`, `google_cloud`, `google_generative_ai_conversation`, `google_translate`, `marytts`, `microsoft`, `openai_conversation`, `picotts`, `smtp`, `voicerss`, `voip`, `wyoming`, `yandextts` |
+| `recorder` | removed layer | `anglian_water`, `elvia`, `filter`, `history_stats`, `ista_ecotrend`, `mill`, `opower`, `plant`, `solaredge`, `sql`, `srp_energy`, `statistics`, `suez_water`, `tibber`, `usage_prediction`, `waterfurnace` |
+| `automation` | removed layer | `airvisual`, `elkm1`, `homekit`, `jvc_projector`, `lg_thinq`, `opensensemap`, `ring`, `roborock`, `smartthings`, `tplink`, `unifiprotect`, `v2c`, `victron_gx`, `whirlpool`, `zwave_js` |
+| `cloud` | removed layer | `august`, `loqed`, `mobile_app`, `monzo`, `netatmo`, `overseerr`, `owntracks`, `plaato`, `rachio`, `switchbot_cloud`, `toon`, `watts`, `withings`, `yale` |
+| `backup` | removed layer | `aws_s3`, `azure_storage`, `backblaze_b2`, `cloudflare_r2`, `dropbox`, `google_drive`, `idrive_e2`, `onedrive`, `onedrive_for_business`, `sftp_storage`, `synology_dsm`, `webdav` |
+| `onboarding` | removed layer | `awair`, `bthome`, `cast`, `elgato`, `homewizard`, `technove`, `thread`, `wiz`, `wled`, `xiaomi_ble`, `yeelight`, `zha` |
+| `hassio` | removed layer | `esphome`, `hardkernel`, `homeassistant_alerts`, `homeassistant_green`, `homeassistant_hardware`, `homeassistant_yellow`, `otbr`, `raspberry_pi`, `zwave_js` |
+| `file_upload` | removed layer | `google_cloud`, `influxdb`, `knx`, `local_calendar`, `sftp_storage`, `velbus`, `zha` |
+| `homeassistant_hardware` | blocked integration | `homeassistant_connect_zbt2`, `homeassistant_green`, `homeassistant_sky_connect`, `homeassistant_yellow`, `otbr`, `raspberry_pi`, `zha` |
+| `hardware` | removed layer | `hardkernel`, `homeassistant_connect_zbt2`, `homeassistant_green`, `homeassistant_sky_connect`, `homeassistant_yellow`, `raspberry_pi` |
+| `input_number` | removed layer | `bayesian`, `derivative`, `filter`, `homekit`, `integration`, `min_max` |
+| `ai_task` | removed layer | `anthropic`, `google_generative_ai_conversation`, `ollama`, `open_router`, `openai_conversation` |
+| `frontend` | removed layer | `insteon`, `knx`, `lcn`, `mobile_app`, `panel_custom` |
+| `stt` | removed layer | `elevenlabs`, `google_cloud`, `google_generative_ai_conversation`, `openai_conversation`, `wyoming` |
+| `panel_custom` | blocked integration | `dynalite`, `insteon`, `knx`, `lcn` |
+| `analytics` | removed layer | `esphome`, `mobile_app`, `wled` |
+| `assist_pipeline` | removed layer | `esphome`, `voip`, `wyoming` |
+| `assist_satellite` | removed layer | `esphome`, `voip`, `wyoming` |
+| `counter` | removed layer | `derivative`, `integration`, `trend` |
+| `homeassistant_yellow` | blocked integration | `otbr`, `zha` |
+| `input_boolean` | removed layer | `bayesian`, `homekit` |
+| `thread` | blocked integration | `homekit_controller`, `otbr` |
+| `cast` | blocked integration | `plex` |
+| `default_config` | removed layer | `go2rtc` |
+| `homeassistant_sky_connect` | blocked integration | `zha` |
+| `input_button` | removed layer | `homekit` |
+| `input_select` | removed layer | `homekit` |
+| `input_text` | removed layer | `bayesian` |
+| `plex` | blocked integration | `sonos` |
+| `sensor.recorder` | removed layer | `utility_meter` |
+| `telegram_bot` | blocked integration | `telegram` |
+| `wake_word` | removed layer | `wyoming` |
+| `zha` | blocked integration | `homeassistant_hardware` |
+
+`utility_meter` imports `reset_detected` from `sensor/recorder.py`, which left
+with Recorder (#28); the domain-level walk cannot see a removed module inside
+a retained component, and the import check of the restore did.
+
+38 virtual integrations point at one of those, and wait for their target:
+
+- `esphome`: `apollo_automation`, `iotorero`, `konnected_esphome`
+- `homewizard`: `eastron`
+- `netatmo`: `bticino`, `bubendorff`, `home_plus_control`, `legrand`, `smarther`
+- `opower`: `aep_ohio`, `aep_texas`, `appalachianpower`, `atlanticcityelectric`, `bge`, `burbank_water_and_power`, `coautilities`, `comed`, `coned`, `delmarva`, `duquesne_light`, `evergy`, `indianamichiganpower`, `kentuckypower`, `oru_opower`, `peco_opower`, `pepco`, `pge`, `pse`, `psoklahoma`, `scl`, `smud`, `swepco`
+- `sonos`: `symfonisk`
+- `tplink`: `tplink_tapo`
+- `whirlpool`: `bauknecht`, `maytag`
+- `wyoming`: `piper`, `whisper`
+
+Bringing one back is a decoupling change of the #25 kind: patch the import of
+the removed layer out of the integration, or restore a layer that turns out to
+serve devices rather than people, as `media_source` did. The gate then
+accepts it, and the catalog job runs its suite.

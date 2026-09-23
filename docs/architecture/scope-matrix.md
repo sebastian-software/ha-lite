@@ -4,11 +4,13 @@
 
 This matrix is the design intent, **not a deletion list**. Before deletion, each item is checked against both Home Assistant integration manifests and actual Python imports.
 
-That check is automated: `script/ha_lite_closure.py` computes the retained closure from both graphs, and [retained-closure.md](retained-closure.md) records what it currently says. The matrix records intent; the closure is the evidence (ADR 0010).
+That check is automated: `script/ha_lite_closure.py` computes the retained closure from both graphs, keeps the excluded product layers out of the tree and rejects imports of anything that is gone, and [retained-closure.md](retained-closure.md) records what it currently says. The matrix records intent; the closure is the evidence.
+
+The matrix is about product layers and the runtime. Integrations are not listed one by one: Home Assistant's integration catalog is kept as upstream ships it, except where an integration still imports a removed layer (ADR 0020). [retained-closure.md](retained-closure.md#the-catalog-restored) lists those.
 
 **REMOVED** means physically absent from the tree. A row that still has work to do names the issue that carries it; [roadmap.md](roadmap.md) groups those issues by wave.
 
-Guiding rule: keep machinery required to discover, configure, identify, observe and control devices; remove product behavior and presentation.
+Guiding rule: keep machinery required to discover, configure, identify, observe and control devices, and the integrations that do it; remove product behavior and presentation.
 
 | Area / HA component | Initial | Rationale / next check |
 |---|---|---|
@@ -27,7 +29,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | REST API | INVESTIGATE | Retain only where useful after API contract is defined. |
 | frontend | **REMOVED** | Outside headless core; physically removed in Wave 1 after bootstrap/config decoupling. |
 | lovelace | **REMOVED** | Dashboard product surface; physically removed in Wave 1. |
-| UI panels / panel registration | **REMOVED** | Registration lived in `frontend` and left with it in Wave 1; `config` no longer registers a panel. `panel_custom` and the integrations that still call it are outside the closure and leave in Wave 4 (#27). |
+| UI panels / panel registration | **REMOVED** | Registration lived in `frontend` and left with it in Wave 1; `config` no longer registers a panel. `panel_custom` and the integrations that still call it left in Wave 4 (#27) and stay out: they import `frontend`. |
 | onboarding | **REMOVED** | Replaced by `hass --script owner` for the first user and tokens, and the existing config APIs for everything else (#22, #30, ADR 0016). |
 | automation | **REMOVED** | Decision engine belongs outside core; physically removed in Wave 2. |
 | script | **REMOVED** | Behavioral orchestration belongs outside core; physically removed in Wave 2. |
@@ -77,18 +79,19 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | webhook | KEEP / INVESTIGATE | Some integrations require inbound events. |
 | OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. Miele exercises them in CI as the OAuth lifecycle anchor (#26, ADR 0017). |
 | Miele | KEEP (anchor) | Application credentials, OAuth2 authorize/callback/token, reauth and reconfigure against a real integration. Kept for what its tests exercise, not as a promise to retain cloud integrations (ADR 0017). |
-| MQTT | KEEP | Representative protocol/integration substrate. |
-| Shelly | KEEP | Primary representative local-device integration. |
-| Matter + Matter server boundary | KEEP | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
-| Hue | KEEP initially | Representative bridge-based local integration. |
-| Fronius | KEEP initially | Representative local energy-device integration; energy UI not needed. |
-| HomeKit controller/device | **REMOVED** | Useful protocol, but not promoted: Matter covers the same local-device ground and is retained. Deleted by reachability in Wave 4 (#27); re-adding it means declaring it a root with a CI job. |
-| HomeKit bridge/export | **REMOVED** | Output/product compatibility. Deleted in Wave 4 (#27). |
-| demo, kitchen_sink | **KEEP (test fixtures)** | Simulated devices that retained upstream test suites set up by name — `demo` behind the `media_player`, `camera`, `group` and config-entry tests, `kitchen_sink` behind `group`'s lock tests. Their platforms for domains ha-lite does not retain are pruned. Roots with a CI job, not runtime (#27). |
+| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,212 catalog members, run by the `catalog` CI job (ADR 0020). 158 wait for a decoupling change, listed in [retained-closure.md](retained-closure.md#the-catalog-restored). |
+| MQTT | KEEP (anchor) | Representative protocol/integration substrate. |
+| Shelly | KEEP (anchor) | Primary representative local-device integration. |
+| Matter + Matter server boundary | KEEP (anchor) | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
+| Hue | KEEP (anchor) | Representative bridge-based local integration. |
+| Fronius | KEEP (anchor) | Representative local energy-device integration; energy UI not needed. |
+| HomeKit controller/device | WAITING | Useful protocol. Deleted by reachability in Wave 4 (#27), and not yet back: it imports `thread`, which still needs `onboarding`. Returns with `thread`'s decoupling. |
+| HomeKit bridge/export | WAITING | Exposes ha-lite's entities to Apple Home. Deleted in Wave 4 (#27) and not yet back: it imports `automation`, `script` and the `input_*` helpers. |
+| demo, kitchen_sink | **KEEP (test fixtures)** | Simulated devices that retained upstream test suites set up by name — `demo` behind the `media_player`, `camera`, `group` and config-entry tests, `kitchen_sink` behind `group`'s lock tests. Wave 4 pruned their platforms for the domains it deleted; they came back with the catalog. Roots with a CI job, not runtime (#27). |
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
 | YAML configuration | **KEEP** | Instance settings (`homeassistant:`, `http:`, `logger:`, discovery) and declarative integration configuration with no config flow — Modbus register maps, MQTT YAML entities, `group`/`person`/`zone`/`scene`. Config entries stay primary; `tests/test_config.py` is in CI (#29, ADR 0019). |
-| Dynamic pip requirement installation | **KEEP** for custom integrations | The closure's requirements ship with the distribution (`requirements_all.txt`, 40 packages, validated in CI), so retained integrations install nothing at runtime. `--skip-pip` forbids it entirely (#29, ADR 0019). |
-| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); deleted with the integration long tail in Wave 4 (#27). |
+| Dynamic pip requirement installation | **KEEP** | `requirements_all.txt` lists every integration's requirements (1,035 packages, validated in CI). A deployment that installs it installs nothing at runtime; one that does not gets an integration's requirements on first setup, as upstream. `--skip-pip` forbids it entirely (#29, ADR 0019). |
+| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); deleted in Wave 4 (#27) and excluded since (ADR 0020). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |
 
@@ -101,7 +104,7 @@ The transitive runtime requirements of Shelly, MQTT, Matter, Hue, Fronius and Mo
 1. Frontend, Lovelace, panels and UI-only support. **Done.**
 2. Automation and scripts. **Done.**
 3. Product features: blueprints and automation helpers, logbook/history, energy, cloud, onboarding and the default bundle, voice presentation. Preserve the Conversation/LLM subset required by MCP. **Done.**
-4. Unselected integrations, deleted by reachability from the computed closure. **Done:** the tree is the closure, and a component outside it fails CI.
+4. Unselected integrations, deleted by reachability from the computed closure. **Done, then reversed:** deleting the catalog was never the goal. ADR 0020 restored every integration that loads without a removed layer.
 5. Persistence/configuration simplification only after the reduced runtime boots and representative integrations pass lifecycle tests.
 
 Entry and exit criteria for each wave, and the issue behind every open block, are in [roadmap.md](roadmap.md).
