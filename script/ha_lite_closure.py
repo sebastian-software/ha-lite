@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Compute the ha-lite retained dependency closure.
 
-The closure answers one question: which integration domains must survive so the
-retained runtime still works? Everything outside it is a deletion candidate.
+The closure answers one question: which integration domains does the protected
+core need? The core is what the roots pull in, and CI runs the full suite of
+every root. Every other component in the tree is the catalog: upstream
+integrations kept as they are and loaded only when a user sets them up.
 
 Two graphs feed the closure, as `docs/architecture/overview.md` requires:
 
@@ -15,14 +17,15 @@ function-local import is coupling that can be patched out without touching the
 importing component's module graph. Soft edges are reported separately so that
 latent coupling stays visible instead of silently widening the closure.
 
-Roots and accepted transitive members live in `ha_lite_closure_config.json`
-next to this script. A domain that enters the closure without being either is a
-finding: someone added coupling from retained code into an unreviewed
-component. So is an import from retained code of a component that is no longer
-in the tree, whatever its strength: a deferred import of a deleted component
-fails when it runs, not when it is loaded. And so is a component in the tree
-that the closure does not reach: Wave 4 deleted everything outside it, so one
-that appears again was added without being declared.
+Roots, accepted transitive members and excluded product layers live in
+`ha_lite_closure_config.json` next to this script. A domain that enters the
+closure without being a root or accepted is a finding: someone added coupling
+from core code into an unreviewed component. So is an import, from any
+component or from core, of a component that is not in the tree, whatever its
+strength: a deferred import of a removed component fails when it runs, not
+when it is loaded. That is also what keeps an integration that still needs a
+removed product layer out of the catalog until it is decoupled. And so is an
+excluded product layer that appears in the tree again.
 
     python3 script/ha_lite_closure.py            # human-readable report
     python3 script/ha_lite_closure.py --check    # CI gate, non-zero on findings
@@ -302,12 +305,16 @@ def analyze() -> dict:
     for members in config["roots"].values():
         roots.update(members)
     accepted: dict[str, dict] = config["accepted_transitive"]
+    excluded: set[str] = set()
+    for members in config["excluded"].values():
+        excluded.update(members)
 
     domains, edges = collect_edges()
     closure, reason = build_closure(roots, domains, edges)
 
     missing_roots = sorted(roots - domains)
-    outside = sorted(domains - closure)
+    catalog = sorted(domains - closure)
+    excluded_in_tree = sorted(domains & excluded)
     unreviewed = sorted(closure - roots - set(accepted))
     stale_accepted = sorted(set(accepted) - closure)
 
@@ -325,17 +332,15 @@ def analyze() -> dict:
         and edge.target not in closure
     ]
 
-    # Retained code naming a component the tree no longer has. The walk cannot
-    # see these, because it only follows edges into domains that exist, and a
+    # Code naming a component the tree does not have. The walk cannot see
+    # these, because it only follows edges into domains that exist, and a
     # deferred one only fails when the function runs. An ordering hint on a
     # missing domain is ignored by the loader, so it is not counted.
     dangling: list[Edge] = sorted(
         (
             edge
             for edge in edges
-            if edge.kind != "after_dependencies"
-            and edge.source in retained_sources
-            and edge.target not in domains
+            if edge.kind != "after_dependencies" and edge.target not in domains
         ),
         key=lambda edge: (edge.target, edge.via),
     )
@@ -363,7 +368,9 @@ def analyze() -> dict:
         "closure": closure,
         "reason": reason,
         "missing_roots": missing_roots,
-        "outside": outside,
+        "catalog": catalog,
+        "excluded": excluded,
+        "excluded_in_tree": excluded_in_tree,
         "unreviewed": unreviewed,
         "stale_accepted": stale_accepted,
         "latent": latent,
@@ -374,13 +381,14 @@ def analyze() -> dict:
 
 
 def as_json(result: dict) -> dict:
-    """Shape the closure as the allowlist that Wave 4 deletion consumes."""
+    """Shape the closure and the catalog as the committed machine-readable view."""
     reason = result["reason"]
     return {
         "closure": sorted(result["closure"]),
         "roots": sorted(result["roots"]),
         "accepted_transitive": sorted(set(result["accepted"]) & result["closure"]),
-        "deletion_candidates": sorted(result["domains"] - result["closure"]),
+        "catalog": result["catalog"],
+        "excluded": sorted(result["excluded"]),
         "pulled_in_by": {
             domain: {
                 "source": reason[domain].source,
@@ -393,7 +401,7 @@ def as_json(result: dict) -> dict:
             "unreviewed_closure_members": result["unreviewed"],
             "stale_accepted_entries": result["stale_accepted"],
             "missing_roots": result["missing_roots"],
-            "outside_closure": result["outside"],
+            "excluded_in_tree": result["excluded_in_tree"],
             "dangling_imports": [
                 {"target": edge.target, "kind": edge.kind, "via": edge.via}
                 for edge in result["dangling"]
@@ -421,7 +429,7 @@ def print_report(result: dict) -> None:
     print(f"| Component domains in tree | {len(domains):,} |")
     print(f"| Declared roots | {len(result['roots']):,} |")
     print(f"| Retained closure | {len(closure):,} |")
-    print(f"| Deletion candidates | {len(domains) - len(closure):,} |")
+    print(f"| Catalog | {len(result['catalog']):,} |")
 
     pulled = sorted(closure - result["roots"])
     print(f"\n## Transitively required ({len(pulled)})\n")
@@ -441,9 +449,9 @@ def print_report(result: dict) -> None:
         by_target: dict[str, list[Edge]] = defaultdict(list)
         for edge in latent:
             by_target[edge.target].append(edge)
-        print(f"\n## Latent coupling ({len(by_target)} domains outside the closure)\n")
+        print(f"\n## Latent coupling ({len(by_target)} catalog domains)\n")
         print("Soft edges only. These would widen the closure if they hardened.\n")
-        print("| Outside domain | Reached from | Kind | Via |")
+        print("| Catalog domain | Reached from | Kind | Via |")
         print("| --- | --- | --- | --- |")
         for target in sorted(by_target):
             edge = min(by_target[target], key=lambda e: e.via)
@@ -460,9 +468,9 @@ def print_report(result: dict) -> None:
             by_type[info["integration_type"]].append(domain)
         print(f"\n## Capability at risk ({len(at_risk)} domains)\n")
         print(
-            "Providers of runtime-resolved platforms that sit outside the closure.\n"
-            "They are reachable by name, not by import, so deleting them removes a\n"
-            "capability without breaking anything. Consult before bulk deletion.\n"
+            "Catalog members that provide runtime-resolved platforms. They are\n"
+            "reachable by name, not by import, so removing one drops a capability\n"
+            "without breaking anything. Consult before removing any of them.\n"
         )
         print("| integration_type | Domains |")
         print("| --- | --- |")
@@ -474,7 +482,7 @@ def print_report(result: dict) -> None:
         *result["unreviewed"],
         *result["stale_accepted"],
         *result["missing_roots"],
-        *result["outside"],
+        *result["excluded_in_tree"],
         *result["dangling"],
     ]
     print("\n## Findings\n")
@@ -495,15 +503,16 @@ def print_report(result: dict) -> None:
         )
     for domain in result["missing_roots"]:
         print(f"- **missing root**: `{domain}` is declared a root but absent.")
-    for domain in result["outside"]:
+    for domain in result["excluded_in_tree"]:
         print(
-            f"- **outside**: `{domain}` is in the tree but not in the closure. "
-            "Declare it a root and give it a CI job, or delete it."
+            f"- **excluded**: `{domain}` is a product layer ha-lite removed. "
+            "Delete it, or record why it comes back and drop it from `excluded`."
         )
     for edge in result["dangling"]:
         print(
             f"- **dangling**: `{edge.via}` imports `{edge.target}` ({edge.kind}), "
-            "which is not in the tree. Remove the import."
+            "which is not in the tree. Decouple the import, or leave its "
+            "component out of the tree."
         )
 
 
@@ -543,7 +552,7 @@ def main() -> int:
             *result["unreviewed"],
             *result["stale_accepted"],
             *result["missing_roots"],
-            *result["outside"],
+            *result["excluded_in_tree"],
             *result["dangling"],
         ]
         if findings:
