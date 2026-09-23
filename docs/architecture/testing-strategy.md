@@ -57,6 +57,7 @@ Protected as directories:
 - `tests/components/diagnostics`
 - `tests/components/conversation`
 - `tests/components/mcp_server`
+- `tests/ha_lite`, contracts ha-lite adds on top of the upstream suite
 
 Tests inside these directories may later be split into retained runtime behavior versus Home Assistant product/UI behavior. Until that split is explicit, they remain a safety net.
 
@@ -104,7 +105,7 @@ prepare environment
        +--> device-class semantics (matrix)
        +--> derived state (matrix)
        +--> retained integrations (matrix)
-       +--> static sanity (prek, trigger targets, closure gate)
+       +--> static sanity (prek, the gates' own tests, trigger targets, closure gate)
 ```
 
 The dependency environment is built once and cached. Matrix suites run separately so a failure in Matter does not obscure a Shelly regression.
@@ -138,6 +139,6 @@ The official Home Assistant MCP server is a retained ha-lite capability, not opt
 
 `conversation` is tested alongside it because it is a hard dependency of `mcp_server`. Passing import-only tests is insufficient: protocol-level MCP tests are the contract.
 
-Wave 1 called for a ha-lite-specific assertion that MCP setup and a representative protocol round-trip succeed with the presentation packages absent, failing if a future upstream merge reintroduces such a dependency. Until it exists, the upstream suite running in a tree without `frontend` and `lovelace` is the only evidence. #23 adds it, together with the voice components it removes.
+`tests/ha_lite/test_mcp_headless.py` is the ha-lite-specific assertion Wave 1 called for. It checks that the removed browser, voice and AI products cannot be imported, runs initialize, tool listing and a device-affecting tool call over streamable HTTP, and fails if that session loads any component outside the retained closure — so a future upstream change that makes MCP lean on something ha-lite deleted, or on something it never reviewed, fails here rather than in production.
 
 `homeassistant-ai/ha-mcp` is an external compatibility canary. A later CI layer may install its current custom component and exercise its embedded server with `enable_sidebar_panel=false`; avoid vendoring its implementation or requiring dashboard/Lovelace tools as part of the ha-lite core contract.

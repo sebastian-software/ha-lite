@@ -259,3 +259,138 @@ def test_platform_provider_inside_the_closure_is_not_flagged(
     result = ha_lite_closure.analyze()
 
     assert result["capability_at_risk"] == {}
+
+
+def write_core(tmp_path: Path, name: str, source: str) -> None:
+    """Create a core module outside homeassistant/components."""
+    path = tmp_path / "homeassistant" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(source, encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("name", "source"),
+    [
+        pytest.param(
+            "bootstrap.py",
+            "from .components import beta\n",
+            id="package-level",
+        ),
+        pytest.param(
+            "bootstrap.py",
+            "from .components.beta import DOMAIN\n",
+            id="module-level",
+        ),
+        pytest.param(
+            "helpers/setup.py",
+            "from ..components import beta\n",
+            id="two-levels-up",
+        ),
+    ],
+)
+def test_relative_import_in_core_binds(
+    tree: Path, tmp_path: Path, name: str, source: str
+) -> None:
+    """A relative import from core is as hard as its absolute spelling.
+
+    bootstrap.py pre-imports its components as `from .components import ...`.
+    Skipping relative imports hid that default_config, and through its manifest
+    the whole voice stack, was part of what the runtime loads.
+    """
+    write_core(tmp_path, name, source)
+    write_component(tree, "beta")
+
+    write_config(tmp_path, roots=[], accepted={})
+    result = ha_lite_closure.analyze()
+
+    assert result["closure"] == {"beta"}
+    assert result["reason"]["beta"].source == ha_lite_closure.CORE
+
+
+def test_relative_import_inside_a_component_stays_inside(
+    tree: Path, tmp_path: Path
+) -> None:
+    """`from .const import DOMAIN` resolves to the component itself."""
+    write_component(
+        tree,
+        "alpha",
+        files={"__init__.py": "from .const import DOMAIN\nfrom . import const\n"},
+    )
+
+    write_config(tmp_path, roots=["alpha"])
+    result = ha_lite_closure.analyze()
+
+    assert result["closure"] == {"alpha"}
+    assert not [edge for edge in result["edges"] if edge.source == "alpha"]
+
+
+def test_core_soft_edge_is_latent_coupling(tree: Path, tmp_path: Path) -> None:
+    """Core is not a closure member, but its deferred imports are still reported.
+
+    helpers/service.py imports five entity domains inside a function. Leaving
+    core out of the latent report hid that the call breaks once they are gone.
+    """
+    write_core(
+        tmp_path,
+        "helpers/service.py",
+        "def load():\n    from homeassistant.components import beta\n",
+    )
+    write_component(tree, "beta")
+
+    write_config(tmp_path, roots=[])
+    result = ha_lite_closure.analyze()
+
+    assert result["closure"] == set()
+    assert [(e.source, e.target, e.kind) for e in result["latent"]] == [
+        (ha_lite_closure.CORE, "beta", "import_deferred")
+    ]
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        pytest.param("from homeassistant.components.gone import X\n", id="runtime"),
+        pytest.param(
+            "def load():\n    from ..components.gone import X\n", id="deferred"
+        ),
+        pytest.param(
+            "from typing import TYPE_CHECKING\n"
+            "if TYPE_CHECKING:\n"
+            "    from homeassistant.components.gone import X\n",
+            id="typing",
+        ),
+    ],
+)
+def test_retained_import_of_a_missing_component_is_a_finding(
+    tree: Path, tmp_path: Path, source: str
+) -> None:
+    """Retained code naming a deleted component fails the gate, however soft.
+
+    core_config.py kept a deferred import of the deleted frontend inside a
+    storage migration; it only failed when an old store was migrated.
+    """
+    write_core(tmp_path, "helpers/thing.py", source)
+
+    write_config(tmp_path, roots=[])
+    result = ha_lite_closure.analyze()
+
+    assert [(e.target, e.via) for e in result["dangling"]] == [
+        ("gone", "homeassistant/helpers/thing.py")
+    ]
+
+
+def test_missing_component_outside_the_closure_is_not_a_finding(
+    tree: Path, tmp_path: Path
+) -> None:
+    """Only retained code is held to it; the rest of the tree is condemned."""
+    write_component(
+        tree,
+        "outside",
+        files={"__init__.py": "from homeassistant.components.gone import X\n"},
+    )
+    write_component(tree, "alpha", manifest={"after_dependencies": ["gone"]})
+
+    write_config(tmp_path, roots=["alpha"])
+    result = ha_lite_closure.analyze()
+
+    assert result["dangling"] == []

@@ -459,7 +459,7 @@ async def test_loading_configuration(hass: HomeAssistant) -> None:
             2,
             ({"id": "user1", "is_owner": True},),
             {"user1": {"language": {"language": "sv"}}},
-            "sv",
+            "en",
         ),
         (
             2,
@@ -491,9 +491,11 @@ async def test_language_default(
     user_data,
     default_language,
 ) -> None:
-    """Test language config default to owner user's language during migration.
+    """Test language config defaults to English during migration.
 
-    This should only happen if the core store version < 1.3
+    Upstream takes the owner's language from the frontend's user store when the
+    core store version is < 1.3. ha-lite has no frontend, so an owner's leftover
+    frontend data is ignored.
     """
     core_data = {
         "data": {},

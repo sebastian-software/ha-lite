@@ -25,13 +25,15 @@ Do not retain frontend or Lovelace merely to satisfy MCP.
 
 The official `tests/components/mcp_server` suite is part of the retained CI contract. It must continue to exercise the real protocol rather than only import/setup behavior.
 
-After frontend/Lovelace are physically removed, ha-lite must keep an explicit headless MCP contract test proving a representative MCP round-trip with those packages absent.
+After frontend/Lovelace are physically removed, ha-lite must keep an explicit headless MCP contract test proving a representative MCP round-trip with those packages absent. `tests/ha_lite/test_mcp_headless.py` is that test. It asserts the removed products cannot be imported, drives initialize, tool listing and a device-affecting tool call over streamable HTTP, and fails if serving that session loads any component outside the retained closure.
 
 Treat `homeassistant-ai/ha-mcp` as an external compatibility canary. A future CI job may install its custom component and exercise its embedded server with UI-only options (especially `enable_sidebar_panel`) disabled. Dashboard/Lovelace-specific tools are outside the compatibility guarantee.
 
 ## Consequences
 
 The earlier broad plan to delete Assist/Conversation as product intelligence is narrowed: voice-oriented presentation features may still be removed, but the Conversation/LLM substrate required by MCP remains until a replacement machine-control API exists.
+
+That split has been made. The runtime closure of `mcp_server` and `conversation` contains no voice component: `assist_pipeline`, `assist_satellite`, `stt`, `tts`, `wake_word` and `media_source` were all outside it and have been removed (#23). `ai_task` went with them. It is an LLM product surface that no retained integration provides, and bootstrap set it up by default only because every entity platform is a default. Agents reach ha-lite through MCP, not through an AI entity inside it.
 
 Future deletion waves must distinguish between:
 

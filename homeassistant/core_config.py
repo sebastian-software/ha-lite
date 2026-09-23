@@ -866,31 +866,9 @@ class Config:
                 if data["unit_system_v2"] == _CONF_UNIT_SYSTEM_IMPERIAL:
                     data["unit_system_v2"] = _CONF_UNIT_SYSTEM_US_CUSTOMARY
             if old_major_version == 1 and old_minor_version < 3:
-                # In 1.3, we add the key "language", initialize it from the
-                # owner account.
+                # In 1.3, we add the key "language". Upstream reads the owner's
+                # choice from the frontend's user store, which ha-lite has not.
                 data["language"] = "en"
-                try:
-                    owner = await self.hass.auth.async_get_owner()
-                    if owner is not None:
-                        from .components.frontend import (  # noqa: PLC0415
-                            storage as frontend_store,
-                        )
-
-                        owner_store = await frontend_store.async_user_store(
-                            self.hass, owner.id
-                        )
-
-                        if (
-                            "language" in owner_store.data
-                            and "language" in owner_store.data["language"]
-                        ):
-                            with suppress(vol.InInvalid):
-                                data["language"] = cv.language(
-                                    owner_store.data["language"]["language"]
-                                )
-                # pylint: disable-next=broad-except
-                except Exception:
-                    _LOGGER.exception("Unexpected error during core config migration")
             if old_major_version == 1 and old_minor_version < 4:
                 # In 1.4, we add the key "radius", initialize it with the default.
                 data.setdefault("radius", DEFAULT_RADIUS)

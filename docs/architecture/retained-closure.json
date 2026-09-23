@@ -48,7 +48,6 @@
     "matter",
     "mcp_server",
     "media_player",
-    "media_source",
     "modbus",
     "moisture",
     "motion",
@@ -179,7 +178,6 @@
     "hassio",
     "intent",
     "llm",
-    "media_source",
     "onboarding",
     "recorder",
     "stream",
@@ -205,7 +203,6 @@
     "aep_texas",
     "aftership",
     "agent_dvr",
-    "ai_task",
     "aidot",
     "airgradient",
     "airly",
@@ -269,8 +266,6 @@
     "arve",
     "arwn",
     "aseko_pool_live",
-    "assist_pipeline",
-    "assist_satellite",
     "asuswrt",
     "atag",
     "atlanticcityelectric",
@@ -1334,7 +1329,6 @@
     "stiebel_eltron",
     "stookwijzer",
     "streamlabswater",
-    "stt",
     "subaru",
     "suez_water",
     "sunricher_dali",
@@ -1437,7 +1431,6 @@
     "trend",
     "triggercmd",
     "trmnl",
-    "tts",
     "tuya",
     "twentemilieu",
     "twilio",
@@ -1505,7 +1498,6 @@
     "w800rf32",
     "wahin",
     "wake_on_lan",
-    "wake_word",
     "wallbox",
     "waqi",
     "waterfurnace",
@@ -1616,11 +1608,6 @@
       "kind": "import_runtime",
       "via": "homeassistant/components/climate/llm.py"
     },
-    "media_source": {
-      "source": "camera",
-      "kind": "import_runtime",
-      "via": "homeassistant/components/camera/media_source.py"
-    },
     "onboarding": {
       "source": "auth",
       "kind": "import_runtime",
@@ -1655,21 +1642,14 @@
   "findings": {
     "unreviewed_closure_members": [],
     "stale_accepted_entries": [],
-    "missing_roots": []
+    "missing_roots": [],
+    "dangling_imports": []
   },
   "capability_at_risk": {
     "alert": {
       "integration_type": "unknown",
       "platforms": [
         "reproduce_state"
-      ]
-    },
-    "assist_satellite": {
-      "integration_type": "entity",
-      "platforms": [
-        "condition",
-        "intent",
-        "trigger"
       ]
     },
     "aws_s3": {

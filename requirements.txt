@@ -24,7 +24,6 @@ cronsim==2.7
 cryptography==48.0.1
 fnv-hash-fast==2.0.3
 gazetteer-matcher==1.1.0
-ha-ffmpeg==3.2.2
 hass-nabucasa==2.7.0
 hassil==3.12.1
 home-assistant-bluetooth==2.0.0
@@ -34,7 +33,6 @@ ifaddr==0.2.0
 infrared-protocols==9.0.0
 Jinja2==3.1.6
 lru-dict==1.4.1
-mutagen==1.48.1
 orjson==3.11.9
 packaging>=23.1
 Pillow==12.3.0
@@ -42,9 +40,7 @@ probatio==0.11.4
 propcache==0.5.2
 psutil-home-assistant==0.0.1
 PyJWT==2.13.0
-pymicro-vad==1.0.1
 pyOpenSSL==26.2.0
-pyspeex-noise==1.0.2
 python-slugify==8.0.4
 PyTurboJPEG==1.8.3
 PyYAML==6.0.3

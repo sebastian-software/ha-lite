@@ -171,11 +171,6 @@
       "reason": "LLM API substrate behind mcp_server; entity domains expose themselves to it through llm.py.",
       "issue": null
     },
-    "media_source": {
-      "status": "adapter",
-      "reason": "Reached from camera/media_source.py, a product adapter.",
-      "issue": 22
-    },
     "onboarding": {
       "status": "patch_required",
       "reason": "The Matter config flow reads onboarding state. Needs the same portability patch as hassio.",

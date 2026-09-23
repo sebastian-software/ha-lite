@@ -142,58 +142,6 @@ def entity_registry_enabled_by_default() -> Generator[None]:
         yield
 
 
-# TTS test fixtures
-@pytest.fixture(name="mock_tts_get_cache_files")
-def mock_tts_get_cache_files_fixture() -> Generator[MagicMock]:
-    """Mock the list TTS cache function."""
-    from .tts.common import mock_tts_get_cache_files_fixture_helper  # noqa: PLC0415
-
-    yield from mock_tts_get_cache_files_fixture_helper()
-
-
-@pytest.fixture(name="mock_tts_init_cache_dir")
-def mock_tts_init_cache_dir_fixture(
-    init_tts_cache_dir_side_effect: Any,
-) -> Generator[MagicMock]:
-    """Mock the TTS cache dir in memory."""
-    from .tts.common import mock_tts_init_cache_dir_fixture_helper  # noqa: PLC0415
-
-    yield from mock_tts_init_cache_dir_fixture_helper(init_tts_cache_dir_side_effect)
-
-
-@pytest.fixture(name="init_tts_cache_dir_side_effect")
-def init_tts_cache_dir_side_effect_fixture() -> Any:
-    """Return the cache dir."""
-    from .tts.common import (  # noqa: PLC0415
-        init_tts_cache_dir_side_effect_fixture_helper,
-    )
-
-    return init_tts_cache_dir_side_effect_fixture_helper()
-
-
-@pytest.fixture(name="mock_tts_cache_dir")
-def mock_tts_cache_dir_fixture(
-    tmp_path: Path,
-    mock_tts_init_cache_dir: MagicMock,
-    mock_tts_get_cache_files: MagicMock,
-    request: pytest.FixtureRequest,
-) -> Generator[Path]:
-    """Mock the TTS cache dir with empty dir."""
-    from .tts.common import mock_tts_cache_dir_fixture_helper  # noqa: PLC0415
-
-    yield from mock_tts_cache_dir_fixture_helper(
-        tmp_path, mock_tts_init_cache_dir, mock_tts_get_cache_files, request
-    )
-
-
-@pytest.fixture(name="tts_mutagen_mock")
-def tts_mutagen_mock_fixture() -> Generator[MagicMock]:
-    """Mock writing tags."""
-    from .tts.common import tts_mutagen_mock_fixture_helper  # noqa: PLC0415
-
-    yield from tts_mutagen_mock_fixture_helper()
-
-
 @pytest.fixture(name="mock_conversation_agent")
 def mock_conversation_agent_fixture(hass: HomeAssistant) -> MockAgent:
     """Mock a conversation agent."""

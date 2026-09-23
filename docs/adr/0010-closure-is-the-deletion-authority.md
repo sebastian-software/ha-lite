@@ -78,7 +78,18 @@ its definition of a component. An early version treated every directory under
 `components/` as a domain, which made a working checkout and a fresh clone
 disagree over `__pycache__`. Rules of this kind belong in
 `tests/script/test_ha_lite_closure.py`, because the gate is only worth as much
-as its own correctness.
+as its own correctness, and those tests run in the `static-sanity` job.
+
+Three such rules were missing and have since been added. Relative imports were
+skipped, which is right inside a component and wrong in core: `bootstrap.py`
+pre-imported `default_config` as `from .components import ...`, and with it
+fifteen domains nobody had reviewed. Core's soft edges were left out of the
+latent report, which hid that `helpers/service.py` calls into five entity
+domains outside the closure. And an import of a component that is no longer in
+the tree was invisible, because the walk only follows edges into domains that
+exist; retained code doing that is now a **dangling** finding, however soft the
+import. The first run found `core_config.py` still importing the deleted
+`frontend`.
 
 Reachability is necessary but not sufficient. It says nothing about capabilities
 resolved by name at runtime; see ADR 0011.

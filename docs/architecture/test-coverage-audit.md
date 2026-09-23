@@ -130,7 +130,7 @@ The audit does **not** promote these to retained scope merely because tests exis
 - history/logbook/energy (removed)
 - cloud/Nabu Casa (removed)
 - onboarding and the default bundle (#22)
-- Assist/voice pipelines (#23)
+- Assist/voice pipelines and the media browser (removed)
 - Home Assistant OS/Supervisor behavior (#25)
 - every unrelated device integration (#27)
 

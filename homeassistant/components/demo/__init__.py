@@ -41,7 +41,6 @@ COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
     Platform.SELECT,
     Platform.SENSOR,
     Platform.SIREN,
-    Platform.STT,
     Platform.SWITCH,
     Platform.TEXT,
     Platform.TIME,
@@ -54,7 +53,6 @@ COMPONENTS_WITH_CONFIG_ENTRY_DEMO_PLATFORM = [
 
 COMPONENTS_WITH_DEMO_PLATFORM = [
     Platform.GEO_LOCATION,
-    Platform.TTS,
     Platform.IMAGE_PROCESSING,
     Platform.DEVICE_TRACKER,
 ]

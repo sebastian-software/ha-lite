@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import Any, override
 
-from homeassistant.components import media_source
 from homeassistant.components.media_player import (
+    BrowseError,
     BrowseMedia,
     MediaClass,
     MediaPlayerDeviceClass,
@@ -13,6 +13,7 @@ from homeassistant.components.media_player import (
     MediaPlayerState,
     MediaType,
     RepeatMode,
+    SearchError,
     SearchMedia,
     SearchMediaQuery,
 )
@@ -418,15 +419,13 @@ class DemoBrowsePlayer(AbstractDemoPlayer):
         media_content_id: str | None = None,
     ) -> BrowseMedia:
         """Implement the websocket media browsing helper."""
-
-        return await media_source.async_browse_media(self.hass, media_content_id)
+        # Upstream delegates to media_source, which ha-lite does not ship.
+        raise BrowseError("The demo player has no media to browse")
 
     @override
     async def async_search_media(self, query: SearchMediaQuery) -> SearchMedia:
-        """Implement the websocket media search helper by delegating to media source."""
-        return await media_source.async_search_media(
-            self.hass, query.media_content_id, query
-        )
+        """Implement the websocket media search helper."""
+        raise SearchError("The demo player has no media to search")
 
 
 class DemoGroupPlayer(AbstractDemoPlayer):

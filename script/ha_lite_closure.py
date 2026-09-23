@@ -18,7 +18,9 @@ latent coupling stays visible instead of silently widening the closure.
 Roots and accepted transitive members live in `ha_lite_closure_config.json`
 next to this script. A domain that enters the closure without being either is a
 finding: someone added coupling from retained code into an unreviewed
-component.
+component. So is an import from retained code of a component that is no longer
+in the tree, whatever its strength: a deferred import of a deleted component
+fails when it runs, not when it is loaded.
 
     python3 script/ha_lite_closure.py            # human-readable report
     python3 script/ha_lite_closure.py --check    # CI gate, non-zero on findings
@@ -82,10 +84,15 @@ class ImportCollector(ast.NodeVisitor):
     `TYPE_CHECKING` never execute at all.
     """
 
-    def __init__(self, domain: str, via: str) -> None:
-        """Prepare to collect the component edges declared by one file."""
+    def __init__(self, domain: str, via: str, package: str) -> None:
+        """Prepare to collect the component edges declared by one file.
+
+        `package` is the dotted package the file belongs to, which is what a
+        relative import is resolved against.
+        """
         self.domain = domain
         self.via = via
+        self.package = package
         self.edges: list[Edge] = []
         self._function_depth = 0
         self._type_checking_depth = 0
@@ -135,23 +142,40 @@ class ImportCollector(ast.NodeVisitor):
         for child in node.orelse:
             self.visit(child)
 
+    def _resolve(self, node: ast.ImportFrom) -> str | None:
+        """Return the absolute module a `from ... import ...` names."""
+        if not node.level:
+            return node.module
+        # `from .components import api` in homeassistant/bootstrap.py is as
+        # hard as its absolute spelling; only the resolution differs.
+        parts = self.package.split(".")
+        if node.level > 1:
+            parts = parts[: -(node.level - 1)]
+        if node.module:
+            parts.append(node.module)
+        return ".".join(parts)
+
     @override
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        """Record an absolute `from ... import ...` edge."""
-        # A relative import cannot leave its own component.
-        if node.level:
-            return
-        if node.module == COMPONENTS_PACKAGE:
+        """Record a `from ... import ...` edge, absolute or relative."""
+        module = self._resolve(node)
+        if module == COMPONENTS_PACKAGE:
             # `from homeassistant.components import person` names the domain in
             # the import list, not in the module path.
             self._record([f"{MODULE_PREFIX}{alias.name}" for alias in node.names])
             return
-        self._record([node.module])
+        self._record([module])
 
     @override
     def visit_Import(self, node: ast.Import) -> None:
         """Record a plain `import ...` edge."""
         self._record([alias.name for alias in node.names])
+
+
+def package_of(path: Path) -> str:
+    """Return the dotted package a Python file belongs to."""
+    parts = path.relative_to(ROOT).with_suffix("").parts
+    return ".".join(parts[:-1])
 
 
 def collect_edges() -> tuple[set[str], list[Edge]]:
@@ -187,7 +211,9 @@ def collect_edges() -> tuple[set[str], list[Edge]]:
                 tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             except SyntaxError, UnicodeDecodeError:
                 continue
-            collector = ImportCollector(domain, str(path.relative_to(ROOT)))
+            collector = ImportCollector(
+                domain, str(path.relative_to(ROOT)), package_of(path)
+            )
             collector.visit(tree)
             edges.extend(collector.edges)
 
@@ -198,7 +224,7 @@ def collect_edges() -> tuple[set[str], list[Edge]]:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError, UnicodeDecodeError:
             continue
-        collector = ImportCollector(CORE, str(path.relative_to(ROOT)))
+        collector = ImportCollector(CORE, str(path.relative_to(ROOT)), package_of(path))
         collector.visit(tree)
         edges.extend(collector.edges)
 
@@ -282,12 +308,34 @@ def analyze() -> dict:
     unreviewed = sorted(closure - roots - set(accepted))
     stale_accepted = sorted(set(accepted) - closure)
 
+    # Core is loaded unconditionally, so its edges count as retained code even
+    # though core is not a domain of the closure.
+    retained_sources = closure | {CORE}
+
     # Soft edges that would widen the closure if they ever hardened.
     latent: list[Edge] = [
         edge
         for edge in edges
-        if not edge.hard and edge.source in closure and edge.target not in closure
+        if not edge.hard
+        and edge.source in retained_sources
+        and edge.target in domains
+        and edge.target not in closure
     ]
+
+    # Retained code naming a component the tree no longer has. The walk cannot
+    # see these, because it only follows edges into domains that exist, and a
+    # deferred one only fails when the function runs. An ordering hint on a
+    # missing domain is ignored by the loader, so it is not counted.
+    dangling: list[Edge] = sorted(
+        (
+            edge
+            for edge in edges
+            if edge.kind != "after_dependencies"
+            and edge.source in retained_sources
+            and edge.target not in domains
+        ),
+        key=lambda edge: (edge.target, edge.via),
+    )
 
     # Capabilities the retained runtime can dispatch to, whose providers the
     # closure cannot see. These do not grow the closure; they are a deletion
@@ -315,6 +363,7 @@ def analyze() -> dict:
         "unreviewed": unreviewed,
         "stale_accepted": stale_accepted,
         "latent": latent,
+        "dangling": dangling,
         "platform_providers": providers,
         "capability_at_risk": at_risk,
     }
@@ -340,6 +389,10 @@ def as_json(result: dict) -> dict:
             "unreviewed_closure_members": result["unreviewed"],
             "stale_accepted_entries": result["stale_accepted"],
             "missing_roots": result["missing_roots"],
+            "dangling_imports": [
+                {"target": edge.target, "kind": edge.kind, "via": edge.via}
+                for edge in result["dangling"]
+            ],
         },
         # Not part of the closure. Consult before bulk deletion: removing these
         # drops a runtime capability without breaking any import.
@@ -412,7 +465,12 @@ def print_report(result: dict) -> None:
             names = ", ".join(f"`{d}`" for d in sorted(by_type[kind]))
             print(f"| {kind} | {names} |")
 
-    findings = result["unreviewed"] + result["stale_accepted"] + result["missing_roots"]
+    findings = [
+        *result["unreviewed"],
+        *result["stale_accepted"],
+        *result["missing_roots"],
+        *result["dangling"],
+    ]
     print("\n## Findings\n")
     if not findings:
         print("None. The closure matches the reviewed configuration.")
@@ -431,6 +489,11 @@ def print_report(result: dict) -> None:
         )
     for domain in result["missing_roots"]:
         print(f"- **missing root**: `{domain}` is declared a root but absent.")
+    for edge in result["dangling"]:
+        print(
+            f"- **dangling**: `{edge.via}` imports `{edge.target}` ({edge.kind}), "
+            "which is not in the tree. Remove the import."
+        )
 
 
 def main() -> int:
@@ -465,9 +528,12 @@ def main() -> int:
         print_report(result)
 
     if args.check:
-        findings = (
-            result["unreviewed"] + result["stale_accepted"] + result["missing_roots"]
-        )
+        findings = [
+            *result["unreviewed"],
+            *result["stale_accepted"],
+            *result["missing_roots"],
+            *result["dangling"],
+        ]
         if findings:
             print(
                 f"\nclosure check failed: {len(findings)} finding(s)", file=sys.stderr
