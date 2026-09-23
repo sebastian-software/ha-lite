@@ -103,6 +103,7 @@ homeassistant.components.awair.*
 homeassistant.components.axis.*
 homeassistant.components.baf.*
 homeassistant.components.bang_olufsen.*
+homeassistant.components.bayesian.*
 homeassistant.components.besen.*
 homeassistant.components.binary_sensor.*
 homeassistant.components.bitcoin.*
@@ -148,6 +149,7 @@ homeassistant.components.datetime.*
 homeassistant.components.deako.*
 homeassistant.components.deconz.*
 homeassistant.components.demo.*
+homeassistant.components.derivative.*
 homeassistant.components.device_automation.*
 homeassistant.components.device_tracker.*
 homeassistant.components.devolo_home_control.*
@@ -218,6 +220,7 @@ homeassistant.components.ghost.*
 homeassistant.components.gios.*
 homeassistant.components.github.*
 homeassistant.components.glances.*
+homeassistant.components.go2rtc.*
 homeassistant.components.goalzero.*
 homeassistant.components.google.*
 homeassistant.components.google_assistant_sdk.*
@@ -240,6 +243,7 @@ homeassistant.components.holiday.*
 homeassistant.components.home_connect.*
 homeassistant.components.homeassistant.*
 homeassistant.components.homee.*
+homeassistant.components.homekit.*
 homeassistant.components.homekit_controller
 homeassistant.components.homekit_controller.alarm_control_panel
 homeassistant.components.homekit_controller.button
@@ -274,6 +278,7 @@ homeassistant.components.incomfort.*
 homeassistant.components.indevolt.*
 homeassistant.components.inels.*
 homeassistant.components.infrared.*
+homeassistant.components.integration.*
 homeassistant.components.intelliclima.*
 homeassistant.components.intent.*
 homeassistant.components.ios.*
@@ -342,11 +347,13 @@ homeassistant.components.met_eireann.*
 homeassistant.components.metoffice.*
 homeassistant.components.miele.*
 homeassistant.components.mikrotik.*
+homeassistant.components.min_max.*
 homeassistant.components.minecraft_server.*
 homeassistant.components.mjpeg.*
 homeassistant.components.modbus.*
 homeassistant.components.modem_callerid.*
 homeassistant.components.mold_indicator.*
+homeassistant.components.monzo.*
 homeassistant.components.moon.*
 homeassistant.components.mopeka.*
 homeassistant.components.motionmount.*
@@ -360,6 +367,7 @@ homeassistant.components.nasweb.*
 homeassistant.components.neato.*
 homeassistant.components.neopool.*
 homeassistant.components.nest.*
+homeassistant.components.netatmo.*
 homeassistant.components.network.*
 homeassistant.components.nextdns.*
 homeassistant.components.nfandroidtv.*
@@ -388,6 +396,7 @@ homeassistant.components.oralb.*
 homeassistant.components.otp.*
 homeassistant.components.ouman_eh_800.*
 homeassistant.components.overkiz.*
+homeassistant.components.overseerr.*
 homeassistant.components.ovhcloud_ai_endpoints.*
 homeassistant.components.p1_monitor.*
 homeassistant.components.paj_gps.*
@@ -498,6 +507,7 @@ homeassistant.components.surepetcare.*
 homeassistant.components.switch.*
 homeassistant.components.switch_as_x.*
 homeassistant.components.switchbee.*
+homeassistant.components.switchbot_cloud.*
 homeassistant.components.switcher_kis.*
 homeassistant.components.system_health.*
 homeassistant.components.system_log.*
@@ -536,6 +546,7 @@ homeassistant.components.trafikverket_ferry.*
 homeassistant.components.trafikverket_train.*
 homeassistant.components.trafikverket_weatherstation.*
 homeassistant.components.transmission.*
+homeassistant.components.trend.*
 homeassistant.components.trmnl.*
 homeassistant.components.twentemilieu.*
 homeassistant.components.unifi.*
@@ -573,6 +584,7 @@ homeassistant.components.websocket_api.*
 homeassistant.components.wemo.*
 homeassistant.components.whois.*
 homeassistant.components.wiim.*
+homeassistant.components.withings.*
 homeassistant.components.wiz.*
 homeassistant.components.wled.*
 homeassistant.components.workday.*

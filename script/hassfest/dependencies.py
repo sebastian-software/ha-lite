@@ -2,6 +2,7 @@
 
 import ast
 from collections import deque
+from functools import cache
 import multiprocessing
 from pathlib import Path
 
@@ -146,6 +147,14 @@ IGNORE_VIOLATIONS = {
 }
 
 
+@cache
+def _compat_modules(components: Path) -> frozenset[str]:
+    """Return ha-lite's compat modules, the single files beside the integrations."""
+    return frozenset(
+        path.stem for path in components.glob("*.py") if path.stem != "__init__"
+    )
+
+
 def calc_allowed_references(integration: Integration) -> set[str]:
     """Return a set of allowed references."""
     manifest = integration.manifest
@@ -153,6 +162,9 @@ def calc_allowed_references(integration: Integration) -> set[str]:
         ALLOWED_USED_COMPONENTS
         | set(manifest.get("dependencies", []))
         | set(manifest.get("after_dependencies", []))
+        # ha-lite: a compat module is not an integration, so it cannot be a
+        # dependency; importing it needs no declaration (ADR 0020).
+        | _compat_modules(integration.path.parent)
     )
     # bluetooth_adapters is a wrapper to ensure
     # that all the integrations that provide bluetooth

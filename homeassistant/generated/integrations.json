@@ -383,6 +383,12 @@
           "config_flow": true,
           "iot_class": "local_push"
         },
+        "homekit": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "local_push",
+          "name": "HomeKit Bridge"
+        },
         "ibeacon": {
           "integration_type": "hub",
           "config_flow": true,
@@ -630,6 +636,12 @@
       "integration_type": "virtual",
       "supported_by": "whirlpool"
     },
+    "bayesian": {
+      "name": "Bayesian",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "calculated"
+    },
     "bbox": {
       "name": "Bbox",
       "integration_type": "hub",
@@ -838,6 +850,16 @@
       "integration_type": "hub",
       "config_flow": true,
       "iot_class": "local_push"
+    },
+    "bticino": {
+      "name": "BTicino",
+      "integration_type": "virtual",
+      "supported_by": "netatmo"
+    },
+    "bubendorff": {
+      "name": "Bubendorff",
+      "integration_type": "virtual",
+      "supported_by": "netatmo"
     },
     "bugu": {
       "name": "Bugu",
@@ -2789,6 +2811,11 @@
       "config_flow": true,
       "iot_class": "local_polling"
     },
+    "home_plus_control": {
+      "name": "Legrand Home+ Control",
+      "integration_type": "virtual",
+      "supported_by": "netatmo"
+    },
     "homee": {
       "name": "Homee",
       "integration_type": "hub",
@@ -3517,6 +3544,11 @@
       "config_flow": true,
       "iot_class": "assumed_state"
     },
+    "legrand": {
+      "name": "Legrand",
+      "integration_type": "virtual",
+      "supported_by": "netatmo"
+    },
     "lektrico": {
       "name": "Lektrico Charging Station",
       "integration_type": "device",
@@ -3792,6 +3824,12 @@
     "lookin": {
       "name": "LOOKin",
       "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "local_push"
+    },
+    "loqed": {
+      "name": "LOQED Touch Smart Lock",
+      "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_push"
     },
@@ -4211,6 +4249,12 @@
       "config_flow": true,
       "iot_class": "local_polling"
     },
+    "monzo": {
+      "name": "Monzo",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "cloud_polling"
+    },
     "moon": {
       "integration_type": "service",
       "config_flow": true,
@@ -4432,6 +4476,13 @@
       "integration_type": "hub",
       "config_flow": true,
       "iot_class": "local_push"
+    },
+    "netatmo": {
+      "name": "Netatmo",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_polling",
+      "single_config_entry": true
     },
     "netdata": {
       "name": "Netdata",
@@ -4965,6 +5016,12 @@
       "config_flow": true,
       "iot_class": "local_polling"
     },
+    "overseerr": {
+      "name": "Seerr",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "local_push"
+    },
     "ovhcloud_ai_endpoints": {
       "name": "OVHcloud AI Endpoints",
       "integration_type": "service",
@@ -4976,6 +5033,13 @@
       "integration_type": "service",
       "config_flow": true,
       "iot_class": "cloud_polling"
+    },
+    "owntracks": {
+      "name": "OwnTracks",
+      "integration_type": "service",
+      "config_flow": true,
+      "iot_class": "local_push",
+      "single_config_entry": true
     },
     "p1_monitor": {
       "name": "P1 Monitor",
@@ -5128,6 +5192,12 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_polling"
+    },
+    "plaato": {
+      "name": "Plaato",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_push"
     },
     "plex": {
       "name": "Plex Media Server",
@@ -5426,6 +5496,12 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_polling"
+    },
+    "rachio": {
+      "name": "Rachio",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_push"
     },
     "radarr": {
       "name": "Radarr",
@@ -6235,6 +6311,11 @@
       "integration_type": "virtual",
       "supported_by": "motion_blinds"
     },
+    "smarther": {
+      "name": "Smarther",
+      "integration_type": "virtual",
+      "supported_by": "netatmo"
+    },
     "smartthings": {
       "name": "SmartThings",
       "integration_type": "hub",
@@ -6560,6 +6641,12 @@
           "config_flow": true,
           "iot_class": "local_push",
           "name": "SwitchBot Bluetooth"
+        },
+        "switchbot_cloud": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "cloud_polling",
+          "name": "SwitchBot Cloud"
         }
       },
       "iot_standards": [
@@ -6927,6 +7014,12 @@
       "integration_type": "device",
       "config_flow": true,
       "iot_class": "local_push"
+    },
+    "toon": {
+      "name": "Toon",
+      "integration_type": "device",
+      "config_flow": true,
+      "iot_class": "cloud_push"
     },
     "torque": {
       "name": "Torque",
@@ -7561,6 +7654,12 @@
       "config_flow": false,
       "iot_class": "cloud_push"
     },
+    "withings": {
+      "name": "Withings",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_push"
+    },
     "wiz": {
       "name": "WiZ",
       "integration_type": "device",
@@ -7867,6 +7966,11 @@
     }
   },
   "helper": {
+    "derivative": {
+      "integration_type": "helper",
+      "config_flow": true,
+      "iot_class": "calculated"
+    },
     "generic_hygrostat": {
       "integration_type": "helper",
       "config_flow": true,
@@ -7882,10 +7986,20 @@
       "config_flow": true,
       "iot_class": "calculated"
     },
+    "integration": {
+      "integration_type": "helper",
+      "config_flow": true,
+      "iot_class": "local_push"
+    },
     "manual": {
       "name": "Manual Alarm Control Panel",
       "integration_type": "helper",
       "config_flow": false,
+      "iot_class": "calculated"
+    },
+    "min_max": {
+      "integration_type": "helper",
+      "config_flow": true,
       "iot_class": "calculated"
     },
     "mold_indicator": {
@@ -7918,6 +8032,11 @@
       "integration_type": "helper",
       "config_flow": true,
       "iot_class": "calculated"
+    },
+    "trend": {
+      "integration_type": "helper",
+      "config_flow": true,
+      "iot_class": "calculated"
     }
   },
   "translated_name": [
@@ -7927,6 +8046,7 @@
     "collection_image",
     "cpuspeed",
     "demo",
+    "derivative",
     "emulated_roku",
     "energenie_power_sockets",
     "filesize",
@@ -7939,10 +8059,12 @@
     "growatt_server",
     "holiday",
     "homekit_controller",
+    "integration",
     "irm_kmi",
     "islamic_prayer_times",
     "local_ip",
     "local_todo",
+    "min_max",
     "moehlenhoff_alpha2",
     "mold_indicator",
     "moon",
@@ -7959,6 +8081,7 @@
     "threshold",
     "time_date",
     "tod",
+    "trend",
     "uptime",
     "vegehub",
     "version",

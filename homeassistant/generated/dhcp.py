@@ -788,6 +788,21 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "macaddress": "245EBE*",
     },
     {
+        "domain": "rachio",
+        "hostname": "rachio-*",
+        "macaddress": "009D6B*",
+    },
+    {
+        "domain": "rachio",
+        "hostname": "rachio-*",
+        "macaddress": "F0038C*",
+    },
+    {
+        "domain": "rachio",
+        "hostname": "rachio-*",
+        "macaddress": "74C63B*",
+    },
+    {
         "domain": "radiotherm",
         "hostname": "thermostat*",
         "macaddress": "5CDAD4*",
@@ -1059,6 +1074,11 @@ DHCP: Final[list[dict[str, str | bool]]] = [
     {
         "domain": "tolo",
         "hostname": "usr-tcp232-ed2",
+    },
+    {
+        "domain": "toon",
+        "hostname": "eneco-*",
+        "macaddress": "74C63B*",
     },
     {
         "domain": "tplink",
@@ -1536,6 +1556,14 @@ DHCP: Final[list[dict[str, str | bool]]] = [
     {
         "domain": "vistapool",
         "hostname": "sugarwifi",
+    },
+    {
+        "domain": "withings",
+        "macaddress": "0024E4*",
+    },
+    {
+        "domain": "withings",
+        "macaddress": "A47EFA*",
     },
     {
         "domain": "wiz",
