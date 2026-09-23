@@ -47,6 +47,7 @@ def write_config(
     roots: list[str],
     accepted: dict[str, dict] | None = None,
     platforms: list[str] | None = None,
+    excluded: list[str] | None = None,
 ) -> None:
     """Write the checked-in-style config the tool reads."""
     (tmp_path / "config.json").write_text(
@@ -55,6 +56,7 @@ def write_config(
                 "roots": {"test": roots},
                 "cross_cutting_platforms": platforms or [],
                 "accepted_transitive": accepted or {},
+                "excluded": {"test": excluded or []},
             }
         ),
         encoding="utf-8",
@@ -218,16 +220,33 @@ def test_missing_root_is_a_finding(tree: Path, tmp_path: Path) -> None:
     assert result["missing_roots"] == ["ghost"]
 
 
-def test_component_outside_the_closure_is_a_finding(tree: Path, tmp_path: Path) -> None:
-    """A component nothing retained reaches was added without being declared."""
+def test_component_outside_the_closure_is_catalog(tree: Path, tmp_path: Path) -> None:
+    """A component no root reaches belongs to the catalog, which is no finding."""
     write_component(tree, "alpha")
-    write_component(tree, "stray")
+    write_component(tree, "catalogued")
 
     write_config(tmp_path, roots=["alpha"])
     result = ha_lite_closure.analyze()
 
-    assert result["outside"] == ["stray"]
-    assert ha_lite_closure.as_json(result)["findings"]["outside_closure"] == ["stray"]
+    assert result["catalog"] == ["catalogued"]
+    assert ha_lite_closure.as_json(result)["catalog"] == ["catalogued"]
+    assert not any(ha_lite_closure.as_json(result)["findings"].values())
+
+
+def test_excluded_product_layer_in_the_tree_is_a_finding(
+    tree: Path, tmp_path: Path
+) -> None:
+    """A removed product layer that comes back fails the gate."""
+    write_component(tree, "alpha")
+    write_component(tree, "frontend")
+
+    write_config(tmp_path, roots=["alpha"], excluded=["frontend", "recorder"])
+    result = ha_lite_closure.analyze()
+
+    assert result["excluded_in_tree"] == ["frontend"]
+    assert ha_lite_closure.as_json(result)["findings"]["excluded_in_tree"] == [
+        "frontend"
+    ]
 
 
 def test_platform_provider_is_flagged_without_growing_the_closure(
@@ -391,15 +410,33 @@ def test_retained_import_of_a_missing_component_is_a_finding(
     ]
 
 
-def test_missing_component_outside_the_closure_is_not_a_finding(
+def test_catalog_import_of_a_missing_component_is_a_finding(
     tree: Path, tmp_path: Path
 ) -> None:
-    """Only retained code is held to it; the rest of the tree is condemned."""
+    """A catalog member that needs a removed component cannot load, so it fails.
+
+    This is what keeps an integration that still imports a removed product
+    layer out of the tree until it is decoupled.
+    """
     write_component(
         tree,
-        "outside",
+        "catalogued",
         files={"__init__.py": "from homeassistant.components.gone import X\n"},
     )
+    write_component(tree, "alpha")
+
+    write_config(tmp_path, roots=["alpha"])
+    result = ha_lite_closure.analyze()
+
+    assert [(e.source, e.target) for e in result["dangling"]] == [
+        ("catalogued", "gone")
+    ]
+
+
+def test_after_dependency_on_a_missing_component_is_not_a_finding(
+    tree: Path, tmp_path: Path
+) -> None:
+    """The loader ignores an ordering hint on a domain that is not there."""
     write_component(tree, "alpha", manifest={"after_dependencies": ["gone"]})
 
     write_config(tmp_path, roots=["alpha"])
