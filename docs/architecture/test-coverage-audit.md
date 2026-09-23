@@ -131,7 +131,7 @@ The audit does **not** promote these to retained scope merely because tests exis
 - cloud/Nabu Casa (removed)
 - onboarding and the default bundle (#22)
 - Assist/voice pipelines and the media browser (removed)
-- Home Assistant OS/Supervisor behavior (#25)
+- Home Assistant OS/Supervisor behavior (removed from the retained integrations)
 - every unrelated device integration (#27)
 
 Their tests disappear with the production behavior they protect. Scenes were on this list once; they are now retained substrate, because Hue and MQTT implement the `scene` entity domain.

@@ -28,3 +28,12 @@ A manifest's transitive dependency closure is a starting point, not the final ha
 Entity-domain components such as sensor, switch, light and climate are considered runtime substrate when retained integrations import their entity contracts.
 
 The project should prefer small portability patches in integrations over keeping Supervisor, onboarding, frontend or other product layers.
+
+#25 applied this to the two cases the context names:
+
+- **MQTT** takes certificate and key material as PEM text in its config flow, validated and normalized exactly as upstream does after an upload. The browser upload is gone, and with it `file_upload` as a dependency. The Mosquitto add-on paths are gone too: install, start, Supervisor discovery, and the reauth step that recovered add-on credentials.
+- **Matter** connects to an external Matter Server by URL, from the user step or after zeroconf discovery. Installing, starting, updating, stopping and uninstalling the server as an add-on is gone, and so are the onboarding check and the repair that read Supervisor's IPv6 settings.
+
+`usb` had the same shape without being named here: it asked Supervisor which apps claim a serial port. That lookup is gone; config entries are the only consumers it reports.
+
+The audit found nothing of the kind in Shelly, Hue, Fronius or Modbus.

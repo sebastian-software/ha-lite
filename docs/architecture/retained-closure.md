@@ -176,14 +176,14 @@ build failure rather than a discovery made months later.
 |---|---|
 | Component domains in tree | 1,480 |
 | Declared roots | 78 |
-| Retained closure | 90 |
-| Deletion candidates | 1,390 |
+| Retained closure | 88 |
+| Deletion candidates | 1,392 |
 
-Of the 12 transitively required domains, 6 are `retained`, 1 is an `adapter` and 5 are `patch_required`.
+Of the 10 transitively required domains, 6 are `retained`, 1 is an `adapter` and 3 are `patch_required`.
 
 ### What this says about Wave 4
 
-The closure is small — 6% of the tree. The 1,390 candidates outside it are
+The closure is small — 6% of the tree. The 1,392 candidates outside it are
 reachable from no retained root, which is the evidence #27 needs to delete in
 bulk instead of one directory at a time.
 
@@ -199,20 +199,24 @@ target leaves with it. #19 confirmed the pattern by removing the five
 `input_*` helpers this way, and #23 by removing `media_source`: deleting the
 `camera` and `image` `media_source.py` adapters was all it took.
 
-The five `patch_required` members are the real blockers, and
-`dependency-findings-2026.9.3.md` predicted three of them:
+The three `patch_required` members are the real blockers:
 
-- `file_upload` ← MQTT certificate configuration UX (#25, then #22)
-- `hassio` ← Matter add-on lifecycle, and MQTT's add-on discovery (#25)
-- `onboarding` ← the Matter config flow reading onboarding state, which the
-  findings predicted, and `auth/login_flow.py`, `bluetooth/config_flow.py` and
-  `helpers/config_entry_flow.py`, which they did not (#22, #30)
-- `backup` ← reached only through `hassio`, so it leaves with that patch unless
-  headless backup semantics keep it (#28, #30)
+- `file_upload` ← only `bootstrap.py`'s pre-import now; MQTT takes certificate
+  material as PEM text since #25 (#22)
+- `onboarding` ← `auth/login_flow.py`, `bluetooth/config_flow.py` and
+  `helpers/config_entry_flow.py` at module level, and `bootstrap.py`'s
+  pre-import (#22, #30)
 - `weather` ← the `temperature` and `humidity` triggers declare a `DomainSpec`
   over weather entities. No retained integration provides the weather
   platform, so the spec can never match; the upstream tests reference weather
   in 99 places, which is why it is deferred rather than patched (#27)
+
+#25 resolved two more. `hassio` was held in by the Matter Server and Mosquitto
+add-on paths in Matter and MQTT, and by `usb` listing the serial ports
+Supervisor apps claim; all three paths are gone, and `backup`, reached only
+through `hassio`, left with it. Both are ordinary deletion candidates now.
+`dependency-findings-2026.9.3.md` had predicted the Matter and MQTT coupling;
+the `usb` edge it did not.
 
 `device_tracker` used to be a sixth, held in by DHCP discovery watching its
 registrations. #20 resolved it the other way: `device_tracker` is an entity

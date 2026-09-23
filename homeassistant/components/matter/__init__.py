@@ -4,7 +4,6 @@ import asyncio
 from functools import cache
 from typing import TYPE_CHECKING
 
-from aiohasupervisor.models import InterfaceMethod
 from matter_server.client import MatterClient
 from matter_server.client.exceptions import (
     CannotConnect,
@@ -16,20 +15,12 @@ from matter_server.client.exceptions import (
 from matter_server.common.errors import MatterError, NodeNotExists
 from yarl import URL
 
-from homeassistant.components.hassio import (
-    AddonError,
-    AddonManager,
-    AddonState,
-    SupervisorError,
-    get_supervisor_client,
-)
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_URL, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.hassio import is_hassio
 from homeassistant.helpers.issue_registry import (
     IssueSeverity,
     async_create_issue,
@@ -38,9 +29,8 @@ from homeassistant.helpers.issue_registry import (
 from homeassistant.helpers.typing import ConfigType
 
 from .adapter import MatterAdapter
-from .addon import get_addon_manager
 from .api import async_register_api
-from .const import CONF_INTEGRATION_CREATED_ADDON, CONF_USE_ADDON, DOMAIN, LOGGER
+from .const import DOMAIN, LOGGER
 from .discovery import SUPPORTED_PLATFORMS
 from .helpers import (
     MatterConfigEntry,
@@ -88,9 +78,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: MatterConfigEntry) -> bool:
     """Set up Matter from a config entry."""
-    if use_addon := entry.data.get(CONF_USE_ADDON):
-        await _async_ensure_addon_running(hass, entry)
-
     matter_client = MatterClient(entry.data[CONF_URL], async_get_clientsession(hass))
     try:
         async with asyncio.timeout(CONNECT_TIMEOUT):
@@ -99,18 +86,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: MatterConfigEntry) -> bo
         raise ConfigEntryNotReady("Failed to connect to matter server") from err
     except InvalidServerVersion as err:
         if isinstance(err, ServerVersionTooOld):
-            if use_addon:
-                addon_manager = _get_addon_manager(hass)
-                addon_manager.async_schedule_update_addon(catch_error=True)
-            else:
-                async_create_issue(
-                    hass,
-                    DOMAIN,
-                    "server_version_version_too_old",
-                    is_fixable=False,
-                    severity=IssueSeverity.ERROR,
-                    translation_key="server_version_version_too_old",
-                )
+            async_create_issue(
+                hass,
+                DOMAIN,
+                "server_version_version_too_old",
+                is_fixable=False,
+                severity=IssueSeverity.ERROR,
+                translation_key="server_version_version_too_old",
+            )
         elif isinstance(err, ServerVersionTooNew):
             async_create_issue(
                 hass,
@@ -130,8 +113,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: MatterConfigEntry) -> bo
 
     async_delete_issue(hass, DOMAIN, "server_version_version_too_old")
     async_delete_issue(hass, DOMAIN, "server_version_version_too_new")
-
-    await _async_check_ipv6_enabled(hass)
 
     ble_proxy: MatterBleProxy | None = None
 
@@ -262,53 +243,6 @@ def _derive_ble_proxy_url(matter_ws_url: str) -> str | None:
     return str(parsed.with_path(new_path))
 
 
-async def _async_check_ipv6_enabled(hass: HomeAssistant) -> None:
-    """Raise a repair issue when IPv6 is disabled in Supervisor network settings.
-
-    Matter relies on IPv6 to communicate with devices. On Supervised/HAOS
-    installations the host network IPv6 method can be disabled per interface,
-    which silently breaks Matter, so we surface a repair pointing the user at
-    the network settings.
-    """
-    if not is_hassio(hass):
-        return
-
-    client = get_supervisor_client(hass)
-    try:
-        network_info = await client.network.info()
-    except SupervisorError as err:
-        LOGGER.debug("Failed to fetch Supervisor network info: %s", err)
-        return
-
-    connected_interfaces = [
-        interface
-        for interface in network_info.interfaces
-        if interface.enabled and interface.connected
-    ]
-    # Without a connected interface we can't tell whether IPv6 is disabled or
-    # the network is simply not up yet, so avoid raising a false repair.
-    if not connected_interfaces:
-        return
-
-    if any(
-        interface.ipv6 is not None
-        and interface.ipv6.method is not InterfaceMethod.DISABLED
-        for interface in connected_interfaces
-    ):
-        async_delete_issue(hass, DOMAIN, "ipv6_disabled")
-        return
-
-    async_create_issue(
-        hass,
-        DOMAIN,
-        "ipv6_disabled",
-        is_fixable=False,
-        severity=IssueSeverity.WARNING,
-        translation_key="ipv6_disabled",
-        learn_more_url="homeassistant://config/network",
-    )
-
-
 async def _client_listen(
     hass: HomeAssistant,
     entry: MatterConfigEntry,
@@ -351,39 +285,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: MatterConfigEntry) -> b
         entry.runtime_data.listen_task.cancel()
         await entry.runtime_data.adapter.matter_client.disconnect()
 
-    if entry.data.get(CONF_USE_ADDON) and entry.disabled_by:
-        addon_manager: AddonManager = get_addon_manager(hass)
-        LOGGER.debug("Stopping Matter Server add-on")
-        try:
-            await addon_manager.async_stop_addon()
-        except AddonError as err:
-            LOGGER.error("Failed to stop the Matter Server add-on: %s", err)
-            return False
-
     return unload_ok
-
-
-async def async_remove_entry(hass: HomeAssistant, entry: MatterConfigEntry) -> None:
-    """Config entry is being removed."""
-
-    if not entry.data.get(CONF_INTEGRATION_CREATED_ADDON):
-        return
-
-    addon_manager: AddonManager = get_addon_manager(hass)
-    try:
-        await addon_manager.async_stop_addon()
-    except AddonError as err:
-        LOGGER.error(err)
-        return
-    try:
-        await addon_manager.async_create_backup()
-    except AddonError as err:
-        LOGGER.error(err)
-        return
-    try:
-        await addon_manager.async_uninstall_addon()
-    except AddonError as err:
-        LOGGER.error(err)
 
 
 def _remove_via_devices(
@@ -430,48 +332,3 @@ async def async_remove_config_entry_device(
             _remove_via_devices(hass, config_entry, device_entry)
 
     return True
-
-
-async def _async_ensure_addon_running(
-    hass: HomeAssistant, entry: MatterConfigEntry
-) -> None:
-    """Ensure that Matter Server add-on is installed and running."""
-    addon_manager = _get_addon_manager(hass)
-    try:
-        addon_info = await addon_manager.async_get_addon_info()
-    except AddonError as err:
-        raise ConfigEntryNotReady(err) from err
-
-    addon_state = addon_info.state
-
-    if addon_state is AddonState.NOT_INSTALLED:
-        addon_manager.async_schedule_install_setup_addon(
-            addon_info.options,
-            catch_error=True,
-        )
-        raise ConfigEntryNotReady(
-            translation_domain=DOMAIN,
-            translation_key="addon_not_installed",
-        )
-
-    if addon_state is AddonState.NOT_RUNNING:
-        addon_manager.async_schedule_start_addon(catch_error=True)
-        raise ConfigEntryNotReady(
-            translation_domain=DOMAIN,
-            translation_key="addon_not_running",
-        )
-
-
-@callback
-def _get_addon_manager(hass: HomeAssistant) -> AddonManager:
-    """Ensure that Matter Server add-on is updated and running.
-
-    May only be used as part of async_setup_entry above.
-    """
-    addon_manager: AddonManager = get_addon_manager(hass)
-    if addon_manager.task_in_progress():
-        raise ConfigEntryNotReady(
-            translation_domain=DOMAIN,
-            translation_key="addon_not_ready",
-        )
-    return addon_manager

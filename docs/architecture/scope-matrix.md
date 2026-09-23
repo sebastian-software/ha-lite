@@ -59,8 +59,8 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | energy | **REMOVED** | Product/domain aggregation; physically removed in Wave 3 after decoupling Analytics reporting. |
 | map | **ABSENT** | Not present in the imported 2026.9.3 tree; the map view is a frontend dashboard. |
 | map_tiles, my, search | DELETE | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). While `my` is loaded, the OAuth2 flow helper uses its redirect instead of the instance's own callback URL, so removing it changes the redirect URI OAuth integrations register (#26). |
-| file_upload | PATCH, then DELETE | Held in by the MQTT certificate flow (`patch_required`). Replace the browser upload with a headless certificate contract (#25), then delete (#22). |
-| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. Reached only through `hassio` today (#28, #30). |
+| file_upload | DELETE | MQTT takes certificate material as PEM text since #25, so only the `bootstrap.py` pre-import holds it now (#22). |
+| backup | INVESTIGATE / REPLACE | Need backup semantics, not necessarily HA implementation. Outside the closure since #25, but still a bootstrap default (#28, #30). |
 | cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
@@ -77,7 +77,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. A retained OAuth integration is to exercise them in CI (#26). |
 | MQTT | KEEP | Representative protocol/integration substrate. |
 | Shelly | KEEP | Primary representative local-device integration. |
-| Matter + Matter server boundary | KEEP | Modern protocol; external helper process is acceptable. |
+| Matter + Matter server boundary | KEEP | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
 | Hue | KEEP initially | Representative bridge-based local integration. |
 | Fronius | KEEP initially | Representative local energy-device integration; energy UI not needed. |
 | HomeKit controller/device | INVESTIGATE | Useful protocol; measure dependency footprint. Not a root, so Wave 4 deletes it unless it is promoted before #27 lands. |
@@ -85,7 +85,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
 | YAML configuration | INVESTIGATE | Config entries likely primary target. Modbus is configured by YAML only (#29). |
 | Dynamic pip requirement installation | INVESTIGATE / REPLACE | Controlled distribution may prefer pre-resolved dependencies (#29). |
-| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. `hassio` is still reached through the Matter and MQTT add-on paths (#25). |
+| Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25 removed the Matter and MQTT add-on paths and `usb`'s app lookup; it leaves with the integration long tail (#27). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |
 
