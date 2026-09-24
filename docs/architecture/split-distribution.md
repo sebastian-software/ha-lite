@@ -13,9 +13,9 @@ integrations. The plan below does not need one.
 ## The problem
 
 ADR 0020 keeps Home Assistant's integration catalog in the tree, and the
-distribution follows the tree. Installing ha-lite installs the 1,268
-catalog members, 1,157 integrations with code and 111 virtual ones: 34.9 MB of
-Python in 7,999 files. A deployment uses a handful of them.
+distribution follows the tree. Installing ha-lite installs the 1,272
+catalog members, 1,161 integrations with code and 111 virtual ones: 35.0 MB of
+Python in 8,042 files. A deployment uses a handful of them.
 
 At runtime this costs almost nothing. The loader imports an integration only
 when it is set up, and requirements are installed on first use (ADR 0019). The
@@ -36,45 +36,46 @@ responsible for, code for devices they will never own.
 ## The interface as it is
 
 The interface between the core and an integration is whatever the
-integration imports. Measured over the 1,268 catalog integrations in this
+integration imports. Measured over the 1,272 catalog integrations in this
 tree:
 
 | What they import | Count |
 |---|---|
 | Core modules outside `homeassistant/components` | 95 modules, 785 distinct names |
-| Components of the protected core (entity domains, `diagnostics`, `bluetooth` and others) | 63 components, 660 distinct names |
-| Compat modules (`automation`, `script`, `onboarding`, `cloud` and seven that name a domain) | 11 |
-| Other catalog integrations | 31 integrations import one, most often `ffmpeg` (15) and `mjpeg` (7) |
+| Components of the protected core (entity domains, `diagnostics`, `bluetooth` and others) | 63 components, 661 distinct names |
+| Compat modules (`automation`, `script`, `onboarding` and seven that name a domain) | 10 |
+| Other catalog integrations | 41 integrations import one, most often `ffmpeg` (15), `cloud` (10) and `mjpeg` (7) |
 
 The most used core modules:
 
 | Module | Integrations |
 |---|---|
-| `homeassistant.core` | 1,157 |
-| `homeassistant.const` | 1,129 |
-| `homeassistant.helpers.entity_platform` | 1,027 |
-| `homeassistant.config_entries` | 862 |
-| `homeassistant.helpers.typing` | 749 |
-| `homeassistant.helpers.device_registry` | 722 |
-| `homeassistant.exceptions` | 693 |
-| `homeassistant.helpers.update_coordinator` | 550 |
-| `homeassistant.helpers.aiohttp_client` | 372 |
-| `homeassistant.util` | 332 |
+| `homeassistant.core` | 1,161 |
+| `homeassistant.const` | 1,133 |
+| `homeassistant.helpers.entity_platform` | 1,030 |
+| `homeassistant.config_entries` | 865 |
+| `homeassistant.helpers.typing` | 751 |
+| `homeassistant.helpers.device_registry` | 725 |
+| `homeassistant.exceptions` | 697 |
+| `homeassistant.helpers.update_coordinator` | 551 |
+| `homeassistant.helpers.aiohttp_client` | 373 |
+| `homeassistant.util` | 342 |
 
 About 1,450 names in total. That is not an API anybody designed; it is the
 whole of Home Assistant's helper layer. It is why the plan locks versions
 instead of promising stability, and why a stable API is a separate, later
 question (level 3 below).
 
-Integrations barely depend on each other. Only 31 of the 1,268 import another
-catalog integration, so a package rarely needs another integration package.
+Integrations barely depend on each other. Only 41 of the 1,272 import another
+catalog integration, ten of them `cloud` for its webhook answers, so a package
+rarely needs another integration package.
 
 ## The packages
 
 | Package | Contents | Size |
 |---|---|---|
-| `ha-lite` (core) | `homeassistant/` without the catalog directories; the 98 components of the protected core; the compat modules; the generated discovery index (`homeassistant/generated/`); brands; the 111 virtual integrations, each a manifest and at most a one-line module | 8.4 MB of Python in about 970 files; 51 requirements |
-| `ha-lite-<domain>`, one per catalog integration with code (1,157) | `homeassistant/components/<domain>/`: code, `manifest.json`, `services.yaml`, `strings.json`, translations and icons | median 18 KB; the largest, UniFi Protect, 0.39 MB |
+| `ha-lite` (core) | `homeassistant/` without the catalog directories; the 98 components of the protected core; the compat modules; the generated discovery index (`homeassistant/generated/`); brands; the 111 virtual integrations, each a manifest and at most a one-line module | 8.4 MB of Python in about 980 files; 51 requirements |
+| `ha-lite-<domain>`, one per catalog integration with code (1,161) | `homeassistant/components/<domain>/`: code, `manifest.json`, `services.yaml`, `strings.json`, translations and icons | median 18 KB; the largest, HomeKit Bridge, 0.43 MB |
 | `ha-lite-all` | nothing; it depends on every integration package | — |
 
 `ha-lite-all` gives the installation that exists today, for deployments that
@@ -208,7 +209,7 @@ and install, before any user depends on them.
 
 ## Open questions
 
-- **Where packages are published.** PyPI would host about 1,250 projects per
+- **Where packages are published.** PyPI would host about 1,160 projects per
   version under an `ha-lite-` prefix; its policies on project count and
   naming need checking first. The alternative is a package index hosted with
   the project's releases.

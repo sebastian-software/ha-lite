@@ -8,7 +8,7 @@ That check is automated: `script/ha_lite_closure.py` computes the retained closu
 
 The matrix is about product layers and the runtime. Integrations are not listed one by one: Home Assistant's integration catalog is kept as upstream ships it, except where an integration still imports a removed layer (ADR 0020). [retained-closure.md](retained-closure.md#what-is-still-out) lists those.
 
-**REMOVED** means physically absent from the tree. A row that still has work to do names the issue that carries it; [roadmap.md](roadmap.md) groups those issues by wave.
+**REMOVED** means physically absent from the tree. **REDUCED** means a removed layer is back with only the part that serves devices. A row that still has work to do names the issue that carries it; [roadmap.md](roadmap.md) groups those issues by wave.
 
 Guiding rule: keep machinery required to discover, configure, identify, observe and control devices, and the integrations that do it; remove product behavior and presentation.
 
@@ -65,7 +65,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | map_tiles, my, search | **REMOVED** | The OpenStreetMap tile proxy behind the frontend's base map, the `my.home-assistant.io` redirect service, and the frontend's related-items search (#22). Without `my`, the OAuth2 flow helper redirects to the instance's own callback URL, which is what OAuth applications register (#26). |
 | file_upload | **REMOVED** | MQTT takes certificate material as PEM text since #25 (#22). |
 | backup | **REMOVED** | Deleted with its storage agents in Wave 4 (#27). A backup of ha-lite is a copy of the configuration directory taken while it is stopped (ADR 0018). |
-| cloud / Nabu Casa | **REMOVED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. `cloud.py` stays as a compat module that answers as upstream does without a login: no subscription, no connection, no cloudhook, so integrations use their local webhook URL (ADR 0020). Account linking, which August, Yale and Watts sign in through, is not provided. |
+| cloud / Nabu Casa | **REDUCED** | Product/cloud service; physically removed in Wave 3 with Alexa and Google Assistant, which only existed to serve it. `cloud` is back as a catalog integration reduced to account linking, through which August, Yale and Watts sign in without a Nabu Casa account. Everything else answers as upstream does without a login: no subscription, no connection, no cloudhook, so integrations use their local webhook URL (ADR 0020). |
 | conversation / intent / LLM API substrate | KEEP / REDUCE | Required by the official MCP server and useful as a machine-control contract; retain headless primitives, remove presentation/voice-product assumptions separately. |
 | MCP server (`mcp_server`) | KEEP | First-class agent-control surface. Must remain usable without frontend/Lovelace and is protected by CI. |
 | STT / TTS / voice presentation | **REMOVED** | `assist_pipeline`, `assist_satellite`, `stt`, `tts` and `wake_word` were outside the `mcp_server` closure; physically removed in Wave 3 (#23). `tests/ha_lite/test_mcp_headless.py` keeps MCP working without them. |
@@ -80,7 +80,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | webhook | KEEP / INVESTIGATE | Some integrations require inbound events. |
 | OAuth2 helpers/application credentials | KEEP | Required for cloud integrations and reauth. Miele exercises them in CI as the OAuth lifecycle anchor (#26, ADR 0017). |
 | Miele | KEEP (anchor) | Application credentials, OAuth2 authorize/callback/token, reauth and reconfigure against a real integration. Kept for what its tests exercise, not as a promise to retain cloud integrations (ADR 0017). |
-| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,268 catalog members, run by the `catalog` CI job (ADR 0020). 73 are still out, listed in [retained-closure.md](retained-closure.md#what-is-still-out): 56 by design and 17 waiting for a decoupling change. |
+| Integration catalog | **KEEP** | Every upstream integration that loads without a removed layer; 1,272 catalog members, run by the `catalog` CI job (ADR 0020). 70 are still out, listed in [retained-closure.md](retained-closure.md#what-is-still-out): 56 by design and 14 waiting for a decoupling change. |
 | MQTT | KEEP (anchor) | Representative protocol/integration substrate. |
 | Shelly | KEEP (anchor) | Primary representative local-device integration. |
 | Matter + Matter server boundary | KEEP (anchor) | Modern protocol; the Matter Server runs as an external process, configured by URL. The add-on lifecycle is gone (#25). |
@@ -91,7 +91,7 @@ Guiding rule: keep machinery required to discover, configure, identify, observe 
 | demo, kitchen_sink | **KEEP (test fixtures)** | Simulated devices that retained upstream test suites set up by name — `demo` behind the `media_player`, `camera`, `group` and config-entry tests, `kitchen_sink` behind `group`'s lock tests. Wave 4 pruned their platforms for the domains it deleted; they came back with the catalog. Roots with a CI job, not runtime (#27). |
 | Frigate | OUT OF TREE | Useful MQTT/event/media stress case, but a custom integration that Home Assistant Core does not ship. A compatibility canary at most, like `ha-mcp`. |
 | YAML configuration | **KEEP** | Instance settings (`homeassistant:`, `http:`, `logger:`, discovery) and declarative integration configuration with no config flow — Modbus register maps, MQTT YAML entities, `group`/`person`/`zone`/`scene`. Config entries stay primary; `tests/test_config.py` is in CI (#29, ADR 0019). |
-| Dynamic pip requirement installation | **KEEP** | `requirements_all.txt` lists every integration's requirements (1,082 packages, validated in CI). A deployment that installs it installs nothing at runtime; one that does not gets an integration's requirements on first setup, as upstream. `--skip-pip` forbids it entirely (#29, ADR 0019). |
+| Dynamic pip requirement installation | **KEEP** | `requirements_all.txt` lists every integration's requirements (1,085 packages, validated in CI). A deployment that installs it installs nothing at runtime; one that does not gets an integration's requirements on first setup, as upstream. `--skip-pip` forbids it entirely (#29, ADR 0019). |
 | Supervisor | DELETE / OUT OF SCOPE | Separate runtime-management product. No retained code reaches `hassio` since #25, and bootstrap no longer sets it up under `SUPERVISOR` (ADR 0016); deleted in Wave 4 (#27) and excluded since (ADR 0020). |
 | Home Assistant OS | DELETE / OUT OF SCOPE | Appliance OS not target. |
 | Docker/container requirement | DELETE as requirement | Run as normal service; containers may remain optional packaging. |

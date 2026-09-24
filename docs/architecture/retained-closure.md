@@ -214,15 +214,15 @@ the `catalog` CI job runs its suite.
 
 | Metric | Count |
 |---|---|
-| Component domains in tree | 1,366 |
+| Component domains in tree | 1,370 |
 | Declared roots | 90 |
 | Retained closure | 98 |
-| Catalog | 1,268 |
+| Catalog | 1,272 |
 
 Of the 8 transitively required domains, 7 are `retained` and 1 is an `adapter`.
 `recorder` was one more until #28 removed it (ADR 0018). The tree count
 includes 111 virtual integrations, which are a manifest pointing at another
-integration and carry no code. The eleven compat modules are files, not
+integration and carry no code. The ten compat modules are files, not
 domains, and are not counted.
 
 ### Wave 4
@@ -363,7 +363,8 @@ it one question:
   running, to add a discovered device without asking.
 
 Three compat modules answer those questions; a second round below added
-eight more. Each is a single file directly under `homeassistant/components/`,
+eight more, and account linking later made one of those, `cloud`, an
+integration again. Each is a single file directly under `homeassistant/components/`,
 without a manifest, so it is not an integration and cannot be set up
 (ADR 0020):
 
@@ -406,8 +407,9 @@ Around them, these files changed:
 - WLED's `analytics.py` platform and its test are removed. Only the removed
   `analytics` integration loads that platform, so it leaves with that layer,
   as logbook's describe platforms did.
-- Cast's manifest drops `cloud` and `tts` from `after_dependencies`, which
-  hassfest rejects for domains that are not in the tree.
+- Cast's manifest drops `tts` from `after_dependencies`, which hassfest
+  rejects for domains that are not in the tree. It dropped `cloud` too, until
+  account linking brought `cloud` back (below).
 - `unifi_discovery` maps Protect consoles to `unifiprotect` again, as upstream
   does.
 
@@ -432,7 +434,7 @@ The same kind of question held back 17 more integrations:
 
 | Module | Provides | Answer in ha-lite |
 |---|---|---|
-| `cloud.py` | `DOMAIN`, the `CloudNotAvailable`/`CloudNotConnected` errors, `CloudConnectionState` and its signal, the subscription and connection checks, the cloudhook functions and the change listeners | No subscription, no connection; creating a cloudhook raises `CloudNotConnected` |
+| `cloud.py`, now `cloud/__init__.py` | `DOMAIN`, the `CloudNotAvailable`/`CloudNotConnected` errors, `CloudConnectionState` and its signal, the subscription and connection checks, the cloudhook functions and the change listeners | No subscription, no connection; creating a cloudhook raises `CloudNotConnected` |
 | `default_config.py` | `DOMAIN` | Never configured, so go2rtc starts only when `go2rtc:` is |
 | `counter.py`, `input_boolean.py`, `input_text.py` | `DOMAIN` | Selectors that name them find nothing |
 | `input_button.py` | `DOMAIN`, `SERVICE_PRESS` | As above |
@@ -453,19 +455,15 @@ integrations, `bticino`, `bubendorff`, `home_plus_control`, `legrand` and
 
 Around them, these files changed:
 
-- Thirteen manifests drop `cloud` or `counter` from `after_dependencies`:
-  - ten drop `cloud`;
-  - `derivative`, `integration` and `trend` drop `counter`.
-
-  A compat module is not an integration, so the entry would fail their setup.
+- `derivative`, `integration` and `trend` drop `counter` from
+  `after_dependencies`. A compat module is not an integration, so the entry
+  would fail their setup. The ten that dropped `cloud` name it again since
+  account linking made it an integration.
 - hassfest's import check (`script/hassfest/dependencies.py`) accepts imports
   of compat modules without a manifest entry, which it otherwise requires.
 - The closure gate reports a manifest entry on a missing domain or on a compat
   module as dangling. It used to let `after_dependencies` pass, on the wrong
   assumption that the loader ignores them.
-- `tests/components/cloud/__init__.py` stands in for upstream's `mock_cloud`
-  helper. Catalog tests call it before they patch the cloud functions to reach
-  their cloudhook code.
 - `tests/helpers/helper_harness.py` drops its stand-ins for the domain names of
   `input_number`, `input_select` and `counter`, which the compat modules now
   provide.
@@ -488,9 +486,67 @@ flow asks for a backup share, and it raises a repair when none is set, for a
 feature ha-lite does not have. Removing that takes edits in several of its
 files.
 
+#### Account linking
+
+August, Yale and Watts waited for `cloud` as a dependency. They sign in with
+OAuth, and their vendors give client credentials only to Nabu Casa. Nabu
+Casa's account link server holds the credentials and runs the sign-in:
+
+1. The config flow asks the server for an authorize URL, over a websocket.
+2. The user signs in at the vendor, which redirects to the server, not to the
+   instance.
+3. The server sends the tokens back over the websocket.
+4. Tokens are refreshed through the server as well.
+
+None of this needs a Home Assistant Cloud account: hass_nabucasa's
+`account_link` module sends no credentials. The browser never has to reach
+the instance either, which suits a headless runtime.
+
+`cloud` is back as an integration reduced to account linking:
+
+| File | Source | Content |
+|---|---|---|
+| `account_link.py` | upstream, unchanged | Offers the account link server as an OAuth2 implementation for every domain the server lists |
+| `__init__.py` | ha-lite | Sets account linking up, and gives the compat module's answers: no login, no subscription, no connection, no cloudhook |
+| `const.py` | ha-lite | `DOMAIN`, and `DATA_CLOUD`, where upstream keeps its hass_nabucasa `Cloud` |
+| `manifest.json` | ha-lite | No dependencies. Its one requirement, `hass-nabucasa`, is a core requirement already, for `http` |
+
+Upstream builds a hass_nabucasa `Cloud`, and with it remote access, voice,
+Alexa and Google Assistant. hass_nabucasa's account link functions read two
+of its attributes: the client's web session and the server's host name. So
+ha-lite stores an object that has only those two.
+
+Around it, these files changed:
+
+- The closure config drops `cloud` from the excluded layers and from the
+  compat modules. It is a catalog integration now.
+- The ten manifests that dropped `cloud`, and Cast's, name it in
+  `after_dependencies` again, as upstream does.
+- The brands `august`, `yale` and `yale_august` are upstream's again.
+- `tests/components/cloud/__init__.py` has upstream's `mock_cloud` helper,
+  without the hass_nabucasa `Cloud` it also initialized. Catalog tests call it
+  before they patch the cloud functions to reach their cloudhook code.
+- `tests/components/cloud/` runs upstream's `test_account_link.py`, which
+  patches hass_nabucasa's functions. ha-lite's `test_init.py` runs them
+  against the stand-in instead, and covers the compat module's answers.
+
+What an operator should know:
+
+- `cloud:` in the configuration sets up account linking for integrations that
+  list `cloud` only in `after_dependencies`. A config entry that signed in
+  through account linking in Home Assistant needs it to refresh its token.
+  Options carried over from Home Assistant, such as `alexa:`, are logged and
+  ignored.
+- A `cloud` config entry carried over from a Home Assistant that was logged in
+  to Nabu Casa fails to load with an error, because ha-lite's `cloud` has no
+  config flow. Account linking works regardless; the entry can be deleted.
+- The account link server is Nabu Casa's service for Home Assistant. If Nabu
+  Casa restricts it, these integrations lose their sign-in. ha-lite cannot run
+  a server of its own, because the vendor credentials belong to Nabu Casa.
+
 ### What is still out
 
-73 integrations are still out, and 28 virtual integrations point at them. They
+70 integrations are still out, and 28 virtual integrations point at them. They
 fall into two groups.
 
 **Out by design (56).** Their purpose is a product layer ha-lite removed, so
@@ -519,13 +575,12 @@ its own files.
 with Recorder (#28). The domain-level walk cannot see a removed module inside
 a retained component; the import check of the restore did.
 
-**Waiting for a decoupling (17).** These serve devices, and a coupling holds
+**Waiting for a decoupling (14).** These serve devices, and a coupling holds
 them back, not their purpose:
 
 | Needs | Integrations | What for |
 |---|---|---|
-| `cloud` as a dependency | `august`, `watts`, `yale` | Signing in through Nabu Casa's account linking, which holds the vendor's OAuth credentials. The compat module cannot provide it |
-| `frontend`, `analytics`, `cloud` | `mobile_app` | The companion apps' panel and analytics; the cloud part alone would be answered |
+| `frontend`, `analytics` | `mobile_app` | The frontend's web app manifest, and an analytics platform. The `cloud` integration answers its cloud questions, except for the remote access URL |
 | `hassio`, Home Assistant hardware | `esphome`, `otbr`, `zha`, `zwave_js` | Managing the add-on that runs the server, firmware for Home Assistant's own radios. ESPHome also brings the voice satellite |
 | `file_upload` | `influxdb`, `knx`, `local_calendar`, `velbus` | Uploading a certificate, keyring or file in a config flow |
 | `frontend`, `panel_custom` | `dynalite`, `insteon`, `knx`, `lcn`, `panel_custom` | A configuration panel in the web UI |
@@ -542,7 +597,7 @@ An integration in the second group comes back in one of three ways:
 - a decoupling change of the #25 kind, which patches the import of the removed
   layer out of the integration;
 - a compat module, where the coupling is only a question;
-- restoring a layer that turns out to serve devices rather than people, as
-  `media_source` did.
+- restoring a layer, or the part of it, that turns out to serve devices rather
+  than people, as `media_source` did and account linking did for `cloud`.
 
 The gate then accepts it, and the catalog job runs its suite.
