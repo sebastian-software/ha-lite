@@ -46,6 +46,31 @@ DHCP: Final[list[dict[str, str | bool]]] = [
         "hostname": "gdocntl-*",
     },
     {
+        "domain": "august",
+        "hostname": "connect",
+        "macaddress": "D86162*",
+    },
+    {
+        "domain": "august",
+        "hostname": "connect",
+        "macaddress": "B8B7F1*",
+    },
+    {
+        "domain": "august",
+        "hostname": "connect",
+        "macaddress": "2C9FFB*",
+    },
+    {
+        "domain": "august",
+        "hostname": "connect",
+        "macaddress": "789C85*",
+    },
+    {
+        "domain": "august",
+        "hostname": "august*",
+        "macaddress": "E076D0*",
+    },
+    {
         "domain": "axis",
         "registered_devices": True,
     },
@@ -1600,6 +1625,11 @@ DHCP: Final[list[dict[str, str | bool]]] = [
     {
         "domain": "xbox",
         "hostname": "xbox*",
+    },
+    {
+        "domain": "yale",
+        "hostname": "yale-connect-plus",
+        "macaddress": "00177A*",
     },
     {
         "domain": "yeelight",

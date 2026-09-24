@@ -1,6 +1,7 @@
 {
   "domain": "rachio",
   "name": "Rachio",
+  "after_dependencies": ["cloud"],
   "codeowners": ["@bdraco", "@rfverbruggen"],
   "config_flow": true,
   "dependencies": ["http"],

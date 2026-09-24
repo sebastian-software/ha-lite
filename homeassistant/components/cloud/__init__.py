@@ -1,22 +1,33 @@
-"""Compatibility module for the removed Home Assistant Cloud integration.
+"""Home Assistant Cloud, reduced to account linking.
 
-This is deliberately not a Home Assistant integration: it has no manifest and no
-setup entry point. Integrations ask it whether Home Assistant Cloud can give
-them a public webhook URL. It answers as upstream does when nobody is logged
-in: no subscription, no connection, no cloudhook. The integrations then use
-their local webhook URL.
+Some vendors give OAuth client credentials only to Nabu Casa, not to users:
+August, Yale and Watts sign in through Nabu Casa's account link server, which
+needs no Home Assistant Cloud account. ha-lite keeps that and nothing else of
+the cloud: no login, remote access, cloudhooks, Alexa, Google Assistant, speech
+or backup. The functions integrations call to ask for those answer as upstream
+does when nobody is logged in, so the integrations use their local webhook URL.
 """
 
 from collections.abc import Awaitable, Callable
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
+from aiohttp import ClientSession
+from hass_nabucasa.const import DEFAULT_SERVERS
+
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.util.signal_type import SignalType
 
-DOMAIN = "cloud"
+from . import account_link
+from .const import DATA_CLOUD, DOMAIN
+
+CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
 
 
 class CloudNotAvailable(HomeAssistantError):
@@ -43,21 +54,49 @@ _SIGNAL_CLOUDHOOKS_UPDATED: SignalType[dict[str, Any]] = SignalType(
 )
 
 
+@dataclass(frozen=True)
+class AccountLinkClient:
+    """The part of a hass_nabucasa CloudClient that account linking uses."""
+
+    websession: ClientSession
+
+
+@dataclass(frozen=True)
+class AccountLinkCloud:
+    """The part of a hass_nabucasa Cloud that account linking uses.
+
+    Building a real Cloud would build remote access, voice, Alexa and Google
+    with it.
+    """
+
+    client: AccountLinkClient
+    account_link_server: str = DEFAULT_SERVERS["production"]["account_link"]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Offer account linking as an OAuth2 implementation."""
+    hass.data[DATA_CLOUD] = AccountLinkCloud(
+        AccountLinkClient(async_get_clientsession(hass))
+    )
+    account_link.async_setup(hass)
+    return True
+
+
 @callback
 def async_is_logged_in(hass: HomeAssistant) -> bool:
-    """Return if a user is logged in; ha-lite has no cloud account."""
+    """Return if a user is logged in; there is no login to Home Assistant Cloud."""
     return False
 
 
 @callback
 def async_is_connected(hass: HomeAssistant) -> bool:
-    """Return if connected to the cloud; ha-lite never is."""
+    """Return if connected to the cloud; never, without a login."""
     return False
 
 
 @callback
 def async_active_subscription(hass: HomeAssistant) -> bool:
-    """Return if there is an active subscription; ha-lite has none."""
+    """Return if there is an active subscription; never, without a login."""
     return False
 
 

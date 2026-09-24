@@ -256,7 +256,6 @@
       "alexa",
       "analytics",
       "backup",
-      "cloud",
       "google_assistant",
       "hassio",
       "labs"
@@ -264,7 +263,6 @@
   },
   "compat_modules": {
     "automation": "automations_with_entity/automations_with_device return no automations; integrations call them before deprecating an entity.",
-    "cloud": "async_active_subscription and async_is_connected are false, creating a cloudhook raises CloudNotConnected; integrations fall back to their local webhook URL.",
     "counter": "DOMAIN only; helpers name it in entity selectors.",
     "default_config": "DOMAIN only; go2rtc sets itself up when default_config is configured, which in ha-lite it never is.",
     "input_boolean": "DOMAIN only; HomeKit and helpers name it among supported domains.",

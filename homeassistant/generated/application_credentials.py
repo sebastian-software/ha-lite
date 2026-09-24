@@ -5,6 +5,7 @@ To update, run python3 -m script.hassfest
 
 APPLICATION_CREDENTIALS = [
     "aladdin_connect",
+    "august",
     "ekeybionyx",
     "electric_kiwi",
     "fitbit",
@@ -41,9 +42,11 @@ APPLICATION_CREDENTIALS = [
     "twitch",
     "vicare",
     "volvo",
+    "watts",
     "weheat",
     "withings",
     "xbox",
+    "yale",
     "yolink",
     "yoto",
     "youtube",
