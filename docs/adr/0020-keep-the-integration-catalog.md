@@ -74,10 +74,12 @@ integration and cannot be set up. It gives the answer upstream gives when the
 product integration is not loaded:
 - `automation.py` and `script.py` find no automations or scripts;
 - `onboarding.py` reports the instance as onboarded;
-- `cloud.py` reports no subscription and no connection, so integrations use
-  their local webhook URL;
 - `counter.py`, `default_config.py` and the `input_*` modules only name their
   domain and its constants.
+
+The cloud question is the exception: `cloud` answers it itself, because it is
+back as an integration (below). There is no subscription and no connection,
+so integrations use their local webhook URL.
 
 An import of a compat module is not dangling. A manifest never names one,
 because a compat module is no integration: with pip allowed, setting up a
@@ -91,6 +93,20 @@ that is not listed there, or a listed module that is gone, is a finding.
 That makes each compat module a reviewed decision rather than a way around
 the dangling check. A compat module never grows into the product it stands
 in for; an integration that needs more than an answer stays out.
+
+**A removed layer can come back reduced to what serves devices.** Home
+Assistant Cloud is a product: remote access, Alexa, Google Assistant, speech,
+backup. One part of it serves devices: account linking. August, Yale and
+Watts give their OAuth client credentials only to Nabu Casa, whose account
+link server completes the sign-in without a Home Assistant Cloud account.
+ha-lite's `cloud` is an integration reduced to that part:
+- upstream's `account_link.py`, unchanged;
+- its own `__init__.py`, which sets account linking up without building
+  hass_nabucasa's `Cloud` and answers everything else as upstream does when
+  nobody is logged in.
+
+`cloud` is a catalog integration, not an excluded layer. Alexa, Google
+Assistant and the rest of the cloud stay excluded.
 
 A platform file that only a removed layer loads, such as WLED's
 `analytics.py`, leaves with that layer, as logbook's describe platforms did.
@@ -131,14 +147,17 @@ The compat modules brought back 57 more in two rounds:
 - the first, with `automation`, `script` and `onboarding`, brought Sonos,
   Google Cast, TP-Link, UniFi Protect, Ring, SmartThings, Roborock, Yeelight,
   WiZ, WLED, Elgato, BTHome and HomeKit Device;
-- the second, with `cloud`, `default_config`, `counter` and the `input_*`
-  modules, brought HomeKit Bridge, go2rtc, Netatmo, Withings, OwnTracks,
-  Rachio, the `derivative`, `integration`, `min_max`, `trend` and `bayesian`
-  helpers, six more integrations and five virtual ones.
+- the second, with `cloud` (then a compat module), `default_config`,
+  `counter` and the `input_*` modules, brought HomeKit Bridge, go2rtc,
+  Netatmo, Withings, OwnTracks, Rachio, the `derivative`, `integration`,
+  `min_max`, `trend` and `bayesian` helpers, six more integrations and five
+  virtual ones.
 
-The tree holds 1,366 components: 98 in the closure and 1,268 in the catalog.
+Account linking brought back four: `cloud` itself, August, Yale and Watts.
 
-73 integrations and 28 virtual integrations pointing at them are still out.
+The tree holds 1,370 components: 98 in the closure and 1,272 in the catalog.
+
+70 integrations and 28 virtual integrations pointing at them are still out.
 `retained-closure.md` lists them in two groups:
 
 - **Out by design** (56). Their purpose is a layer ha-lite removed:
@@ -149,15 +168,14 @@ The tree holds 1,366 components: 98 in the closure and 1,268 in the catalog.
   - `intent_script`, which runs actions the way automations do.
 
   They leave with that layer.
-- **Waiting for a decoupling** (17). They serve devices, and a coupling holds
+- **Waiting for a decoupling** (14). They serve devices, and a coupling holds
   them back, not their purpose. Among them are ESPHome, ZHA, Z-Wave JS and
-  KNX, and August and Yale, which sign in through Nabu Casa's account
-  linking. Each needs a change of the #25 kind, or a compat module where the
+  KNX. Each needs a change of the #25 kind, or a compat module where the
   coupling is only a question.
 
 The reduction is now in the product layers, not in the catalog. Product
 Python goes from 8 MB back to 43 MB, and `requirements_all.txt` from 40
-packages to 1,082; upstream's full catalog is 51 MB and 1,146. ADR 0019 records what that means for installation.
+packages to 1,085; upstream's full catalog is 51 MB and 1,146. ADR 0019 records what that means for installation.
 
 Upstream updates get cheaper. A curated update (ADR 0003) no longer has to
 skip 1,379 deleted directories; it has to carry the excluded layers and the

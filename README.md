@@ -38,7 +38,7 @@ Home Assistant's device knowledge without the application.
 | **History and statistics** | Recorder database, history graphs, energy dashboard | None. State changes are streamed, and clients keep what they need |
 | **First run** | Onboarding wizard in the browser | Two commands create the owner and an access token |
 | **Broken configuration** | Recovery mode in the browser | Recovery mode serves the API and reports the cause |
-| **Cloud, add-ons, OS** | Nabu Casa, Supervisor, add-ons, Home Assistant OS | None |
+| **Cloud, add-ons, OS** | Nabu Casa, Supervisor, add-ons, Home Assistant OS | Only Nabu Casa's account linking, which some integrations sign in through |
 | **Backup** | Backup integration with cloud storage agents | Copy the configuration directory |
 | **Python source** | 51 MB in 10,000 files | 43 MB in 9,000 files |
 
@@ -95,9 +95,8 @@ Some integrations are not included:
   - integrations that write to or read from the Recorder's statistics;
   - backup agents;
   - Home Assistant's own hardware.
-- **Not included yet (17).** They still depend on a removed layer, among them
-  ESPHome, ZHA, Z-Wave JS and KNX, and August and Yale, which sign in through
-  Nabu Casa. Each needs a small decoupling change first.
+- **Not included yet (14).** They still depend on a removed layer, among them
+  ESPHome, ZHA, Z-Wave JS and KNX. Each needs a small decoupling change first.
 
 [retained-closure.md](docs/architecture/retained-closure.md#what-is-still-out)
 lists each one and what it needs.
@@ -110,12 +109,12 @@ folder load as they do in Home Assistant.
 Everything that makes Home Assistant a product for people is removed from the
 code base, not just switched off: the frontend and dashboards, automations and
 scripts, blueprints and templates, history, logbook and energy, the Recorder
-database, the voice pipeline, onboarding, Home Assistant Cloud, Alexa and
-Google Assistant, the Supervisor and add-ons, and backups. The integrations
-stay, except those whose purpose is one of these layers. Where an integration
-only asks a removed layer a question, such as whether an automation uses one of
-its entities, a small compat module answers it the way Home Assistant does
-without that layer.
+database, the voice pipeline, onboarding, Home Assistant Cloud except its
+account linking, Alexa and Google Assistant, the Supervisor and add-ons, and
+backups. The integrations stay, except those whose purpose is one of these
+layers. Where an integration only asks a removed layer a question, such as
+whether an automation uses one of its entities, a small compat module answers
+it the way Home Assistant does without that layer.
 
 The principle behind the cut: ha-lite describes and controls the physical
 world, and deciding what should happen belongs to its clients. Whatever is not

@@ -5,8 +5,8 @@
 ## Context
 
 ADR 0020 keeps Home Assistant's integration catalog in the tree, and the
-distribution follows the tree. One package carries 1,157 catalog integrations
-with code, 34.9 MB of Python, next to a core of 8.4 MB. A deployment uses a
+distribution follows the tree. One package carries 1,161 catalog integrations
+with code, 35.0 MB of Python, next to a core of 8.4 MB. A deployment uses a
 few of them. The rest costs little at runtime, since integrations load only
 when set up, but it is shipped, installed and, in principle, audited by
 everyone.
@@ -62,7 +62,7 @@ Proposed:
 - Discovery still covers the whole catalog, because the index ships with the
   core. A device whose integration is not installed is recognised, and the
   core names the package that handles it.
-- Every release publishes about 1,250 packages. Where they are published is
+- Every release publishes about 1,160 packages. Where they are published is
   open; see the plan.
 - The loader gains a version check, and the requirements manager gains an
   install step. Both are ha-lite changes to upstream files, and both are

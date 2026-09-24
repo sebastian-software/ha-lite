@@ -56,4 +56,8 @@ does not stay on the local network. That is acceptable for an anchor; it is
 not a direction.
 
 With `my` removed, OAuth integrations redirect to the instance's own callback
-URL, which is the URL a user registers with the provider.
+URL, which is the URL a user registers with the provider. The exception is
+account linking through `cloud`, which is back reduced to that part
+(ADR 0020): there, Nabu Casa's server receives the redirect and passes the
+tokens on. That path's own tests cover it; Miele stays the anchor for the
+callback path.

@@ -18,7 +18,7 @@ what is still to do.
 | 3 | Remaining Home Assistant product layers | [#16] | Done |
 | 4 | Explicit retained integration closure | [#17] | Done, integration deletion reversed |
 | 5 | Persistence, configuration and runtime composition | [#18] | Done |
-| — | Integration catalog restored | — | Done; 17 integrations wait for decoupling, 56 are out by design |
+| — | Integration catalog restored | — | Done; 14 integrations wait for decoupling, 56 are out by design |
 
 [#15] is the umbrella epic. Waves 3 and 4 overlap on purpose: the closure (#24)
 was built during Wave 3 so that each Wave 3 cut could be checked against it.
@@ -147,17 +147,19 @@ integrations:
   brought back 22 more, among them HomeKit Bridge, go2rtc, Netatmo, Withings
   and the `derivative`, `integration` and `min_max` helpers.
 
-**Still open:** 73 integrations and 28 virtual integrations pointing at them.
+`cloud` then came back as an integration reduced to Nabu Casa's account
+linking, which brought August, Yale and Watts with it.
+
+**Still open:** 70 integrations and 28 virtual integrations pointing at them.
 [retained-closure.md](retained-closure.md#what-is-still-out) lists them in two
 groups:
 
 - 56 are out by design: speech and AI, Recorder statistics, backup agents,
   Home Assistant's own hardware and `intent_script`.
-- 17 wait for a decoupling:
+- 14 wait for a decoupling:
   - `hassio` and Home Assistant's own hardware: ESPHome, ZHA, Z-Wave JS and
     OTBR;
-  - `file_upload` and `frontend`: KNX, Insteon, Velbus and others;
-  - Nabu Casa's account linking: August, Yale and Watts.
+  - `file_upload` and `frontend`: KNX, Insteon, Velbus and others.
 
 No issue carries this yet.
 
@@ -189,6 +191,7 @@ checkpoint. The README carries the current numbers.
 | After the catalog restore (#49, #50) | 22,729 | 8,395 files / 38.92 MB | 6,779 files / 46.89 MB | 1,289 |
 | After the compat modules (#51) | 24,216 | 8,799 files / 41.97 MB | 7,138 files / 50.84 MB | 1,324 |
 | After the cloud and helper compat modules | 24,689 | 8,981 files / 43.27 MB | 7,283 files / 52.81 MB | 1,342 |
+| After account linking | 24,858 | 9,023 files / 43.40 MB | 7,317 files / 53.08 MB | 1,346 |
 
 The first row was measured before the repository's history begins: the root
 commit is a squashed import taken after Waves 1 and 2, so that snapshot cannot
