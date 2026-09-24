@@ -1,7 +1,7 @@
 {
   "domain": "owntracks",
   "name": "OwnTracks",
-  "after_dependencies": ["mqtt"],
+  "after_dependencies": ["mqtt", "cloud"],
   "codeowners": [],
   "config_flow": true,
   "dependencies": ["webhook"],

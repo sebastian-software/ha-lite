@@ -557,10 +557,22 @@
       "config_flow": false,
       "iot_class": "cloud_polling"
     },
-    "august_ble": {
-      "name": "August Bluetooth",
-      "integration_type": "virtual",
-      "supported_by": "yalexs_ble"
+    "august": {
+      "name": "August Home",
+      "integrations": {
+        "august": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "cloud_push",
+          "name": "August"
+        },
+        "yalexs_ble": {
+          "integration_type": "device",
+          "config_flow": true,
+          "iot_class": "local_push",
+          "name": "Yale Access Bluetooth"
+        }
+      }
     },
     "aurora": {
       "integration_type": "service",
@@ -7566,6 +7578,12 @@
       "config_flow": true,
       "iot_class": "local_push"
     },
+    "watts": {
+      "name": "Watts Vision +",
+      "integration_type": "hub",
+      "config_flow": true,
+      "iot_class": "cloud_polling"
+    },
     "watttime": {
       "name": "WattTime",
       "integration_type": "service",
@@ -7787,6 +7805,12 @@
     "yale": {
       "name": "Yale (non-US/Canada)",
       "integrations": {
+        "yale": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "cloud_push",
+          "name": "Yale Home"
+        },
         "yalexs_ble": {
           "integration_type": "device",
           "config_flow": true,
@@ -7798,6 +7822,23 @@
           "config_flow": true,
           "iot_class": "cloud_polling",
           "name": "Yale Smart Living"
+        }
+      }
+    },
+    "yale_august": {
+      "name": "Yale August (US/Canada)",
+      "integrations": {
+        "august": {
+          "integration_type": "hub",
+          "config_flow": true,
+          "iot_class": "cloud_push",
+          "name": "August"
+        },
+        "august_ble": {
+          "integration_type": "virtual",
+          "config_flow": false,
+          "supported_by": "yalexs_ble",
+          "name": "August Bluetooth"
         }
       }
     },

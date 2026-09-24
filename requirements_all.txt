@@ -1177,6 +1177,9 @@ hanna-cloud==0.0.7
 # homeassistant.components.harbor
 harbor-python==1.5.0
 
+# homeassistant.components.cloud
+hass-nabucasa==2.7.0
+
 # homeassistant.components.splunk
 hass-splunk==0.1.4
 
@@ -3177,6 +3180,9 @@ victron-vrm==0.1.12
 # homeassistant.components.vilfo
 vilfo-api-client==0.5.0
 
+# homeassistant.components.watts
+visionpluspython==1.1.0
+
 # homeassistant.components.vizio
 vizaio==0.6.2
 
@@ -3263,8 +3269,14 @@ xs1-api-client==3.0.0
 # homeassistant.components.yale_smart_alarm
 yalesmartalarmclient==0.4.3
 
+# homeassistant.components.august
+# homeassistant.components.yale
 # homeassistant.components.yalexs_ble
 yalexs-ble==4.0.1
+
+# homeassistant.components.august
+# homeassistant.components.yale
+yalexs==9.2.13
 
 # homeassistant.components.yeelight
 yeelight==0.7.16

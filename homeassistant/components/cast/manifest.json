@@ -1,7 +1,7 @@
 {
   "domain": "cast",
   "name": "Google Cast",
-  "after_dependencies": ["http", "media_source", "plex", "zeroconf"],
+  "after_dependencies": ["cloud", "http", "media_source", "plex", "zeroconf"],
   "codeowners": ["@emontnemery"],
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/cast",
